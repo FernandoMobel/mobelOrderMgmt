@@ -115,14 +115,24 @@ function loadItems(rid){
 	if(typeof rid !== 'undefined'){
     	myData = { mode: "getItems", oid: "<?php echo $_GET["OID"] ?>", rid: rid};
     	
-    	$.post("OrderItem.php",
-    			myData, 
-    		       function(data, status, jqXHR) {
+		//$.post("OrderItem.php",
+    	//		myData, 
+    	//	       function(data, status, jqXHR) {
+    	//	           $('#items').append(data);
+    	//	           $(".borderless").css('border-top','0px');
+    	//	           $("#roomTotal").html("<b>Room Total: $" + $("#TotalPrice").val() + "</b></br>pre HST & pre delivery");
+    	//	        });
+    	
+    	$.ajax({
+	    url: 'OrderItem.php',
+	    type: 'POST',
+	    data: myData,
+	    success: function(data, status, jqXHR) {
     		           $('#items').append(data);
     		           $(".borderless").css('border-top','0px');
     		           $("#roomTotal").html("<b>Room Total: $" + $("#TotalPrice").val() + "</b></br>pre HST & pre delivery");
-    		        });
-	}
+    		        }
+	  	});
 }
 
 function showResult(str) {
