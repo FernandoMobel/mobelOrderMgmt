@@ -7,7 +7,7 @@
 if($_SESSION["userType"]==2){
     $admin = "or m.account = " . $_SESSION["account"];
 }
-opendb("select m.*,s.name as 'status',u.email from mosOrder m, state s, mosUser u where s.id = m.state and m.mosUser = u.id and (u.email = '" . $_SESSION["username"] . "' ". $admin ."  ) order by m.state asc ");
+opendb("select m.*,s.name as 'status',u.email from mosOrder m, state s, mosUser u where s.id = m.state and m.mosUser = u.id and (u.email = '" . $_SESSION["username"] . "' ". $admin ."  ) order by m.state asc, m.oid desc ");
 echo "<br/><div class=\"container\">";
 //echo  "select m.*,s.name as 'status',u.email from mosOrder m, state s, mosUser u where s.id = m.state and m.mosUser = u.id and (u.email = '" . $_SESSION["username"] . "'  )". $admin .")";
 if($GLOBALS['$result']->num_rows > 0){
