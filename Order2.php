@@ -755,6 +755,7 @@ function fixDate(){
             $isWarranty = $row['isWarranty'];
             $isPriority = $row['isPriority'];
             $fromOrder = $row['fromOrder'];
+            $state = $row['state'];
             
             echo "<div class=\"col-sm-3 col-md-3 col-lg-3  align-self-center\">";
             
@@ -839,7 +840,7 @@ function fixDate(){
         }
     }
     
-    if($_SESSION["userType"] == 3){
+    if($_SESSION["userType"] == 3 && $state <> "1"){
         echo "</div><div class=\"row\"><div class=\"col-12\">";
         echo "Order Locked: <input type=\"checkbox\"";
         echo "onchange=\"if($('#isLocked').is(':checked')){viewOnly=1;}else{viewOnly=0;};\"  \" checked id=\"isLocked\">";
