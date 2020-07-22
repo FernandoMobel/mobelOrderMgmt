@@ -690,6 +690,9 @@ function fixDate(){
 			alert("Your leadtime has been adjusted to match the current leadtime.");
 			saveOrder("dateRequired");
 		}
+		$("#isWarranty").val(0);
+		$("#isWarranty").prop("checked",false);
+		saveOrder('isWarranty');
 	}
 }
 
@@ -745,7 +748,11 @@ function fixDate(){
             
             echo "<div class=\"col-sm-3 col-md-3 col-lg-3  align-self-center\">";
             
-            echo "<label for=\"OID\">For Order Number ".$row['oid']."</label>";
+            echo "<label for=\"OID\">For Order Number ".$row['oid'];
+            
+            
+                
+            echo "</label>";
             echo "<input type=\"hidden\" value=\"".$row['oid']."\" id=\"OID\"><br/>";
             
             //echo "<div class=\"btn-group \">";
@@ -762,7 +769,7 @@ function fixDate(){
                 }
             }else{
                 if($_SESSION["userType"] == 3){
-                    echo "<script>viewOnly = 0;</script>";
+                    echo "<script>viewOnly = 1;</script>";
                 }else{
                     echo "<script>viewOnly = 1;</script>";
                 }
@@ -815,11 +822,18 @@ function fixDate(){
         foreach ($GLOBALS['$result'] as $row){
             echo "<div class=\"col-sm-1 col-md-2 col-lg-2\">";
             echo "<label for=\"state\">Lead Time:</label>";
-            echo "<textarea rows=\"1\" readonly class=\"form-control noresize\" id=\"currentLeadtime\">";
+            echo "<textarea title=\"Some factors may increase your lead time. We will inform you as soon as possible once your quote is submitted.\" rows=\"1\" readonly class=\"form-control noresize\" id=\"currentLeadtime\">";
             echo substr($row['currentLeadtime'],0,10);
             echo "</textarea>";
             echo "</div>";
         }
+    }
+    
+    if($_SESSION["userType"] == 3){
+        echo "</div><div class=\"row\"><div class=\"col-12\">";
+        echo "Order Locked: <input type=\"checkbox\"";
+        echo "onchange=\"if($('#isLocked').is(':checked')){viewOnly=1;}else{viewOnly=0;};\"  \" checked id=\"isLocked\">";
+        echo "</div>";
     }
     ?>
 </div>
@@ -1585,7 +1599,7 @@ function fixDate(){
                 <div class="col-3">
                 Required Date: 
                 <?php 
-                echo "<input type=\"text\" maxlength=\"10\" data-provide=\"datepicker\" data-date-format=\"yyyy-mm-dd\" onchange=\"saveOrder('dateRequired');\" class=\"form-control date\"  value=\"". substr($dateRequired,0,10) ."\" id=\"dateRequired\">";
+                echo "<input title=\"Some factors may increase your lead time. We will inform you as soon as possible once your quote is submitted.\" type=\"text\" maxlength=\"10\" data-provide=\"datepicker\" data-date-format=\"yyyy-mm-dd\" onchange=\"saveOrder('dateRequired');\" class=\"form-control date\"  value=\"". substr($dateRequired,0,10) ."\" id=\"dateRequired\">";
                 ?>
                 </div>
                 <div class="col-2 text-center service">

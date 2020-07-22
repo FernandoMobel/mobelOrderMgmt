@@ -224,6 +224,8 @@ if($_POST['mode']=="updateOrder"){
     
     $sql = "update mosOrder set ".$fixPost." = '" . $_POST['value'] . "' where oid = " . $_POST['oid'];
     opendb($sql);
+    $sql = "insert into trackSingleChange (id, uid, tableName, fieldName, notes) values (". $_POST['oid'] . "," . $_SESSION["userid"] . ", 'mosOrder','" .$fixPost."','" . $_POST['value'] . "')";
+    opendb($sql);
     //http_response_code(200);
     echo "success";
 }
