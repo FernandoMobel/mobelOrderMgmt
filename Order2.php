@@ -234,12 +234,44 @@ function cleanEdit(){
 	$('#FR').prop('checked',false);
 }
 
+function solvefirst(W,H,D,name,catid) {
+  return new Promise(resolve => {
+  	//setTimeout(() => {
+	    refresh = 0;
+		$('#W').val(W);
+		$('#H').val(H);
+		$('#D').val(D);
+		addItemID = catid;
+		$('#editItemID').val(catid);
+		$('#livesearch').val(name);
+		saveItem();
+		saveEditedItem('HL','hingeLeft');
+		saveEditedItem('HR','hingeRight');
+		saveEditedItem('FL','finishLeft');
+		saveEditedItem('FR','finishRight');
+    	saveEditedItem('note','note');
+    	resolve('');
+    	//}, 5000); set time out
+  });
+}
+
+async function setSizes(W,H,D,name,catid) {
+	console.log('starting');
+  const result = await solvefirst(W,H,D,name,catid);
+  console.log('done');
+  $('#editItemSearch').val(result);
+	document.getElementById("livesearch").innerHTML=name;
+	loadItems($("a.nav-link.roomtab.active").attr("value"));
+  // expected output: "resolved"
+}
+
 	//id of the item or itemmods table (not order items table)
-function setSizes(W,H,D,name,catid){
-	
+/*function setSizes2(W,H,D,name,catid){
+	console.log("setSizes is executing");
 	
 	//$("#editItemID").val(id);
-	
+	console.log("async line 255 is executing");
+
 	(async()=>{
 		refresh = 0;
 		$('#W').val(W);
@@ -259,11 +291,12 @@ function setSizes(W,H,D,name,catid){
    		//saveEditedItem('D','D');
     	
 	})();
+
 	$('#editItemSearch').val('');
 	document.getElementById("livesearch").innerHTML=name;
 	loadItems($("a.nav-link.roomtab.active").attr("value"));
 	
-}
+}*/
 
 
 function saveEditedItem(objectID,col){
