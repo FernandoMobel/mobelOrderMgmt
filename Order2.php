@@ -218,7 +218,8 @@ function editItems(itemID, mod){
 	} 
 }
 
-function cleanEdit(){
+function cleanEdit(rqst){
+	console.log("cleanEdit is executing");
 	$('#editItemID').val(0);
 	$('#editOrderItemID').val(0);
 	$('#editOrderItemPID').val(0);
@@ -232,6 +233,12 @@ function cleanEdit(){
 	$('#HR').prop('checked',false);
 	$('#FL').prop('checked',false);
 	$('#FR').prop('checked',false);
+	$('#deleteItemButton').show();
+	$('#deleteItemButton').val(0);
+	//Hide delete button when new item
+	if(rqst == "add"){
+		$('#deleteItemButton').hide();
+	}		
 }
 
 function solvefirst(W,H,D,name,catid) {
@@ -256,48 +263,11 @@ function solvefirst(W,H,D,name,catid) {
 }
 
 async function setSizes(W,H,D,name,catid) {
-	console.log('starting');
   const result = await solvefirst(W,H,D,name,catid);
-  console.log('done');
   $('#editItemSearch').val(result);
 	document.getElementById("livesearch").innerHTML=name;
 	loadItems($("a.nav-link.roomtab.active").attr("value"));
-  // expected output: "resolved"
 }
-
-	//id of the item or itemmods table (not order items table)
-/*function setSizes2(W,H,D,name,catid){
-	console.log("setSizes is executing");
-	
-	//$("#editItemID").val(id);
-	console.log("async line 255 is executing");
-
-	(async()=>{
-		refresh = 0;
-		$('#W').val(W);
-		$('#H').val(H);
-		$('#D').val(D);
-		addItemID = catid;
-		$('#editItemID').val(catid);
-		$('#livesearch').val(name);
-		saveItem();
-		saveEditedItem('HL','hingeLeft');
-		saveEditedItem('HR','hingeRight');
-		saveEditedItem('FL','finishLeft');
-		saveEditedItem('FR','finishRight');
-    	saveEditedItem('note','note');
-   		//saveEditedItem('W','W');
-   		//saveEditedItem('H','H');
-   		//saveEditedItem('D','D');
-    	
-	})();
-
-	$('#editItemSearch').val('');
-	document.getElementById("livesearch").innerHTML=name;
-	loadItems($("a.nav-link.roomtab.active").attr("value"));
-	
-}*/
-
 
 function saveEditedItem(objectID,col){
 	if(viewOnly>0){
@@ -384,6 +354,9 @@ function saveItem(){
 	       			if(refresh>0){
 			    	   loadItems($("a.nav-link.roomtab.active").attr("value"));
 	       			}
+	       			//Delete button active for new item added
+	       			$('#deleteItemButton').val(jqXHR.responseText);
+	       			$('#deleteItemButton').show();
 		        });
 }
 
@@ -1441,7 +1414,7 @@ function fixDate(){
     <?php 
     if ($roomCount >0){
     ?>
-    <div class="d-flex justify-content-between"><!-- onClick=allItems('allItems','allItems');  --> <button type="button"  onClick=cleanEdit(); class="btn btn-primary pt-2 pb-2" data-toggle="modal" data-target="#editItemModal">Add Item<span class="ui-icon ui-icon-plus"></span></button><span class="ml-auto" id="roomTotal"></span></div>
+    <div class="d-flex justify-content-between"><!-- onClick=allItems('allItems','allItems');  --> <button type="button"  onClick=cleanEdit("add"); class="btn btn-primary pt-2 pb-2" data-toggle="modal" data-target="#editItemModal">Add Item<span class="ui-icon ui-icon-plus"></span></button><span class="ml-auto" id="roomTotal"></span></div>
     <?php 
     }
     ?>
