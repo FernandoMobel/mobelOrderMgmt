@@ -114,15 +114,7 @@ function loadItems(rid){
 	$("#items").empty();
 	if(typeof rid !== 'undefined'){
     	myData = { mode: "getItems", oid: "<?php echo $_GET["OID"] ?>", rid: rid};
-    	
-		//$.post("OrderItem.php",
-    	//		myData, 
-    	//	       function(data, status, jqXHR) {
-    	//	           $('#items').append(data);
-    	//	           $(".borderless").css('border-top','0px');
-    	//	           $("#roomTotal").html("<b>Room Total: $" + $("#TotalPrice").val() + "</b></br>pre HST & pre delivery");
-    	//	        });
-    	
+    	    	
     	$.ajax({
 	    url: 'OrderItem.php',
 	    type: 'POST',
@@ -133,6 +125,7 @@ function loadItems(rid){
     		           $("#roomTotal").html("<b>Room Total: $" + $("#TotalPrice").val() + "</b></br>pre HST & pre delivery");
     		        }
 	  	});
+	}
 }
 
 function showResult(str) {
@@ -350,12 +343,13 @@ function saveItem(){
 	       			if($("#editOrderItemID").val() == 0){
 		       			//alert(data);
 	       				$("#editOrderItemID").val(data);
+						//Delete button can delete item recently added
+						$('#deleteItemButton').val(data);
 	       			}
 	       			if(refresh>0){
 			    	   loadItems($("a.nav-link.roomtab.active").attr("value"));
 	       			}
-	       			//Delete button active for new item added
-	       			$('#deleteItemButton').val(jqXHR.responseText);
+	       			//Delete button is shown for new item added 	       			
 	       			$('#deleteItemButton').show();
 		        });
 }
