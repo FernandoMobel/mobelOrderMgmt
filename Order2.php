@@ -62,8 +62,7 @@ function saveStyle(col,objectID){
 				
 		    	loadItems($("a.nav-link.roomtab.active").attr("value"));
 				
-		    	if(col=="species"){
-			    	//alert(col);
+		    	if(col=="species" || col=="frontFinish"){
 		    		location.reload();
 		    	}
 	    	//}
@@ -112,6 +111,10 @@ function addRoom(){
 
 function loadItems(rid){
 	$("#items").empty();
+	//if($("#invalidHeaderMessage").val() <> ""   ){
+	//	$("#items").append(  $("#invalidHeaderMessage").val()  );
+	//	$("#roomTotal").html("<b>Room Total: $" + "undefined" + "</b></br>pre HST & pre delivery");
+	//}else{
 	if(typeof rid !== 'undefined'){
     	myData = { mode: "getItems", oid: "<?php echo $_GET["OID"] ?>", rid: rid};
     	    	
@@ -126,6 +129,7 @@ function loadItems(rid){
     		        }
 	  	});
 	}
+	
 }
 
 function showResult(str) {
@@ -754,6 +758,7 @@ function fixDate(){
             $dateRequired = $row['dateRequired'];
             $isWarranty = $row['isWarranty'];
             $isPriority = $row['isPriority'];
+            $CLid = $row['CLid'];
             $fromOrder = $row['fromOrder'];
             $state = $row['state'];
             
@@ -919,7 +924,7 @@ function fixDate(){
         <p>This creates a new room</p>
     </div>
     <?php
-    
+    $invalidHeaderMessage = "";
     if($i!=0){
         //$RID = $r;
         $i=0;
@@ -974,6 +979,8 @@ function fixDate(){
                 		        echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
                 		    }
                 		}
+                    }else{
+                        $invalidHeaderMessage = $invalidHeaderMessage .  "<br>No species selected";
                     }
                     ?>
                     </select>
@@ -1000,6 +1007,8 @@ function fixDate(){
                 		        echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
                 		    }
                 		}
+                    }else{
+                        $invalidHeaderMessage = $invalidHeaderMessage .  "<br>No interior finish selected";
                     }
                     ?>
                     </select>
@@ -1062,6 +1071,7 @@ function fixDate(){
                 		}
                 		if($match == 0){
                 		    echo "<option ". "selected" ." value=\"" . "Please choose a new door style" . "\">" . "" . "</option>";
+                		    $invalidHeaderMessage = $invalidHeaderMessage .  "<br>No door selected";
                 		}
                     }
                     ?>
@@ -1093,6 +1103,7 @@ function fixDate(){
                 		}
                 		if($match == 0){
                 		    echo "<option ". "selected" ." value=\"" . "Please choose a new finish" . "\">" . "" . "</option>";
+                		    $invalidHeaderMessage = $invalidHeaderMessage . "<br>No finish selected";
                 		}
                     }
                     ?>
@@ -1143,6 +1154,7 @@ function fixDate(){
                     if($GLOBALS['$result2']->num_rows > 0){
                         if(is_null($row['glaze'])){
                             echo "<option ". "selected" ." value=\"\">" . "Choose a Glaze" . "</option>";
+                            $invalidHeaderMessage = $invalidHeaderMessage . "<br>No glaze selected";
                         }
                 		foreach ($GLOBALS['$result2'] as $row2) {
                 		    if($row2['id']==$row['glaze']){
@@ -1152,6 +1164,8 @@ function fixDate(){
                 		    }
                 		}
                     }
+                        
+                    
                     ?>
                     </select>
                     </div>
@@ -1201,7 +1215,9 @@ function fixDate(){
                     if($GLOBALS['$result2']->num_rows > 0){
                         $match = 2;
                         if(is_null($row['sheen'])){
-                            echo "<option ". "selected" ." value=\"\">" . "Choose a Sheen" . "</option>";
+                            echo "<option disabled=\"disabled\" ". "selected" ." value=\"\">" . "Choose a Sheen" . "</option>";
+                            $invalidHeaderMessage = $invalidHeaderMessage . "<br>No sheen selected";
+                            $match = 3;
                         }
                 		foreach ($GLOBALS['$result2'] as $row2) {
                 		    if($row2['id']==$row['sheen']){
@@ -1213,10 +1229,11 @@ function fixDate(){
                 		}
                     }
                     if($match==0){
-                        echo "<option ". "selected" ." value=\"\">" . "N/A" . "</option>";
+                        echo "<option ". "selected" ." value=\"\">" . "" . "</option>";
                     }
                     if($match==2){
-                        echo "<option  ". "selected" ." value=\"null\">" . "Please choose your new sheen" . "</option>";
+                        echo "<option disabled=\"disabled\"  ". "selected" ." value=\"null\">" . "Please choose your new sheen" . "</option>";
+                        $invalidHeaderMessage = $invalidHeaderMessage . "<br>No sheen selected";
                     }
                     ?>
                     </select>
@@ -1589,7 +1606,7 @@ function fixDate(){
           	
             <div class="col-12 " >
             <div class="row">
-                <div class="col-4">
+                <div class="col-3">
                 This is a:
                 <?php 
                 
@@ -1613,7 +1630,7 @@ function fixDate(){
                 echo "<input title=\"Some factors may increase your lead time. We will inform you as soon as possible once your quote is submitted.\" type=\"text\" maxlength=\"10\" data-provide=\"datepicker\" data-date-format=\"yyyy-mm-dd\" onchange=\"saveOrder('dateRequired');\" class=\"form-control date\"  value=\"". substr($dateRequired,0,10) ."\" id=\"dateRequired\">";
                 ?>
                 </div>
-                <div class="col-2 text-center service">
+                <div class="col-1 text-center service">
                 Warranty: 
                 <?php 
                 echo "<input type=\"checkbox\"";
@@ -1631,6 +1648,32 @@ function fixDate(){
                 echo "onchange=\"saveOrder('fromOrder');\" class=\"form-control  \"  id=\"fromOrder\">";
                 ?>
             	</div>
+            	
+            	
+                <div class="col-2">
+                
+                <?php 
+                if($_SESSION["CLGroup"]>3){
+                    echo "Line:<select onchange=\"saveOrder('CLid');\" class=\"form-control \"  id=\"CLid\"><option ";
+                    //showOrderOptions('CLid');
+                    if($CLid==1){
+                        echo "selected";
+                    }
+                    echo " value=\"1\">Designer</option><option ";
+                    
+                    if($CLid==2){
+                        echo "selected";
+                    }
+                    echo " value=\"2\">Builder</option><option ";
+                    
+                    if($CLid==3){
+                        echo "selected";
+                    }
+                    echo " value=\"3\">Span</option></select>";
+                }
+                ?>
+                
+                </div>
             </div>
             </div>
             <br/>
@@ -1720,7 +1763,7 @@ function fixDate(){
 
 
 
-
+<input type="hidden" id="invalidHeaderMessage" value="<?php echo ""; //$invalidHeaderMessage;?>">
 
 
 

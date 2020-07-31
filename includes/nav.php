@@ -4,7 +4,6 @@ if(isset($_SESSION["username"])){
     if(($_SESSION["username"]=="" || $_SESSION["username"]=="invalid") && $_SERVER['REQUEST_URI']!="/index.php"){
         header("Location: index.php");
         //exit();
-    //echo $_SERVER['REQUEST_URI'];
     }
 }else{
     $_SESSION["username"]="invalid";
@@ -27,8 +26,7 @@ if(isset($_SESSION["username"])){
 <link rel="stylesheet" href="js/jqueryui112/jquery-ui.min.css">
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.7.1/css/bootstrap-datepicker3.standalone.min.css" />
-<link rel="stylesheet" href="https://res.cloudinary.com/dxfq3iotg/raw/upload/v1569006288/BBBootstrap/choices.min.css?version=7.0.0">
-<script src="https://res.cloudinary.com/dxfq3iotg/raw/upload/v1569006273/BBBootstrap/choices.min.js?version=7.0.0"></script>
+
 
 <style>
 :root {
@@ -178,7 +176,7 @@ body {
           if($_SESSION["userType"]==3){
               ?>
               <li class="nav-item">
-            <a class="nav-link" href="submittedOrders.php">Mobel Only</a>
+            <a class="nav-link" href="EmployeeMenu.php">Mobel Only</a>
           </li>
               <?php 
           }
