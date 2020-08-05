@@ -25,6 +25,7 @@ function saveSettings(){
             	    alert('Sorry, something went wrong. Did you get the old password right? Please reload the page and try again.');
         	    }
 	        });
+	
 }
 
 function saveOrder(objectID,OID){
@@ -33,7 +34,7 @@ function saveOrder(objectID,OID){
 	$.post("OrderItem.php",
 			myData, 
 		       function(data, status, jqXHR) {
-            		if(data == "success"){
+            		if(status == "success" || data == "success"){
             	    	$("#"+objectID+OID).css("border-color", "#00b828");
             	    }
 		        });

@@ -12,100 +12,203 @@ if(isset($_SESSION["username"])){
 ?>
 <?php include_once 'includes/db.php';?>
 <?php
-if($_POST['mode']=="getFiles"){
+if($_POST['mode']=="getFileModal"){
     
-    
-    echo "<h2>All Order Files</h2><br/>";
-    echo "<button class=\"btn btn-primary\">Add Order File</button><br/>";
-    echo "List of Order Files:</br>";
-    $sql = "select * from orderFiles where oid = " . $_POST['oid'] ;
-    opendb($sql);
-    
-    $orderfiles = ""; //full displayable list of all the files of a certain group.
-    $roomfiles = "";
-    $itemfiles = "";
-    $modfiles = "";
-    
-    if($GLOBALS['$result']->num_rows > 0){
-        foreach ($GLOBALS['$result'] as $row){
-            $orderfiles = $orderfiles . $row["name"];
-        }
+
+    //echo "<button class=\"btn btn-primary\">Add Order File</button><br/>";
+    $oid = $_POST['oid'];
+    $rid = $_POST['rid'];
+    $iid = $_POST['iid'];
+    $mid = $_POST['mid'];
+    if($mid == 0){
+        $mid = "NULL";
+    }
+    if($iid == 0){
+        $iid = "NULL";
+    }
+    if($rid == 0){
+        $rid = "NULL";
     }
     
-    echo $orderfiles . "</br></br>";    
+    echo "<h2><span onClick = \"refreshFiles()\">";
+    if(strcmp($rid,"NULL")==0){
+        echo "Upload Order Files";
+    }else if(strcmp($iid,"NULL")==0){
+        echo "Upload Room Files";
+    }else if(strcmp($mid,"NULL")==0){
+        echo "Upload Item Files";
+    }else{
+        echo "Upload Mod Files";
+    }
     
-    $sql = "select * from
-    (select o.oid,o.po,o.tagName,r.name,r.rid,i.id as pid,0 as mid,i.name as itemName,position from mosOrder o, orderRoom r, orderItem i where
-    o.oid = r.oid and r.rid = i.rid and o.oid = 1
-        
-    union all
-        
-    select o.oid,o.po,o.tagName,r.name,r.rid,im.pid as pid,mid, im.name as itemName, position from mosOrder o, orderRoom r, orderItemMods im where
-    o.oid = r.oid and r.rid = im.rid and o.oid = 1) as T1 order by oid,name,pid,mid,position";
+    echo "</span><button type=\"button\" class=\"close\" data-dismiss=\"modal\">&times;</button></h2>";
+    //action="upload.php" method="post"
+    //<input type="submit" value="Upload File" id="sendFile" name="sendFile">
+    ?>
+    <form enctype="multipart/form-data">
+    Drag or browse to the file you wish to upload for this order:
+        <div class="custom-file">
+        <input type="file" class="custom-file-input d-none" name="fileToUpload" id="fileToUpload">
+		<label class="custom-file-label" for="fileToUpload">Choose File</label>
+    	</div>
+    	<input type="button" class="btn btn-primary  ml-0" value="Upload File" id="sendFile" name="sendFile">
+        <progress id="fileUploadProgress" value="0"></progress>
+		
+        <input type="hidden" value="<?php echo $oid?>" name="oid">
+        <input type="hidden" value="<?php echo $rid?>" name="rid">
+        <input type="hidden" value="<?php echo $iid?>" name="iid">
+        <input type="hidden" value="<?php echo $mid?>" name="mid">
+    </form>
     
-    $start = "";
-    $room = "";
-    $item = "";
-    opendb($sql);
-    if($GLOBALS['$result']->num_rows > 0){
-        foreach ($GLOBALS['$result'] as $row){
-            if(strcmp($start,"")==0){
-                //echo "<div class=\"collapse\" id=\"orderCollapse\">";
-                //echo "<div class=\"card card-body\">";
-                
-                echo "<button class=\"btn btn-primary\" type=\"button\" data-toggle=\"collapse\" data-target=\"div[id^='collapse']\">Show All</button>";
-                //echo $row['po'] . $row['tagName'] . "<br/>";
-                $start = "Order set";
-                //echo "</div>";
-            }
-            if(strcmp($row['name'],$room)<>0){
-                //echo "-" . $row['name']."-" . $room. "-";
-                if($room<>""){
-                    echo "</div>"; //end room div
-                }
-                echo "<button class=\"btn btn-primary\" type=\"button\" data-toggle=\"collapse\" data-target=\"collapseRoom".$row['rid']."\">Show " .$row['name']. "</button>";
-                echo "<div class=\"collapse\" id=\"collapseRoom".$row['rid']."\">";
-                echo "<div class=\"card card-body\">";
-                
-                echo $row['name'];
-                echo "</div>";
-            }
-            $room = $row['name'];
+
+
+
+    <?php     
+    echo "<br/><b>List of Order Files:<input type=\"button\" class=\"btn btn-light p-1 \" value=\"Refresh Listing\" onClick = \"refreshFiles()\"></b><br/>";
+    ?>
+   
+    <table id="FileList" class="display nowrap ml-0" style="width:100%">
+    <thead>
+          <tr>
             
-            if( strcmp($row['pid'],$item)<>0){
-                if($room<>""){
-                    echo "</div>"; //end room div
-                }
-                echo "<div class=\"collapse\" id=\"collapseItem".$row['pid']."\">";
-                echo "<div class=\"card card-body\">";
-                $item = $row['pid'];
-                echo "parent" . $row['itemName'] . "<br/>";
-                echo "</div>";
-            }else{
-                echo "mod" . $row['itemName'] . "<br/>";
-            }
-        }
-        echo "</div>"; //end item level div
-        echo "</div>"; //end room level div
-        //echo "</div>"; //end order level div
-    }
+            <th>File Name</th>
+            <th>Room Name</th>
+            <th>Item #</th>
+            <th>Item Description</th>
+            <th>File Tools</th>
+          </tr>
+    </thead>
+    <tfoot>
+      <tr>
+        
+        <th>File Name</th>
+        <th>Room Name</th>
+        <th>Item #</th>
+        <th>Item Description</th>
+        <th>File Tools</th>
+      </tr>
+    </tfoot><tbody>
     
+    </tbody>
+    </table>
+ 
+    <?php
+       
 }
 
+
+if($_POST['mode']=="getFiles"){
+    $oid = $_POST['oid'];
+    $rid = $_POST['rid'];
+    $iid = $_POST['iid'];
+    $mid = $_POST['mid'];
+    if($mid == 0){
+        $mid = "NULL";
+    }
+    if($iid == 0){
+        $iid = "NULL";
+    }
+    if($rid == 0){
+        $rid = "NULL";
+    }
+
+    opendb("select * from orderFiles where oid = ".$oid." and rid is null");
+    
+    if($GLOBALS['$result']->num_rows > 0){
+        foreach ($GLOBALS['$result'] as $row) {
+            echo "<tr>";
+            //echo "<td>" . $row['oid'] . "</td>";
+            echo "<td><b><form action=\"download.php\" method=\"post\"><input name=\"OGName\" type=\"hidden\" value=\"". $row['name'] . "\"></input><input name=\"DealerFile\" type=\"hidden\" value=\"". $_SESSION["account"]."/".$_POST["oid"]."/" . $row['id'] . "." . strtolower(pathinfo($row['name'],PATHINFO_EXTENSION)). "\" ></input><input type=\"submit\" value=\"" . $row['name'] . "\"/></form></b></td>";
+            echo "<td>" . "N/A" . "</td>";
+            echo "<td>" . "N/A" . "</td>";
+            echo "<td>" . "N/A" . "</td>";
+            echo "<td>" . "<input type=\"submit\" value=\"Delete\" onClick=\"deleteFile(". $row['id'] . ");\">" . "</td>";
+            echo "</tr>";
+        }
+    }
+    
+    opendb("select F.oid as oid, F.name as fileName, R.name as roomName, F.id as id from orderFiles F, orderRoom R where F.iid is null and F.rid = R.rid and F.oid = ".$oid."");
+    if($GLOBALS['$result']->num_rows > 0){
+        foreach ($GLOBALS['$result'] as $row) {
+            echo "<tr>";
+            //echo "<td><b>" . $row['oid'] . "</b></td>";
+            echo "<td><b><form action=\"download.php\" method=\"post\"><input name=\"OGName\" type=\"hidden\" value=\"". $row['fileName'] . "\"></input><input name=\"DealerFile\" type=\"hidden\" value=\"". $_SESSION["account"]."/".$_POST["oid"]."/" . $row['id'] . "." . strtolower(pathinfo($row['fileName'],PATHINFO_EXTENSION)). "\" ></input><input type=\"submit\" value=\"" . $row['fileName'] . "\"/></form></b></td>";
+            echo "<td>" . $row['roomName'] . "</td>";
+            echo "<td>" . "N/A" . "</td>";
+            echo "<td>" . "N/A" . "</td>";
+            echo "<td>" . "<input type=\"submit\" value=\"Delete\" onClick=\"deleteFile(". $row['id'] . ");\">" . "</td>";
+            echo "</tr>";
+        }
+    }
+    opendb("select F.oid as oid, F.name as fileName, R.name as roomName, F.id as id, I.description as description, I.name as name, I.id as iid, null as mid,   F.rid as rid from orderItem I, orderFiles F, orderRoom R where F.mid is null and F.iid = I.id and F.rid = R.rid and F.oid = ".$oid."
+union all
+select F.oid as oid, F.name as fileName, R.name as roomName, F.id as id, M.description as description, M.name as name,  I.id as iid, F.mid as mid, F.rid as rid from orderItemMods M, orderItem I, orderFiles F, orderRoom R where M.id = F.mid and F.iid = I.id and F.rid = R.rid and F.oid = ".$oid."
+order by rid, iid, mid");
+    if($GLOBALS['$result']->num_rows > 0){
+        foreach ($GLOBALS['$result'] as $row) {
+            echo "<tr>";
+            //echo "<td><b>" . $row['oid'] . "</b></td>";
+            echo "<td><b><form action=\"download.php\" method=\"post\"><input name=\"OGName\" type=\"hidden\" value=\"". $row['fileName'] . "\"></input><input name=\"DealerFile\" type=\"hidden\" value=\"". $_SESSION["account"]."/".$_POST["oid"]."/" . $row['id'] . "." . strtolower(pathinfo($row['fileName'],PATHINFO_EXTENSION)). "\" ></input><input type=\"submit\" value=\"" . $row['fileName'] . "\"/></form></b></td>";
+            echo "<td>" . $row['roomName'] . "</td>";
+            if(is_null($row['mid'])){
+                echo "<td>" . getItemID($row['rid'],$row['iid'],0) . "</td>";
+            }else{
+                echo "<td>" . getItemID($row['rid'],$row['mid'],1) . "</td>";
+            }
+            echo "<td>" . $row['description'] . " Code: " .$row['name'] . "</td>";
+            
+            echo "<td>" . "<input type=\"submit\" value=\"Delete\" onClick=\"deleteFile(". $row['id'] . ");\">" . "</td>";
+            echo "</tr>";
+        }
+    }
+}
+
+if($_POST['mode']=="deleteFile"){
+    opendb("delete from orderFiles where id = " . $_POST['id']);
+}
 
 if($_POST['mode']=="getNewItem"){
     $strArr = explode(" ",$_POST['filter']); //words to search
     $com = $_POST['com']; //and or or
     $type = $_POST['type']; //item or mod
-    $aFilter = "(description like '%" . $strArr[0] . "%' ";
+    $aFilter = "(description like";
     
-    for($i = 1; $i<count($strArr); $i++){
-        $aFilter = $aFilter . $com . " description like '%" . $strArr[$i] . "%' ";
+    if($_POST['startsWith']==1){
+        $aFilter = $aFilter . " '" . $strArr[0];
+    }else{
+        $aFilter = $aFilter . " '%" . $strArr[0];
+    }
+    $aFilter = $aFilter . "%' ";
+    
+    
+    if($_POST['startsWith']==1){
+        for($i = 1; $i<count($strArr); $i++){
+            $aFilter = $aFilter . $com . " description like '" . $strArr[$i] . "%' ";
+        }
+    }else{
+        for($i = 1; $i<count($strArr); $i++){
+            $aFilter = $aFilter . $com . " description like '%" . $strArr[$i] . "%' ";
+        }
     }
     
-    $aFilter = $aFilter . ") or (name like '%" . $strArr[0] . "%'";
-    for($i = 1; $i<count($strArr); $i++){
-        $aFilter = $aFilter . $com . " name like '%" . $strArr[$i] . "%' ";
+    
+    
+    $aFilter = $aFilter . ") or ";
+    
+    if($_POST['startsWith']==1){
+        $aFilter = $aFilter ."(name like '" . $strArr[0] . "%'";
+    }else{
+        $aFilter = $aFilter ."(name like '%" . $strArr[0] . "%'";
+    }
+    
+    if($_POST['startsWith']==1){
+        for($i = 1; $i<count($strArr); $i++){
+            $aFilter = $aFilter . $com . " name like '" . $strArr[$i] . "%' ";
+        }
+    }else{
+        for($i = 1; $i<count($strArr); $i++){
+            $aFilter = $aFilter . $com . " name like '%" . $strArr[$i] . "%' ";
+        }
     }
     
     $aFilter = $aFilter . ")";
@@ -125,24 +228,32 @@ if($_POST['mode']=="getNewItem"){
 }
 /*Updates order details*/
 if($_POST['mode']=="updateOrder"){
-    if($_POST['id'] == "dateRequired"){
+    if($_POST['id'] == "dateRequired"  && $_POST['isPriority'] == 0){
         opendb("select * from settings");
         $d1 = "2020-01-01";
         $LT = "2020-01-01";
         if($GLOBALS['$result']->num_rows > 0){
             foreach ($GLOBALS['$result'] as $row){
                 $d1 = $_POST['value'];
-                $LT = $row['currentLeadtime'];
+                $LT = substr($row['currentLeadtime'],10);
                 //echo $d1;
                 //echo $LT;
-                if($LT >= $d1){
+                if(strcmp($LT,$d1) > 0){
                     //http_response_code(206);
                     die("Invalid date entered. Must be after the leadtime.");
                 }
             }
         }
     }
-    $sql = "update mosOrder set ".$_POST['id']." = '" . $_POST['value'] . "' where oid = " . $_POST['oid'];
+    $fixPost = $_POST['id'];
+    if(strcmp($_POST['id'],"OrderNote")==0){
+        $fixPost = "note";
+    }
+    
+    
+    $sql = "update mosOrder set ".$fixPost." = '" . $_POST['value'] . "' where oid = " . $_POST['oid'];
+    opendb($sql);
+    $sql = "insert into trackSingleChange (id, uid, tableName, fieldName, notes) values (". $_POST['oid'] . "," . $_SESSION["userid"] . ", 'mosOrder','" .$fixPost."','" . $_POST['value'] . "')";
     opendb($sql);
     //http_response_code(200);
     echo "success";
@@ -196,11 +307,11 @@ if($_POST['mode']=="getItems"){
     */
     
     //opendb("select oi.*, case when round(price*(1.0+ (". $doorfactor . "-0.0 )*doorFactor  + ". $interiorfactor . "*interiorFactor),2) = 0 then 'NA' else qty*round( price*(1.0 + (". $doorfactor . " - 0.0)*doorFactor + ". $interiorfactor . "*interiorFactor),2) end as formattedPrice from orderItem oi where rid = '" .$RID. "' order by position,id asc");
-    $SQL = "select * from (SELECT oi.note, oi.id as item, 0 as sid, oi.qty, oi.name, oi.price, oi.sizePrice, 0 as 'parentPercent', ds.factor as 'DFactor', irf.factor as 'IFactor', ff.factor as 'FFactor', sh.factor as 'SFactor', gl.factor as 'GFactor', sp.finishedEndSizePrice as 'EFactor', (db.upcharge + dg.upcharge) as 'drawerCharge', sdf.upcharge as 'smallDrawerCharge', ldf.upcharge as 'largeDrawerCharge', oi.doorFactor as 'DApplies', oi.interiorFactor as 'IApplies', oi.finishFactor as 'FApplies', oi.sheenFactor as 'SApplies', oi.glazeFactor as 'GApplies',oi.drawers, oi.smallDrawerFronts, oi.largeDrawerFronts, oi.H, oi.W, oi.D, oi.minSize, it.pricingMethod as methodID, oi.hingeLeft,oi.hingeRight,oi.finishLeft,oi.finishRight
+    $SQL = "select * from (SELECT oi.description, oi.note, oi.id as item, 0 as sid, oi.qty, oi.name, oi.price, oi.sizePrice, 0 as 'parentPercent', ds.factor as 'DFactor', irf.factor as 'IFactor', ff.factor as 'FFactor', ff.upcharge as 'FUpcharge', sh.factor as 'SFactor', gl.factor as 'GFactor', sp.finishedEndSizePrice as 'EFactor', (db.upcharge + dg.upcharge) as 'drawerCharge', sdf.upcharge as 'smallDrawerCharge', ldf.upcharge as 'largeDrawerCharge', oi.doorFactor as 'DApplies', oi.interiorFactor as 'IApplies', oi.finishFactor as 'FApplies', oi.sheenFactor as 'SApplies', oi.glazeFactor as 'GApplies',oi.drawers, oi.smallDrawerFronts, oi.largeDrawerFronts, oi.H, oi.W, oi.D, oi.minSize, it.pricingMethod as methodID, oi.hingeLeft,oi.hingeRight,oi.finishLeft,oi.finishRight
     FROM  orderItem oi, orderRoom orr, doorSpecies ds, interiorFinish irf, item it, sheen sh, glaze gl, frontFinish ff,drawerBox db, drawerGlides dg, smallDrawerFront sdf, largeDrawerFront ldf, species sp
     WHERE it.id = oi.iid and oi.rid = orr.rid and orr.species = ds.sid and orr.species = sp.id and orr.door = ds.did and orr.interiorFinish = irf.id and orr.sheen = sh.id and orr.glaze = gl.id and orr.frontFinish = ff.id and orr.drawerBox = db.id and orr.drawerGlides = dg.id and orr.smallDrawerFront = sdf.id and orr.largeDrawerFront = ldf.id and orr.rid = '" .$RID. "'
     union all
-                           SELECT oi.note, oi.pid,oi.id as sid,     oi.qty, oi.name, oi.price, oi.sizePrice, parentPercent       , ds.factor as 'DFactor', irf.factor as 'IFactor', ff.factor as 'FFactor', sh.factor as 'SFactor', gl.factor as 'GFactor', sp.finishedEndSizePrice as 'EFactor', (db.upcharge + dg.upcharge) as 'drawerCharge', sdf.upcharge as 'smallDrawerCharge', ldf.upcharge as 'largeDrawerCharge', oi.doorFactor as 'DApplies', oi.interiorFactor as 'IApplies', oi.finishFactor as 'FApplies', oi.sheenFactor as 'SApplies', oi.glazeFactor as 'GApplies',oi.drawers, oi.smallDrawerFronts, oi.largeDrawerFronts, oi.H, oi.W, oi.D, oi.minSize, it.pricingMethod as methodID, oi.hingeLeft,oi.hingeRight,oi.finishLeft,oi.finishRight
+                           SELECT oi.description, oi.note, oi.pid,oi.id as sid,     oi.qty, oi.name, oi.price, oi.sizePrice, parentPercent       , ds.factor as 'DFactor', irf.factor as 'IFactor', ff.factor as 'FFactor', ff.upcharge as 'FUpcharge', sh.factor as 'SFactor', gl.factor as 'GFactor', sp.finishedEndSizePrice as 'EFactor', (db.upcharge + dg.upcharge) as 'drawerCharge', sdf.upcharge as 'smallDrawerCharge', ldf.upcharge as 'largeDrawerCharge', oi.doorFactor as 'DApplies', oi.interiorFactor as 'IApplies', oi.finishFactor as 'FApplies', oi.sheenFactor as 'SApplies', oi.glazeFactor as 'GApplies',oi.drawers, oi.smallDrawerFronts, oi.largeDrawerFronts, oi.H, oi.W, oi.D, oi.minSize, it.pricingMethod as methodID, oi.hingeLeft,oi.hingeRight,oi.finishLeft,oi.finishRight
     FROM  orderItemMods oi, orderRoom orr, doorSpecies ds, interiorFinish irf, itemMods it, sheen sh, glaze gl, frontFinish ff,drawerBox db, drawerGlides dg,  smallDrawerFront sdf, largeDrawerFront ldf, species sp
     WHERE it.id = oi.mid and oi.rid = orr.rid and orr.species = ds.sid and orr.species = sp.id and orr.door = ds.did and orr.interiorFinish = irf.id and orr.sheen = sh.id and orr.glaze = gl.id and orr.frontFinish = ff.id and orr.drawerBox = db.id and orr.drawerGlides = dg.id and orr.smallDrawerFront = sdf.id and orr.largeDrawerFront = ldf.id and orr.rid = '" .$RID. "') as T1 order by item,sid";
 
@@ -208,15 +319,15 @@ if($_POST['mode']=="getItems"){
 //echo $SQL;
     opendb($SQL);
     
-    echo "<br/><div class=\"col-12 container\">";
+    echo "<div class=\"col-12 container\">";
     if($GLOBALS['$result']->num_rows > 0){
         ?>
         <input id="#orderTotal" type="hidden"></input>
-        <table id="example" class="table table-striped table-sm" style="width:100%">
+        <table id="itemListingTable" class="table table-striped table-sm" style="width:100%">
         <!-- display nowrap table-striped table-hover -->
         <thead >
               <tr>
-                <th class="font-weight-bold">Item#</th>
+                <th class="font-weight-bold">Item</th>
                 <th class="font-weight-bold">Description</th>
                 <th class="font-weight-bold" title="Width">W</th>
                 <th class="font-weight-bold" title="Height">H</th>
@@ -265,7 +376,7 @@ if($_POST['mode']=="getItems"){
                 echo "<tr class=\"table-sm\">";
             }
             echo $tdStyle . $i . "." . $si . "</td>";
-            echo $tdStyle . $row['name'] . "</td>";
+            echo $tdStyle . "<span title=\"". str_replace("\"","inch",$row['description'])."\">" . $row['name'] . "</span>" . "</td>";
             echo $tdStyle . (float)$row['W'] . "</td>";
             echo $tdStyle . (float)$row['H'] . "</td>";
             echo $tdStyle . (float)$row['D'] . "</td>";
@@ -308,7 +419,7 @@ if($_POST['mode']=="getItems"){
             }else{
                 $mixDoorSpeciesFactor = 1;
             }
-            $aPrice = getPrice($row['qty'],$row['price'],$row['sizePrice'],$parentPrice,$row['parentPercent'],$row['DFactor'],$row['IFactor'],$row['FFactor'],$row['GFactor'],$row['SFactor'],$row['EFactor'],$row['drawerCharge'],$row['smallDrawerCharge'],$row['largeDrawerCharge'],  $mixDoorSpeciesFactor,$row['IApplies'],$row['FApplies'],$row['GApplies'],$row['SApplies'],$row['drawers'],$row['smallDrawerFronts'],$row['largeDrawerFronts'],$row['finishLeft']+$row['finishRight'], $row['H'],$row['W'],$row['D'],$row['minSize'],$row['methodID']);
+            $aPrice = getPrice($row['qty'],$row['price'],$row['sizePrice'],$parentPrice,$row['parentPercent'],$row['DFactor'],$row['IFactor'],$row['FFactor'],$row['GFactor'],$row['SFactor'],$row['EFactor'],$row['drawerCharge'],$row['smallDrawerCharge'],$row['largeDrawerCharge'],  $mixDoorSpeciesFactor,$row['IApplies'],$row['FApplies'],$row['GApplies'],$row['SApplies'],$row['drawers'],$row['smallDrawerFronts'],$row['largeDrawerFronts'],$row['finishLeft']+$row['finishRight'], $row['H'],$row['W'],$row['D'],$row['minSize'],$row['methodID'],$row['FUpcharge']);
 //                      getPrice($qty, $base, $sizePrice, $parentPrice, $parentPercent,                           $DFactor,$IFactor,            $FFactor,$GFactor,$SFactor,                   $drawerCharge,$smallDrawerCharge,$largeDrawerCharge,                           $DApplies, $IApplies,            $FApplies, $GApplies, $SApplies, $drawers,                         $smallDrawerFronts,$largeDrawerFronts, $H, $W, $D, $minSize,  $methodID){
             if($isParent === 1){
                 $parentPrice = $aPrice;
@@ -318,18 +429,24 @@ if($_POST['mode']=="getItems"){
                 echo $tdStyle . number_format($aPrice,2,'.','') . "</td>";            
             }
             if($isParent === 1){
-                echo "<td >" . "<button type=\"button\" onClick=editItems(".$row['item'].",0) class=\"btn btn-primary btn-sm editbutton\" data-toggle=\"modal\" title=\"Edit\" data-target=\"#editItemModal\"><span class=\"ui-icon ui-icon-pencil\"></span></button>" . "";
+                echo "<td >" . "<button type=\"button\" onClick=editItems(".$row['item'].",0) class=\"btn btn-primary pl-3 pr-3 btn-sm editbutton\" data-toggle=\"modal\" title=\"Edit\" data-target=\"#editItemModal\"><span class=\"ui-icon ui-icon-pencil \"></span></button>" . "";
                 //if($_SERVER['HTTP_REFERER']=="https://mos.mobel.ca/Order2.php?OID=1"){
-                    echo "<button type=\"button\" title=\"Add Mod\" onclick=\"var promise = new Promise(function(resolve,reject){cleanEdit();resolve();}); promise.then(function(){\$('#editOrderItemPID').val(". $parentID .");$('#editItemTitle').text('Edit/Delete Mod');});\" class=\"btn btn-primary btn-sm editbutton\" data-toggle=\"modal\" data-target=\"#editItemModal\"><span class=\"ui-icon ui-icon-circle-plus\"></button></td>";
+                    echo "<button type=\"button\" title=\"Add Mod\" onclick=\"var promise = new Promise(function(resolve,reject){cleanEdit();resolve();}); promise.then(function(){\$('#editOrderItemPID').val(". $parentID .");$('#editItemTitle').text('Edit/Delete Mod');});\" class=\"btn btn-primary btn-sm editbutton btn-primary ml-0 pl-3 pr-3\" data-toggle=\"modal\" data-target=\"#editItemModal\"><span class=\"ui-icon ui-icon-circle-plus\"></button>";
+                    
                 //}else{
                 //    echo "<button type=\"button\" onclick=\"allItems('allItems','modItems',". $parentID .");\" class=\"btn btn-primary btn-sm editbutton\" data-toggle=\"modal\" data-target=\"#addItemModal\"><span class=\"ui-icon ui-icon-circle-plus\"></button></td>";
                 //}
                 //echo "" . "<button type=\"button\" onClick=addModItems(".$row['item'].") class=\"btn btn-primary btn-sm editbutton\" data-toggle=\"modal\" title=\"Add a modification or accessory\" data-target=\"#addModModal\"><span class=\"ui-icon ui-icon-circle-plus\"></span></button>" . "</td>";
+                    echo "<button class=\"btn btn-primary pl-3 pr-3 btn-sm ml-0 editbutton\" data-toggle=\"modal\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles(".$_POST['oid'] . ",$('a.nav-link.roomtab.active').attr('value'),".$parentID.");\"><span class=\"ui-icon  ui-icon-disk\"></span></button></td>";
+                    
             }else{
                 //echo "<td >" . "<button type=\"button\" onClick=editItems(".$row['item'].",". $row['sid'] .") class=\"btn btn-primary btn-sm editbutton\" data-toggle=\"modal\" title=\"Edit\" data-target=\"#editItemModal\"><span class=\"ui-icon ui-icon-pencil\"></span></button>" . "";
                 //echo "<td>" . "<span class=\"td ui-icon ui-icon-pencil\"> <button type=\"button\" onClick=editItems(".$row['item'].",". $row['sid'] .") class=\"btn btn-primary btn-sm\" data-toggle=\"modal\" title=\"Edit\" data-target=\"#editItemModal\"></button></span>" . "";
-                echo $tdStyle ."&nbsp;&nbsp;<span onClick=\"cleanEdit();$('#editOrderItemPID').val(". $parentID ."); editItems(".$row['item'].",". $row['sid'] .");\" data-toggle=\"modal\" title=\"Edit\" data-target=\"#editItemModal\" class=\"btn-primary pl-2 pr-2\"><span class=\"ui-icon ui-icon-pencil btn-primary pl-2 pr-2\" ></span></span></td>";
+                echo $tdStyle ."&nbsp;&nbsp;<span onClick=\"cleanEdit();$('#editOrderItemPID').val(". $parentID ."); editItems(".$row['item'].",". $row['sid'] .");\" data-toggle=\"modal\" title=\"Edit\" data-target=\"#editItemModal\" class=\"btn ml-0 btn-primary pl-2 pr-2 pt-1 pb-1 btn-sm\"><span class=\"ui-icon ui-icon-pencil btn-primary pl-2 pr-2\" ></span></span>";
+                echo "<button class=\"btn btn-primary pl-2 pr-2 pt-1 pb-1 ml-1 btn-sm editbutton \" data-toggle=\"modal\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles(".$_POST['oid'] . ",$('a.nav-link.roomtab.active').attr('value'),".$parentID.",". $row['sid'] .");\"><span class=\"ui-icon ui-icon-disk\"></span></button></td>";
+                
             }
+            
             //function getPrice($qty, $base, $sizePrice, $parentPrice, $parentPercent,$DFactor,$IFactor, $DApplies, $IApplies, $H, $W, $D, $minDim,  $methodID){
             echo "</tr>";
             $i = $i + 1;
@@ -505,10 +622,76 @@ if($_POST['mode'] == "editItemGetDetails"){
         }
     }
 }
+/*
+ * Given a source oid, rid and/or id, copy it to the destination oid, or rid.
+ * Options: include items, include og id (for service only - also include attached files) (always include mods)
+ * If oid and no rid, copy all rooms
+ * 
+ * To accomodate the batch insert, the fromX is populated with a random number between 1 and 99999 followed by the original id.
+ * Using this code, the newly created room or item can be found to link to the lower level table
+ * 
+ */
+if($_POST['mode'] == "copy"){
+    $insertID = mt_rand(1,99999);
+    $orderFields = fieldList("mosOrder");
+    $roomFields = fieldList("orderRoom");
+    $itemFields = fieldList("orderItem");
+    $modFields = fieldList("orderItemMods");
+    
+    echo $insertID;
+    echo $_POST['mode'];
+    echo $_POST['oid'];
+    echo $_POST['rid'];
+    echo $_POST['id'];
+    echo $_POST['Doid'];
+    echo $_POST['Drid'];
+    copyItem($_POST['rid'],$_POST['id'],$_POST['Drid']);
+    //get all field names from order, room, item, mod. Skip first field (id field). 
+    //contruct SQL to copy from each area
+}
+
+function copyItem($Sroom, $Sitem, $Droom){
+    //copies item Sitem in room Sroom to Droom.
+    $myList = fieldList("orderItem");
+    $sql = "insert into orderItem (". $myList .")
+    select ". $myList ."
+    from orderItem
+    where id = " . $Sitem;
+    echo $sql;
+    $myList = fieldList("orderItem");
+    
+    $sql = "SELECT LAST_INSERT_ID()";
+    echo $sql;
+    echo "<br/>";
+    echo $GLOBALS['$conn']->insert_id;
+    
+    $sql = "insert into your_table (". $myList .")
+    select ". $myList ."
+    from orderItem
+    where id = " . Sitem;
+    
+    echo $sql;
+    
+}
+
+function copyMod(){
+    //copies 
+}
 
 
-
-
+/* 
+ * Returns a comma seperated list of all of the fields in a given table.
+ */
+function fieldList($tableName){
+    $Fields = "";
+    opendb("SELECT COLUMN_NAME  FROM INFORMATION_SCHEMA.COLUMNS  WHERE TABLE_SCHEMA = 'dqnrmrwrfh' AND TABLE_NAME = '".$tableName."'");
+    if($GLOBALS['$result']->num_rows > 0){
+        foreach ($GLOBALS['$result'] as $row) {
+            $Fields = $Fields . $row['COLUMN_NAME'] . ",";
+        }
+    }
+    return substr($Fields,0,$strlen($Fields)-1);
+}
 
 
 

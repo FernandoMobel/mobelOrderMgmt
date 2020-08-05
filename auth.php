@@ -4,7 +4,7 @@
 <?php 
 echo $_POST["email"];
 echo $_POST["password"];
-opendb( "select firstName,lastName,email,id,userType,account from mosUser where email = '". $_POST['email'] ."' and pw = '". $_POST['password'] ."'");
+opendb( "select firstName,lastName,email,id,userType,account,CLGroup,defaultCLid from mosUser where email = '". $_POST['email'] ."' and pw = '". $_POST['password'] ."'");
 if($GLOBALS['$result']->num_rows > 0){
     foreach ($GLOBALS['$result'] as $row) {
         $_SESSION['firstName'] = $row['firstName'];
@@ -14,6 +14,8 @@ if($GLOBALS['$result']->num_rows > 0){
         $_SESSION["userid"] = $row['id'];
         $_SESSION["userType"] = $row['userType'];
         $_SESSION["account"] = $row['account'];
+        $_SESSION["CLGroup"] = $row['CLGroup'];
+        $_SESSION["defaultCLid"] = $row['defaultCLid'];
     }
     opendb("select leadTime, siteMode from webNotes");
     if($GLOBALS['$result']->num_rows > 0){
