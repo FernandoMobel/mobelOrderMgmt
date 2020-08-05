@@ -171,15 +171,44 @@ if($_POST['mode']=="getNewItem"){
     $strArr = explode(" ",$_POST['filter']); //words to search
     $com = $_POST['com']; //and or or
     $type = $_POST['type']; //item or mod
-    $aFilter = "(description like '%" . $strArr[0] . "%' ";
+    $aFilter = "(description like";
     
-    for($i = 1; $i<count($strArr); $i++){
-        $aFilter = $aFilter . $com . " description like '%" . $strArr[$i] . "%' ";
+    if($_POST['startsWith']==1){
+        $aFilter = $aFilter . " '" . $strArr[0];
+    }else{
+        $aFilter = $aFilter . " '%" . $strArr[0];
+    }
+    $aFilter = $aFilter . "%' ";
+    
+    
+    if($_POST['startsWith']==1){
+        for($i = 1; $i<count($strArr); $i++){
+            $aFilter = $aFilter . $com . " description like '" . $strArr[$i] . "%' ";
+        }
+    }else{
+        for($i = 1; $i<count($strArr); $i++){
+            $aFilter = $aFilter . $com . " description like '%" . $strArr[$i] . "%' ";
+        }
     }
     
-    $aFilter = $aFilter . ") or (name like '%" . $strArr[0] . "%'";
-    for($i = 1; $i<count($strArr); $i++){
-        $aFilter = $aFilter . $com . " name like '%" . $strArr[$i] . "%' ";
+    
+    
+    $aFilter = $aFilter . ") or ";
+    
+    if($_POST['startsWith']==1){
+        $aFilter = $aFilter ."(name like '" . $strArr[0] . "%'";
+    }else{
+        $aFilter = $aFilter ."(name like '%" . $strArr[0] . "%'";
+    }
+    
+    if($_POST['startsWith']==1){
+        for($i = 1; $i<count($strArr); $i++){
+            $aFilter = $aFilter . $com . " name like '" . $strArr[$i] . "%' ";
+        }
+    }else{
+        for($i = 1; $i<count($strArr); $i++){
+            $aFilter = $aFilter . $com . " name like '%" . $strArr[$i] . "%' ";
+        }
     }
     
     $aFilter = $aFilter . ")";

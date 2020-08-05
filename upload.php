@@ -36,16 +36,14 @@ if (file_exists($target_file)) {
     $uploadOk = 0;
 }
 // Check file size
-if ($_FILES["fileToUpload"]["size"] > 52428800) {
+if ($_FILES["fileToUpload"]["size"] > 5200000) {
     echo "Sorry, your file is too large, there is a 50MB limit";
     $uploadOk = 0;
 }
 // Allow certain file formats
 if($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg"
-        && $imageFileType != "gif" && $imageFileType != "pdf" && $imageFileType != "xls" 
-    && $imageFileType != "xlsx" && $imageFileType != "doc" && $imageFileType != "docx" 
-        && $imageFileType != "dxf" && $imageFileType != "zip" && $imageFileType != "txt" ) {
-    echo "Sorry, only Picture, PDF, TXT and certain other files are allowed.";
+    && $imageFileType != "gif" && $imageFileType != "pdf" ) {
+    echo "Sorry, only JPG, JPEG, PNG, PDF, & GIF files are allowed.";
     $uploadOk = 0;
 }
 // Check if $uploadOk is set to 0 by an error

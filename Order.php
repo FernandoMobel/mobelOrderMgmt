@@ -154,10 +154,17 @@ function showResult(str) {
     }
     xmlhttp.open("POST","OrderItem.php",true);
     xmlhttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+    
+	if($("#startsWith").is(":checked")){
+		$("#startsWith").val(1);
+	}else{
+		$("#startsWith").val(0);
+	}
+	
     if($('#editOrderItemPID').val()=="0"){
-    	xmlhttp.send("filter="+str+"&mode=getNewItem&com=and&type=item");
+    	xmlhttp.send("filter="+str+"&mode=getNewItem&com=and&type=item&startsWith="+$("#startsWith").val());
     }else{
-    	xmlhttp.send("filter="+str+"&mode=getNewItem&com=and&type=mod");
+    	xmlhttp.send("filter="+str+"&mode=getNewItem&com=and&type=mod&startsWith="+$("#startsWith").val());
     }
 }
 
@@ -1448,7 +1455,7 @@ function fixDate(){
                 </div>
                 
                 <div class="modal-body">
-                    <p>Changes save as you finish making them.</p>
+                    <p>Changes save as you finish making them.</p>Starts with:<input type="checkbox" id="startsWith" checked></input>
                     <div class="col-xs-2">
                     Find Item:
                     <input class="col-xs-2" autocomplete="off" type="text"  id="editItemSearch" onkeyup="showResult(this.value)">
@@ -1700,9 +1707,7 @@ function fixDate(){
                         if(is_null($row['shipAddress'])||$row['shipAddress']==""){
                             echo "<option ". "selected" ." value=\"" . $row['id'] . "\">" . "Please choose a ship location" . "</option>";
                         }
-                        
-                        
-                        
+
                 		foreach ($GLOBALS['$result'] as $row) {
                 		    if($row['shipAddress']==$row[id]){
                                 echo "<option ". "selected" ." value=\"" . $row['id'] . "\">" . $row['contactName']. " " . $row['contactEmail']. " " . $row['contactPhone']. " " . $row['unit']. " " . $row['street'].  ", " .$row['city']. ", " . $row['province']. " " . $row['postalCode'].  "</option>";

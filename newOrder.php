@@ -19,7 +19,7 @@ if($GLOBALS['$result']->num_rows > 0){
     }
     echo "<div class=\"bg-warning\">Opening order now... If it doesn't work, please try this link: ";
     echo "<a href=\"Order.php?OID=" . $x . "\">Open order now</a></div>";
-    header("Location:https://mos.mobel.ca/Order.php?OID=" . $x);
+    header("Location: https://mos.mobel.ca/Order.php?OID=" . $x);
     echo "<script type='text/javascript'>window.top.location='https://mos.mobel.ca/Order.php?OID=" . $x . "';</script>"; 
 exit;
 
