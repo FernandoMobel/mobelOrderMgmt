@@ -4,6 +4,7 @@
 <div class="card card-signin my-5">
 <div class="card-body">
 <?php
+$admin = "";
 if($_SESSION["userType"]==2){
     $admin = "or m.account = " . $_SESSION["account"];
 }
