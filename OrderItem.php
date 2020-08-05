@@ -337,7 +337,7 @@ if($_POST['mode']=="getItems"){
                 <th class="font-weight-bold" title="Finished End (B for Both, R for Right, L for Left)">F.E.</th>
                 <th class="font-weight-bold">Note</th>
                 <?php if($_SESSION["userType"]>1){
-                	?><th class="font-weight-bold">Price</th><?php
+                	?><th class="d-print-none font-weight-bold">Price</th><?php
                 }?>
                 <th></th>
               </tr>
@@ -368,10 +368,11 @@ if($_POST['mode']=="getItems"){
             }
             
             echo "";
-            $tdStyle = "<td class=\"borderless\">";
+            $tdStyle = "<td class=\"borderless\">";			
             if($isParent===1){
                 echo "<tr class=\"font-weight-bold\">";
                 $tdStyle = "<td class=\"font-weight-bold\">";
+				$tdStyleNotPrint = "<td class=\"d-print-none font-weight-bold\">";
             }else{
                 echo "<tr class=\"table-sm\">";
             }
@@ -426,7 +427,7 @@ if($_POST['mode']=="getItems"){
             }
             if($_SESSION["userType"]>1){
                 $TotalPrice = $TotalPrice + $aPrice;
-                echo $tdStyle . number_format($aPrice,2,'.','') . "</td>";            
+                echo $tdStyleNotPrint . number_format($aPrice,2,'.','') . "</td>";            
             }
             if($isParent === 1){
                 echo "<td >" . "<button type=\"button\" onClick=editItems(".$row['item'].",0) class=\"btn btn-primary pl-3 pr-3 btn-sm editbutton\" data-toggle=\"modal\" title=\"Edit\" data-target=\"#editItemModal\"><span class=\"ui-icon ui-icon-pencil \"></span></button>" . "";

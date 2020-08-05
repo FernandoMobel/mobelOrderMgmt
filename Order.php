@@ -740,7 +740,7 @@ function fixDate(){
 
 
 
-<div class="navbar navbar-expand-sm bg-light navbar-light">
+<div class="navbar d-print-block navbar-expand-sm bg-light navbar-light">
 <div class="col-sm-12 col-md-12 col-lg-12 mx-auto pl-1 pr-1 ml-1 mr-1">
 <div class="row">
     <?php
@@ -1432,7 +1432,7 @@ function fixDate(){
     <?php 
     if ($roomCount >0){
     ?>
-    <div class="d-flex justify-content-between"><!-- onClick=allItems('allItems','allItems');  --> <button type="button"  onClick=cleanEdit("add"); class="btn btn-primary pt-2 pb-2" data-toggle="modal" data-target="#editItemModal">Add Item<span class="ui-icon ui-icon-plus"></span></button><span class="ml-auto" id="roomTotal"></span></div>
+    <div class="d-flex d-print-none justify-content-between"><!-- onClick=allItems('allItems','allItems');  --> <button type="button"  onClick=cleanEdit("add"); class="btn btn-primary pt-2 pb-2" data-toggle="modal" data-target="#editItemModal">Add Item<span class="ui-icon ui-icon-plus"></span></button><span class="ml-auto" id="roomTotal"></span></div>
     <?php 
     }
     ?>
