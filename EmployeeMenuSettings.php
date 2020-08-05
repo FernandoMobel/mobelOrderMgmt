@@ -55,4 +55,15 @@ if($_POST['mode']=="setFilter"){
 	}
 }
 
+if($_POST['mode']=="getOrderID"){
+	opendb("select 1 from mosOrder where oid =".$_POST['value']);
+	if($GLOBALS['$result']-> num_rows >0){
+		echo "<a href=\"Order.php?OID=".$_POST['value']."\" id=\"searchOrderBtn\" class=\"btn btn-outline-primary btn-sm float-right\" type=\"button\" >";
+		echo "Open Order </a>";
+	}else{
+		echo "<div class=\"alert alert-warning\" role=\"alert\">";
+		echo "<p>Order <b>".$_POST['value']."</b> doesn't exists</p></div>";
+
+	}
+}
 ?>
