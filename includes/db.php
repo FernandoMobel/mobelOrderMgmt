@@ -112,7 +112,7 @@ $GLOBALS['$result'] = "";
    * Later should add sheen factor and seperate out species from door factor.
    * Additional factors are currently multiplicative, not additive IE 2 and 1.3 = 2.6, not 2.3.
    */
-  function getPrice($qty, $base, $sizePrice, $parentPrice, $parentPercent,$DFactor,$IFactor,$FFactor,$GFactor,$SFactor,$EFactor,$drawerCharge,$smallDrawerCharge,$largeDrawerCharge, $DApplies, $IApplies,$FApplies, $GApplies, $SApplies, $drawers,$smallDrawerFronts,$largeDrawerFronts,$finishedEnds, $H, $W, $D, $minSize,  $methodID){
+  function getPrice($qty, $base, $sizePrice, $parentPrice, $parentPercent,$DFactor,$IFactor,$FFactor,$GFactor,$SFactor,$EFactor,$drawerCharge,$smallDrawerCharge,$largeDrawerCharge, $DApplies, $IApplies,$FApplies, $GApplies, $SApplies, $drawers,$smallDrawerFronts,$largeDrawerFronts,$finishedEnds, $H, $W, $D, $minSize,  $methodID, $finishUpcharge){
       $size = $W*$H*$D;
       if($methodID == 1){
           $size = $W*$D;
@@ -152,7 +152,7 @@ $GLOBALS['$result'] = "";
           $factor *= (1+$SFactor);
       }
       
-      $upcharge = $drawerCharge * $drawers + $smallDrawerCharge*$smallDrawerFronts + $largeDrawerCharge*$largeDrawerFronts + $EFactor*$finishedEnds*$H*$D;
+      $upcharge = $drawerCharge * $drawers + $smallDrawerCharge*$smallDrawerFronts + $largeDrawerCharge*$largeDrawerFronts + $EFactor*$finishedEnds*$H*$D + $finishUpcharge;
       
       
       //if($methodID == 0){
