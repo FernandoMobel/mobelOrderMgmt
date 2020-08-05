@@ -63,7 +63,6 @@ if($_POST['mode']=="getOrderID"){
 	}else{
 		echo "<div class=\"alert alert-warning\" role=\"alert\">";
 		echo "<p>Order <b>".$_POST['value']."</b> doesn't exists</p></div>";
-
 	}
 }
 ?>

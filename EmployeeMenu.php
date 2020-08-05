@@ -255,10 +255,3 @@ if($GLOBALS['$result']->num_rows > 0){
 </div>
 </div>     
 <?php include 'includes/foot.php';?>
-<script>
-  
- $(document).ready(function(){	
-	//$('#searchOrderBtn').hide();
- });
-
-</script>
