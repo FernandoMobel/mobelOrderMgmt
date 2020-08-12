@@ -152,7 +152,7 @@ $GLOBALS['$result'] = "";
           $factor *= (1+$SFactor);
       }
       
-      $upcharge = $drawerCharge * $drawers + $smallDrawerCharge*$smallDrawerFronts + $largeDrawerCharge*$largeDrawerFronts + $EFactor*$finishedEnds*$H*$D + $finishUpcharge;
+      $upcharge = $drawerCharge * $drawers + $smallDrawerCharge*$smallDrawerFronts + $largeDrawerCharge*$largeDrawerFronts + $EFactor*$finishedEnds*$H*$D;
       
       
       //if($methodID == 0){

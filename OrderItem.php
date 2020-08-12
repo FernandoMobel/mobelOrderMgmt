@@ -349,6 +349,7 @@ if($_POST['mode']=="getItems"){
         $parentPrice = 0;
         $parentID = -1;
         $isParent = -1;
+        $roomFinishUpcharge = 0;
         foreach ($GLOBALS['$result'] as $row) {
             if($parentID !== $row['item']){ //new parent item
                 $parentID = $row['item'];
@@ -421,6 +422,7 @@ if($_POST['mode']=="getItems"){
                 $mixDoorSpeciesFactor = 1;
             }
             $aPrice = getPrice($row['qty'],$row['price'],$row['sizePrice'],$parentPrice,$row['parentPercent'],$row['DFactor'],$row['IFactor'],$row['FFactor'],$row['GFactor'],$row['SFactor'],$row['EFactor'],$row['drawerCharge'],$row['smallDrawerCharge'],$row['largeDrawerCharge'],  $mixDoorSpeciesFactor,$row['IApplies'],$row['FApplies'],$row['GApplies'],$row['SApplies'],$row['drawers'],$row['smallDrawerFronts'],$row['largeDrawerFronts'],$row['finishLeft']+$row['finishRight'], $row['H'],$row['W'],$row['D'],$row['minSize'],$row['methodID'],$row['FUpcharge']);
+            $roomFinishUpcharge=$row['FUpcharge'];
 //                      getPrice($qty, $base, $sizePrice, $parentPrice, $parentPercent,                           $DFactor,$IFactor,            $FFactor,$GFactor,$SFactor,                   $drawerCharge,$smallDrawerCharge,$largeDrawerCharge,                           $DApplies, $IApplies,            $FApplies, $GApplies, $SApplies, $drawers,                         $smallDrawerFronts,$largeDrawerFronts, $H, $W, $D, $minSize,  $methodID){
             if($isParent === 1){
                 $parentPrice = $aPrice;
@@ -473,6 +475,7 @@ if($_POST['mode']=="getItems"){
     	echo "No items yet, or you may have chosen a species and door style that are not compatible with each other. Please ensure you have also chosen an Interior Finish. <br/>Please add items or remove this room.";
     }
     if($TotalPrice > 0.01){
+        $TotalPrice = $TotalPrice + $roomFinishUpcharge;
         //echo "<input type=/"hidden/">Total room price: $" . number_format($TotalPrice,2,'.','') .  "</b>";
         echo "<input type=\"hidden\" id=\"TotalPrice\" value=\"" . number_format($TotalPrice,2,'.','') ."\">";
     }
