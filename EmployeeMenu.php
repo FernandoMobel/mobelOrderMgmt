@@ -163,8 +163,9 @@ echo "<br/><div class=\"container\">";
 						//Building filter
 						if($GLOBALS['$result2']->num_rows > 0){			
 							foreach ($GLOBALS['$result2'] as $row2) {	
+								$selected = ">";
 								foreach ($state_ar as &$value) {
-									$selected = ">";
+									
 									if($value==$row2['id']){
 										$selected = "selected>";
 										break;
