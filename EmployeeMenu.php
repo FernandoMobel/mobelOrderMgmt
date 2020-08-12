@@ -135,12 +135,12 @@ if($GLOBALS['$result2']-> num_rows >0){
 		$str = $row2['state'];
 		$state_ar = explode(', ', $str);//convert string to array to create control dinamically
 		//opendb("select m.*,s.name as 'status' from mosOrder m, state s where s.id = m.state and m.state in (".$row2['state'].") order by m.state desc");
-		opendb("select m.*,s.name as 'status', a.busName as 'company', concat(mu.firstName,' ',mu.lastName) as 'designer' from mosOrder m, state s, account a, mosuser mu where s.id = m.state and m.account = a.id and m.mosUser = mu.id and m.state in (".$row2['state'].") order by m.state desc");
+		opendb("select m.*,s.name as 'status', a.busName as 'company', concat(mu.firstName,' ',mu.lastName) as 'designer' from mosOrder m, state s, account a, mosUser mu where s.id = m.state and m.account = a.id and m.mosUser = mu.id and m.state in (".$row2['state'].") order by m.state desc");
 	}
 }else{
 	opendb2("INSERT INTO `employeesettings` (`mosUser`) VALUES ( ".$_SESSION["userid"] .")");//new user
 	//opendb("select m.*,s.name as 'status' from mosOrder m, state s where s.id = m.state and m.state > 1 and m.state <> 10 order by m.state desc");
-	opendb2("select m.*,s.name as 'status', a.busName as 'company', concat(mu.firstName,' ',mu.lastName) as 'designer' from mosOrder m, state s, account a, mosuser mu where s.id = m.state and m.account = a.id and m.mosUser = mu.id and m.state > 1 and m.state <> 10 order by m.state desc");
+	opendb2("select m.*,s.name as 'status', a.busName as 'company', concat(mu.firstName,' ',mu.lastName) as 'designer' from mosOrder m, state s, account a, mosUser mu where s.id = m.state and m.account = a.id and m.mosUser = mu.id and m.state > 1 and m.state <> 10 order by m.state desc");
 }
 echo "<br/><div class=\"container\">";
     ?>
@@ -164,8 +164,7 @@ echo "<br/><div class=\"container\">";
 						if($GLOBALS['$result2']->num_rows > 0){			
 							foreach ($GLOBALS['$result2'] as $row2) {	
 								$selected = ">";
-								foreach ($state_ar as &$value) {
-									
+								foreach ($state_ar as &$value) {									
 									if($value==$row2['id']){
 										$selected = "selected>";
 										break;
