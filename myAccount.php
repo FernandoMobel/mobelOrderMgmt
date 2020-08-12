@@ -99,7 +99,7 @@ if($GLOBALS['$result']->num_rows > 0){
               </div>
               <div class="form-label-group">
                 <input name="New Password (again)" type="password" id="pw3" class="form-control" placeholder="Password" required>
-                <label for="pw3">New Password</label>
+                <label for="pw3">Confirm New Password</label>
               </div>
               <button class="btn btn-lg btn-primary btn-block text-uppercase" onClick="savePw();" >Save New Password</button>
             

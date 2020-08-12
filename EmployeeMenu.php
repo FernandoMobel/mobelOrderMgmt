@@ -48,21 +48,17 @@ function saveOrder(objectID,OID){
             	    	$("#"+objectID+OID).css("border-color", "#00b828");
             	    }
 		        });
-				console.log(OID);
 }
 
 function getOrderID(OID){
 	$('#searchOrderBtn').empty();
 	OID = OID.replace(/\s+/g, '');
-	if (OID.trim()){		
-		console.log(OID);		
+	if (OID.trim()){			
 		myData = { mode: "getOrderID", id: OID.trim(), value: OID.trim()};
-		console.log(myData);
 		$.post("EmployeeMenuSettings.php",
 			myData, 
 		       function(data, status, jqXHR) {
-						$('#searchOrderBtn').append(data);
-						console.log(data);            	    
+						$('#searchOrderBtn').append(data);           	    
 		        });
 		
 	}else{
@@ -77,7 +73,6 @@ function saveEmployeeSettings(objectID){
 		 arr = ["1","2","3","4","5","6","7","8","9","10"]; 
 	}
 	myData = { mode: "setFilter", id: objectID, value: arr}; //$("#"+objectID).val()};
-	console.log(myData);
 	$.post("EmployeeMenuSettings.php",
 			myData, 
 			   function(data, status, jqXHR) {
@@ -97,7 +92,6 @@ function loadOrders(objectID){
     		        }
 	  	});
 }
-
 </script>
 
 <div class="navbar navbar-expand-sm bg-light navbar-light">
@@ -140,11 +134,13 @@ if($GLOBALS['$result2']-> num_rows >0){
 	foreach ($GLOBALS['$result2'] as $row2) {
 		$str = $row2['state'];
 		$state_ar = explode(', ', $str);//convert string to array to create control dinamically
-		opendb("select m.*,s.name as 'status' from mosOrder m, state s where s.id = m.state and m.state in (".$row2['state'].") order by m.state desc");
+		//opendb("select m.*,s.name as 'status' from mosOrder m, state s where s.id = m.state and m.state in (".$row2['state'].") order by m.state desc");
+		opendb("select m.*,s.name as 'status', a.busName as 'company', concat(mu.firstName,' ',mu.lastName) as 'designer' from mosOrder m, state s, account a, mosuser mu where s.id = m.state and m.account = a.id and m.mosUser = mu.id and m.state in (".$row2['state'].") order by m.state desc");
 	}
 }else{
 	opendb2("INSERT INTO `employeesettings` (`mosUser`) VALUES ( ".$_SESSION["userid"] .")");//new user
-	opendb("select m.*,s.name as 'status' from mosOrder m, state s where s.id = m.state and m.state > 1 and m.state <> 10 order by m.state desc");
+	//opendb("select m.*,s.name as 'status' from mosOrder m, state s where s.id = m.state and m.state > 1 and m.state <> 10 order by m.state desc");
+	opendb2("select m.*,s.name as 'status', a.busName as 'company', concat(mu.firstName,' ',mu.lastName) as 'designer' from mosOrder m, state s, account a, mosuser mu where s.id = m.state and m.account = a.id and m.mosUser = mu.id and m.state > 1 and m.state <> 10 order by m.state desc");
 }
 echo "<br/><div class=\"container\">";
     ?>
@@ -197,8 +193,10 @@ echo "<br/><div class=\"container\">";
 		</tr>
 		<tr>
 			<th>OID</th>
+			<th>Company</th>
 			<th>Tag Name</th>
 			<th>PO</th>			
+			<th>Designer</th>
 			<th>Status</th>
 			<!--th >Update Status</th-->
 		</tr>
@@ -206,8 +204,10 @@ echo "<br/><div class=\"container\">";
 	<tfoot class="thead-light">
 		<tr>
 			<th>OID</th>
+			<th>Company</th>
 			<th>Tag Name</th>
-			<th>PO</th>
+			<th>PO</th>			
+			<th>Designer</th>
 			<th>Status</th>
 			<!--th >Update Status</th-->
 		</tr>
@@ -218,8 +218,10 @@ if($GLOBALS['$result']->num_rows > 0){
 		foreach ($GLOBALS['$result'] as $row) {
 			echo "<tr>";
 			echo "<td><b><a href=\"Order.php?OID=" . $row['oid'] . "\">".$row['oid']."</b></td>";
+			echo "<td><b><a href=\"Order.php?OID=" . $row['oid'] . "\">".$row['company']."</b></td>";
 			echo "<td><a href=\"Order.php?OID=" . $row['oid'] . "\">" . $row['tagName'] . "</td>";
 			echo "<td><a href=\"Order.php?OID=" . $row['oid'] . "\">" . $row['po'] . "</td>";	
+			echo "<td><b><a href=\"Order.php?OID=" . $row['oid'] . "\">".$row['designer']."</b></td>";
 			echo "<td>";
 			echo "<select onchange=\"saveOrder('state','" . $row['oid'] . "');\" id=\"state".$row['oid']."\" >";
 			opendb2("select * from state order by position asc");
@@ -253,5 +255,6 @@ if($GLOBALS['$result']->num_rows > 0){
 
 </div>
 </div>
-</div>     
+</div>    
+
 <?php include 'includes/foot.php';?>
