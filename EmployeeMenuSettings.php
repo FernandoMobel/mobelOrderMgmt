@@ -52,7 +52,7 @@ if($_POST['mode']=="setFilter"){
 	//Checking which filter is going to be updated
 	if($_POST['id']=="stateFilter"){
 		$arr = implode(', ', $_POST['value']);//getting all values from array
-		$sql = "update employeesettings set mainMenuDefaultStateFilter = \"".$arr."\" where mosUser = " . $_SESSION["userid"];
+		$sql = "update employeeSettings set mainMenuDefaultStateFilter = \"".$arr."\" where mosUser = " . $_SESSION["userid"];
 		opendb2($sql);
 	}
 }
