@@ -1,0 +1,140 @@
+<?php
+session_start();
+if(isset($_SESSION["username"])){
+    if(($_SESSION["username"]=="" || $_SESSION["username"]=="invalid") && str_replace("/HelloWorldPHP/","",$_SERVER['REQUEST_URI'])!="index.php"){
+        header("Location: index.php");
+        //exit();
+    }
+}else{
+    $_SESSION["username"]="invalid";
+    header("Location: index.php");
+}
+
+include 'includes/db.php';?>
+<?php
+function convertQueryStr(){
+	$itemData = $_POST['data'];
+	$keywords = preg_split("/[\s,=,&]+/", $itemData);
+	$arr=array();
+	for($i=0;$i<sizeof($keywords);$i++)	{
+		$arr[$keywords[$i]] = mb_convert_encoding(urldecode($keywords[++$i]), 'UTF-8', 'UTF-8,ISO-8859-1');//encoding ascii values
+	}
+	return json_decode(json_encode((object)$arr),true);
+}
+
+if($_POST['mode']=="insertNewItem"){
+	$obj = convertQueryStr();
+	
+	$sql = "INSERT INTO item(name, description, price, sizePrice, minSize, W, H, D, W2, H2, D2, minW, minH, minD, maxW, maxH, maxD, doorFactor, ";
+	$sql .=	"speciesFactor, finishFactor, interiorFactor, sheenFactor, glazeFactor, drawers, smallDrawerFronts, largeDrawerFronts, dateCreated, pricingMethod,";
+	if(count($obj)==29){
+		$sql .= "isCabinet,";
+	}	
+	$sql .= " CLGroup) VALUES (";
+	$sql .= "'".strtoupper($obj["name"])."','".strtoupper($obj["description"])."',".$obj["price"].",".$obj["sizePrice"].",".$obj["minSize"].",".$obj["W"].",".$obj["H"].",".$obj["D"].",".$obj["W2"].",".$obj["H2"].",";
+	$sql .= $obj["D2"].",".$obj["minW"].",".$obj["minH"].",".$obj["minD"].",".$obj["maxW"].",".$obj["maxH"].",".$obj["maxD"].",".$obj["doorFactor"].",".$obj["speciesFactor"].",".$obj["finishFactor"].",";
+	$sql .= $obj["interiorFactor"].",".$obj["sheenFactor"].",".$obj["glazeFactor"].",".$obj["drawers"].",".$obj["smallDrawerFronts"].",".$obj["largeDrawerFronts"].",CURDATE(),".$obj["pricingMethod"].",";
+	if(count($obj)==29){
+		$sql .= "1,";
+	}
+	$sql .= $obj["CLGroup"].")";
+	
+	opendb($sql);
+	echo $GLOBALS['$result'] ;
+}
+
+if($_POST['mode']=="updateItemById"){
+	$id = $_POST['id'];
+	//convert to Json
+	$obj = convertQueryStr();
+	//Update Item
+	$sql = "update item set name = '".strtoupper($obj["name"])."', description = '".strtoupper($obj["description"])."', price=".$obj["price"].", sizePrice =".$obj["sizePrice"];
+	$sql .= ", minSize=".$obj["minSize"].", W =".$obj["W"].", H=".$obj["H"].", D = ".$obj["D"].", lastModified=CURDATE()";
+	if(count($obj)==29){
+		$sql .= " , isCabinet = 1";
+	}else{
+		$sql .= " , isCabinet = 0";
+	}
+	$sql .= " where id = ".$id;
+	opendb($sql);
+	if($GLOBALS['$result'] > 0){
+		//Update Order Items
+		$sql = "UPDATE orderItem oit SET name = '".strtoupper($obj["name"])."', description = '".strtoupper($obj["description"])."', price=".$obj["price"].", sizePrice =".$obj["sizePrice"];
+		$sql .= ", minSize=".$obj["minSize"].", W =".$obj["W"].", H=".$obj["H"].", D = ".$obj["D"];
+		$sql .= " where oit.id in (SELECT oi.id FROM orderRoom orr, orderItem oi, mosOrder mo where orr.rid = oi.rid and mo.oid = orr.oid and mo.state = 1 and oi.iid = ".$id.")";
+		opendb2($sql);
+	}
+	echo $GLOBALS['$result2'];
+}
+
+if($_POST['mode']=="getItems"){
+	$filter = $_POST['str'];
+	$sql = "select id,name,description from item where name like '%".$filter."%' or description like '%".$filter."%' order by description limit 80";
+    //echo $sql;
+    $query = opendb($sql);
+	$itemData = array(); 
+	if($query->num_rows > 0){ 
+		while($row = $query->fetch_assoc()){ 
+			$data['id'] = $row['id'];
+			$data['name'] = $row['name']; 
+			$data['description'] = $row['description'];
+			array_push($itemData, $data); 
+		} 
+	} 
+	 
+	// Return results as json encoded array 
+	echo json_encode($itemData); 
+}
+
+
+if($_POST['mode']=="getItemById"){
+	$id = $_POST['id'];
+	$sql = "select * from item where id = ".$id;
+    //echo $sql;
+	
+    $query = opendb($sql);
+	
+	$itemData = array(); 
+	if($query->num_rows > 0){ 
+		while($row = $query->fetch_assoc()){ 
+			$data['id'] = $row['id'];
+			$data['name'] = $row['name']; 
+			$data['description'] = $row['description'];
+			$data['price'] = $row['price']; 
+			$data['sizePrice'] = $row['sizePrice']; 
+			$data['minSize'] = $row['minSize']; 
+			/********************************************/
+			$data['W'] = $row['W']; 
+			$data['H'] = $row['H']; 
+			$data['D'] = $row['D']; 
+			$data['minW'] = $row['minW']; 
+			$data['minH'] = $row['minH']; 
+			$data['minD'] = $row['minD'];
+			$data['maxW'] = $row['maxW']; 
+			$data['maxH'] = $row['maxH']; 
+			$data['maxD'] = $row['maxD'];
+			/********************************************/
+			$data['doorFactor'] = $row['doorFactor'];
+			$data['speciesFactor'] = $row['speciesFactor'];
+			$data['finishFactor'] = $row['finishFactor'];
+			$data['interiorFactor'] = $row['interiorFactor'];
+			$data['sheenFactor'] = $row['sheenFactor'];
+			$data['glazeFactor'] = $row['glazeFactor'];
+			$data['drawers'] = $row['drawers'];
+			$data['smallDrawerFronts'] = $row['smallDrawerFronts'];
+			$data['largeDrawerFronts'] = $row['largeDrawerFronts'];
+			/********************************************/
+			$data['isCabinet'] = $row['isCabinet'];
+			$data['CLGroup'] = $row['CLGroup'];
+			array_push($itemData, $data); 
+		} 
+	} 
+	 
+	// Return results as json encoded array 
+	echo json_encode($itemData); 
+}
+
+
+
+
+?>

@@ -14,16 +14,18 @@ if(isset($_SESSION["username"])){
 <?php
 if($_POST['mode']=="getOrders"){
 	$arr = implode(', ', $_POST['value']);//getting all values from array
-	opendb("select m.*,s.name as 'status' from mosOrder m, state s where s.id = m.state and m.state in (".$arr.") order by m.state desc");
+	//opendb("select m.*,s.name as 'status' from mosOrder m, state s where s.id = m.state and m.state in (".$arr.") order by m.state desc");
+	opendb("select m.*,s.name as 'status', a.busName as 'company', concat(mu.firstName,' ',mu.lastName) as 'designer' from mosOrder m, state s, account a, mosUser mu where s.id = m.state and m.account = a.id and m.mosUser = mu.id and m.state in (".$arr.") order by m.state desc");
 	if($GLOBALS['$result']-> num_rows >0){	
 		foreach ($GLOBALS['$result'] as $row) {
 			echo "<tr>";
 			echo "<td><b><a href=\"Order.php?OID=" . $row['oid'] . "\">".$row['oid']."</b></td>";
-			echo "<td>" . $row['tagName'] . "</td>";
-			//echo "<td>" . $row['status'] . "</td>";
-			echo "<td>" . $row['po'] . "</td>";	
+			echo "<td><b><a href=\"Order.php?OID=" . $row['oid'] . "\">".$row['company']."</b></td>";
+			echo "<td><a href=\"Order.php?OID=" . $row['oid'] . "\">" . $row['tagName'] . "</td>";
+			echo "<td><a href=\"Order.php?OID=" . $row['oid'] . "\">" . $row['po'] . "</td>";	
+			echo "<td><b><a href=\"Order.php?OID=" . $row['oid'] . "\">".$row['designer']."</b></td>";
 			echo "<td>";
-			echo "<select onchange=\"saveOrder('state','" . $row['oid'] . "');\" id=\"state".$row['oid']."\" class=\"custom-select-w-75\">";
+			echo "<select onchange=\"saveOrder('state','" . $row['oid'] . "');\" id=\"state".$row['oid']."\" >";
 			opendb2("select * from state order by position asc");
 			if($GLOBALS['$result2']->num_rows > 0){
 				if(is_null($row['status'])){
