@@ -134,12 +134,12 @@ if($GLOBALS['$result2']-> num_rows >0){
 	foreach ($GLOBALS['$result2'] as $row2) {
 		$str = $row2['state'];
 		$state_ar = explode(', ', $str);//convert string to array to create control dinamically
-		opendb("select m.*,s.name as 'status', a.busName as 'company', concat(mu.firstName,' ',mu.lastName) as 'designer' from mosOrder m, state s, account a, mosUser mu where s.id = m.state and m.account = a.id and m.mosUser = mu.id and m.state in (".$row2['state'].") order by m.state desc");
+		opendb("select m.*,s.name as 'status', a.busName as 'company', concat(mu.firstName,' ',mu.lastName) as 'designer', email from mosOrder m, state s, account a, mosUser mu where s.id = m.state and m.account = a.id and m.mosUser = mu.id and m.state in (".$row2['state'].") order by m.state desc");
 	}
 }else{
 	opendb2("INSERT INTO employeeSettings (mosUser) VALUES ( ".$_SESSION["userid"] .")");//new user
 	//opendb("select m.*,s.name as 'status' from mosOrder m, state s where s.id = m.state and m.state > 1 and m.state <> 10 order by m.state desc");
-	opendb2("select m.*,s.name as 'status', a.busName as 'company', concat(mu.firstName,' ',mu.lastName) as 'designer' from mosOrder m, state s, account a, mosUser mu where s.id = m.state and m.account = a.id and m.mosUser = mu.id and m.state > 1 and m.state <> 10 order by m.state desc");
+	opendb2("select m.*,s.name as 'status', a.busName as 'company', concat(mu.firstName,' ',mu.lastName) as 'designer', email from mosOrder m, state s, account a, mosUser mu where s.id = m.state and m.account = a.id and m.mosUser = mu.id and m.state > 1 and m.state <> 10 order by m.state desc");
 }
 echo "<br/><div class=\"container\">";
     ?>
@@ -196,6 +196,7 @@ echo "<br/><div class=\"container\">";
 			<th>Tag Name</th>
 			<th>PO</th>			
 			<th>Designer</th>
+			<th>UserName</th>
 			<th>Status</th>
 			<!--th >Update Status</th-->
 		</tr>
@@ -207,6 +208,7 @@ echo "<br/><div class=\"container\">";
 			<th>Tag Name</th>
 			<th>PO</th>			
 			<th>Designer</th>
+			<th>UserName</th>
 			<th>Status</th>
 			<!--th >Update Status</th-->
 		</tr>
@@ -221,6 +223,7 @@ if($GLOBALS['$result']->num_rows > 0){
 			echo "<td><a href=\"Order.php?OID=" . $row['oid'] . "\">" . $row['tagName'] . "</td>";
 			echo "<td><a href=\"Order.php?OID=" . $row['oid'] . "\">" . $row['po'] . "</td>";	
 			echo "<td><b><a href=\"Order.php?OID=" . $row['oid'] . "\">".$row['designer']."</b></td>";
+			echo "<td><b><a href=\"Order.php?OID=" . $row['oid'] . "\">".$row['email']."</b></td>";
 			echo "<td>";
 			echo "<select onchange=\"saveOrder('state','" . $row['oid'] . "');\" id=\"state".$row['oid']."\" >";
 			opendb2("select * from state order by position asc");
