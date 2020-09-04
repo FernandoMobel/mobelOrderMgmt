@@ -1974,6 +1974,7 @@ $('#fileListing').on('click','#sendFile',
 	        }, false);
 	      }
 	      refreshFiles(); //refresh listing upon completion.
+		  console.log(myXhr);
 	      return myXhr;
 	      refreshFiles();
 	    }
