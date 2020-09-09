@@ -111,14 +111,17 @@ if($_POST['mode']=="getFiles"){
     if($rid == 0){
         $rid = "NULL";
     }
-
+	
+	$result = opendb2("select account from mosOrder where oid =".$_POST["oid"]);
+	$row2 = mysqli_fetch_assoc($result);
+	
     opendb("select * from orderFiles where oid = ".$oid." and rid is null");
     
     if($GLOBALS['$result']->num_rows > 0){
         foreach ($GLOBALS['$result'] as $row) {
             echo "<tr>";
             //echo "<td>" . $row['oid'] . "</td>";
-            echo "<td><b><form action=\"download.php\" method=\"post\"><input name=\"OGName\" type=\"hidden\" value=\"". $row['name'] . "\"></input><input name=\"DealerFile\" type=\"hidden\" value=\"". $_SESSION["account"]."/".$_POST["oid"]."/" . $row['id'] . "." . strtolower(pathinfo($row['name'],PATHINFO_EXTENSION)). "\" ></input><input type=\"submit\" value=\"" . $row['name'] . "\"/></form></b></td>";
+            echo "<td><b><form action=\"download.php\" method=\"post\"><input name=\"OGName\" type=\"hidden\" value=\"". $row['name'] . "\"></input><input name=\"DealerFile\" type=\"hidden\" value=\"". $row2["account"]."/".$_POST["oid"]."/" . $row['id'] . "." . strtolower(pathinfo($row['name'],PATHINFO_EXTENSION)). "\" ></input><input type=\"submit\" value=\"" . $row['name'] . "\"/></form></b></td>";
             echo "<td>" . "N/A" . "</td>";
             echo "<td>" . "N/A" . "</td>";
             echo "<td>" . "N/A" . "</td>";
@@ -148,7 +151,7 @@ order by rid, iid, mid");
         foreach ($GLOBALS['$result'] as $row) {
             echo "<tr>";
             //echo "<td><b>" . $row['oid'] . "</b></td>";
-            echo "<td><b><form action=\"download.php\" method=\"post\"><input name=\"OGName\" type=\"hidden\" value=\"". $row['fileName'] . "\"></input><input name=\"DealerFile\" type=\"hidden\" value=\"". $_SESSION["account"]."/".$_POST["oid"]."/" . $row['id'] . "." . strtolower(pathinfo($row['fileName'],PATHINFO_EXTENSION)). "\" ></input><input type=\"submit\" value=\"" . $row['fileName'] . "\"/></form></b></td>";
+            echo "<td><b><form action=\"download.php\" method=\"post\"><input name=\"OGName\" type=\"hidden\" value=\"". $row['fileName'] . "\"></input><input name=\"DealerFile\" type=\"hidden\" value=\"". $row2["account"]."/".$_POST["oid"]."/" . $row['id'] . "." . strtolower(pathinfo($row['fileName'],PATHINFO_EXTENSION)). "\" ></input><input type=\"submit\" value=\"" . $row['fileName'] . "\"/></form></b></td>";
             echo "<td>" . $row['roomName'] . "</td>";
             if(is_null($row['mid'])){
                 echo "<td>" . getItemID($row['rid'],$row['iid'],0) . "</td>";

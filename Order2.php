@@ -26,9 +26,9 @@ p{
 @media print {
   .d-print-none {display:none;}
   .print  {display:block!important;}
-  body {font-size: 1.5em !important;}
-  table td {font-size: 1em !important;overflow: visible !important;}
-  table th {font-size: 1.05em !important;overflow: visible !important;}
+  body {font-size: 1.3em !important;}
+  table td {font-size: .8em !important;overflow: visible !important;}
+  table th {font-size: .8em !important;overflow: visible !important;}
 }
 
 </style>
@@ -784,6 +784,18 @@ function fixDate(){
 	}
 }
 
+function printPrice(){
+	var price = document.getElementById("roomTotal");
+	var printChk = document.getElementById("printChk");
+	if(printChk.checked == true){
+		price.classList.remove('d-print-none');
+		price.classList.add('d-print-block');
+	}else {
+		price.classList.remove('d-print-block');
+		price.classList.add('d-print-none');
+	}
+}
+
 </script>
 
 
@@ -1510,7 +1522,22 @@ function fixDate(){
     <?php 
     if ($roomCount >0){
     ?>
-    <div class="d-flex d-print-none justify-content-between"><!-- onClick=allItems('allItems','allItems');  --> <button type="button"  onClick=cleanEdit("add"); class="btn btn-primary pt-2 pb-2" data-toggle="modal" data-target="#editItemModal">Add Item<span class="ui-icon ui-icon-plus"></span></button><span class="ml-auto" id="roomTotal"></span></div>
+    <div class="d-flex justify-content-between"><!-- onClick=allItems('allItems','allItems');  --> <button type="button"  onClick=cleanEdit("add"); class="btn btn-primary pt-2 pb-2 d-print-none" data-toggle="modal" data-target="#editItemModal">Add Item<span class="ui-icon ui-icon-plus"></span></button>
+	<span class="ml-auto d-print-none" id="roomTotal"></span>
+	</div>
+	
+	<?php
+	if($_SESSION["userType"]>1){
+	?>
+	<div class="d-print-none">
+		<input class="d-flex float-right" type="checkbox" id="printChk" name="printChk" onclick="printPrice()"></input>
+		<small class="d-flex float-right" for="printChk">Print price&nbsp</small><br>
+	</div>
+	<?php
+	}
+	?>
+	
+	
     <?php 
     }
     ?>

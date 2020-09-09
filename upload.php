@@ -17,7 +17,6 @@ if(isset($_SESSION["username"])){
 <?php
 $result = opendb("select account from mosOrder where oid =".$_POST["oid"]);
 $row = mysqli_fetch_assoc($result);
-//$target_dir = "uploads/DealerFiles/".$_SESSION["account"]."/".$_POST["oid"]."/";
 $target_dir = "uploads/DealerFiles/".$row['account']."/".$_POST["oid"]."/";
 $target_file = $target_dir . basename($_FILES["fileToUpload"]["name"]);
 $uploadOk = 1;
