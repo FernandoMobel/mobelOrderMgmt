@@ -114,15 +114,16 @@ function submitToMobel(){
 
 
 
-function addRoom(){
+function addRoom(roomQty){
 	if(viewOnly>0){
 		alert(noChangeMsg);
 		return;
 	}
 	var data = {mode:"addRoom",oid:<?php echo $_GET["OID"]?>};
-	$.post("save.php",data,function(data, status){
+	$.post("save.php",data,function(data, status,jqXHR){
 	    if(status == "success"){
-	    	window.location.reload();
+	    	window.open(window.location.pathname+"?OID="+<?php echo $_GET["OID"]?>+"#rnewroom"+roomQty,"_self")
+			window.location.reload();
 	    }else{
 		    alert('Sorry, room could not be added.');
 		    window.location.reload();
@@ -962,7 +963,8 @@ function printPrice(){
 <ul class="nav nav-tabs bg-dark">
     <?php 
     //$r =0;
-    opendb("select * from orderRoom where oid = ".$_GET["OID"]." order by name asc");
+	//echo window.location.href();
+    opendb("select * from orderRoom where oid = ".$_GET["OID"]." order by rid asc");
     $s = " active";
     $i = 0;
     //window.location.replace(window.location.href+'test');
@@ -981,7 +983,7 @@ function printPrice(){
         echo "<li class=\"nav-item" . $s . "\"><a class=\"nav-link active\"href=\"#NoRooms\">No Rooms</a></li>";
         $roomCount = 0;
     }
-    echo "<li class=\"nav-item d-print-none\"><a onclick=\"addRoom()\" id=\"addRoom\" class=\"nav-link text-muted\"  >Add</a></li>";
+    echo "<li class=\"nav-item d-print-none\"><a onclick=\"addRoom(".$i.")\" id=\"addRoom\" class=\"nav-link text-muted\"  >Add</a></li>";
     //href=\"#Add\"
     
     ?>
@@ -1014,7 +1016,9 @@ function printPrice(){
     if($i!=0){
         //$RID = $r;
         $i=0;
-        opendb("select * from orderRoom where oid = ". $_GET["OID"] ." order by name asc");
+		$sql = "select * from orderRoom where oid = ". $_GET["OID"] ." order by rid asc";
+		//echo $sql;
+        opendb($sql);
         if($GLOBALS['$result']->num_rows > 0){
             foreach ($GLOBALS['$result'] as $row) {
                 //$i=$i+1;
@@ -1152,22 +1156,24 @@ function printPrice(){
                     <select onchange="$('#doorPDF').attr('href','header/'+$('option:selected', this).attr('doorPDFTag')); saveStyle('door','<?php echo "doorstyle" . $row['rid'];?>');" id="<?php echo "doorstyle" . $row['rid'];?>" class="custom-select">
                     
                     <?php
-                    opendb2("select d.* from door d, doorSpecies ds where d.id = ds.did and ds.sid = '" . $row['species'] . "'");
-                    if($GLOBALS['$result2']->num_rows > 0){
+					$sql = "select d.* from door d, doorSpecies ds where d.id = ds.did and ds.sid = '" . $row['species'] . "'";
+					//echo $sql;
+                    opendb2($sql);
+                    if($GLOBALS['$result2']->num_rows > 0){ 
+						$match = 0;
                         if(is_null($row['door'])){
-                            echo "<option doorPDFTag= \"" . $row2['PDF'] . "\"". "selected" ." value=\"\">" . "Choose a Door" . "</option>";
-                        }
-                        $match = 0;
+                            echo "<option doorPDFTag= \"DOORSTYLES.pdf\"". "selected" ." value=\"\">" . "Choose a Door" . "</option>";
+                        }                        
                 		foreach ($GLOBALS['$result2'] as $row2) {
-                		    if($row2['id']==$row['door']){
+							if($row2['id']==$row['door']){
                 		        echo "<option doorPDFTag= \"" . $row2['PDF'] . "\"". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
                 		        $match = 1;
                 		    }else{
                 		        echo "<option doorPDFTag= \"" . $row2['PDF'] . "\"   value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
                 		    }
                 		}
-                		if($match == 0){
-                		    echo "<option ". "selected" ." value=\"" . "Please choose a new door style" . "\">" . "" . "</option>";
+						if($match == 0){
+                		    echo "<option value=\"" . "Please choose a new door style" . "\">" . "Please choose a new door style" . "</option>";
                 		    $invalidHeaderMessage = $invalidHeaderMessage .  "<br>No door selected";
                 		}
                     }
@@ -1304,12 +1310,34 @@ function printPrice(){
                     <select onchange="saveStyle('sheen','<?php echo "sheen" . $row['rid'];?>');" id="<?php echo "sheen" . $row['rid'];?>" class="custom-select">
                     
                     <?php
-                    opendb2("select * from sheen where id in (
+                    $sql ="select * from sheen where id in (
                         select sid from finishTypeSheen where ftid in (
                         select finishType from frontFinish where id in (
-                        select frontFinish from orderRoom where rid = " . $row['rid'] . "))) order by name");
-                    $match = 0; //if match is 0, no sheens work. If 1, a matching sheen was found. If 2, sheens were found, but not what was selected.                   
-                    if($GLOBALS['$result2']->num_rows > 0){
+                        select frontFinish from orderRoom where rid = " . $row['rid'] . "))) order by name";
+					//echo $sql;
+					opendb2($sql);
+                    $match = 0; //if match is 0, no sheens work. If 1, a matching sheen was found. If 2, sheens were found, but not what was selected.
+					if($GLOBALS['$result2']->num_rows == 1){						
+						foreach ($GLOBALS['$result2'] as $row2) {
+                		    if($row2['id']==$row['sheen']){
+                		        echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+                		        $match = 1;
+                		    }else{
+                		        echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+                		    }
+                		}
+					}else if($GLOBALS['$result2']->num_rows > 1){
+						echo "<option disabled=\"disabled\" ". "selected" ." value=\"\">" . "Choose a Sheen" . "</option>";
+						foreach ($GLOBALS['$result2'] as $row2) {
+                		    if($row2['id']==$row['sheen']){
+                		        echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+                		        $match = 1;
+                		    }else{
+                		        echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+                		    }
+                		}
+					}
+                    /*if($GLOBALS['$result2']->num_rows > 0){
                         $match = 2;
                         if(is_null($row['sheen'])){
                             echo "<option disabled=\"disabled\" ". "selected" ." value=\"\">" . "Choose a Sheen" . "</option>";
@@ -1331,7 +1359,7 @@ function printPrice(){
                     if($match==2){
                         echo "<option disabled=\"disabled\"  ". "selected" ." value=\"null\">" . "Please choose your new sheen" . "</option>";
                         $invalidHeaderMessage = $invalidHeaderMessage . "<br>No sheen selected";
-                    }
+                    }*/
                     ?>
                     </select>
                     </div>
