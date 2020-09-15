@@ -209,8 +209,9 @@ function editItems(itemID, mod){
 		       function(data, status, jqXHR) {
 					
 					refresh = 0;
-					//$("allItemsEdit").append("myItem");
-					//$('.selectpicker').selectpicker('refresh');
+					// remove non-printable and other non-valid JSON chars
+					data = data.replace(/[\u0000-\u0019]+/g,"\\n"); 					
+					console.log(data);
 					myObj= JSON.parse(data);
 					document.getElementById("livesearch").innerHTML=myObj.name;
 					$('#note').val("");
