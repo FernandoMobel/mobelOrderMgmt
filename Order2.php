@@ -8,17 +8,22 @@ padding-bottom:.3rem;
 height: 1px !important;
 }
 
+table{
+	text-align: center;
+}
+
 option{ white-space: normal; }
 
 .bootstrap-select .filter-option { white-space: normal; }
 
 p{
+	text-align: center;
     line-height: 1.5em;
     height: 1.5em;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    width: 100%;
+	width: 100%;
 }
 
 .print {display:none;}
@@ -787,14 +792,27 @@ function fixDate(){
 }
 
 function printPrice(){
+	//this function add and remove classes for printing
 	var price = document.getElementById("roomTotal");
 	var printChk = document.getElementById("printChk");
+	var table = document.getElementById("itemListingTable");
+	var tdPrice = null;
 	if(printChk.checked == true){
 		price.classList.remove('d-print-none');
 		price.classList.add('d-print-block');
+		for (i=0; i<table.rows.length; i++){
+			tdPrice = document.getElementById("priceCol"+i);
+			tdPrice.classList.remove('d-print-none');
+			tdPrice.classList.add('d-print-block');			
+		}
 	}else {
 		price.classList.remove('d-print-block');
 		price.classList.add('d-print-none');
+		for (i=0; i<table.rows.length; i++){
+			tdPrice = document.getElementById("priceCol"+i);
+			tdPrice.classList.remove('d-print-block');
+			tdPrice.classList.add('d-print-none');
+		}
 	}
 }
 

@@ -324,6 +324,7 @@ if($_POST['mode']=="getItems"){
     
     echo "<div class=\"col-12 container\">";
     if($GLOBALS['$result']->num_rows > 0){
+		$tableRow = 0;//count for every row in order to identify every price column to be printable
         ?>
         <input id="#orderTotal" type="hidden"></input>
         <table id="itemListingTable" class="table table-striped table-sm" style="width:100%">
@@ -340,7 +341,7 @@ if($_POST['mode']=="getItems"){
                 <th class="font-weight-bold" title="Finished End (B for Both, R for Right, L for Left)">F.E.</th>
                 <th class="font-weight-bold">Note</th>
                 <?php if($_SESSION["userType"]>1){
-                	?><th class="d-print-none font-weight-bold">Price</th><?php
+                	?><th id="priceCol<?php echo $tableRow ?>" class="d-print-none font-weight-bold">Price</th><?php
                 }?>
                 <th></th>
               </tr>
@@ -354,6 +355,7 @@ if($_POST['mode']=="getItems"){
         $isParent = -1;
         $roomFinishUpcharge = 0;
         foreach ($GLOBALS['$result'] as $row) {
+			$tableRow += 1;
             if($parentID !== $row['item']){ //new parent item
                 $parentID = $row['item'];
                 $isParent = 1;
@@ -372,11 +374,11 @@ if($_POST['mode']=="getItems"){
             }
             
             echo "";
-            $tdStyle = "<td class=\"borderless\">";			
+            $tdStyle = "<td class=\"borderless\">";	
+			$tdStyleNotPrint = "<td id=\"priceCol".$tableRow."\" class=\"d-print-none font-weight-bold\">";		
             if($isParent===1){
                 echo "<tr class=\"font-weight-bold\">";
                 $tdStyle = "<td class=\"font-weight-bold\">";
-				$tdStyleNotPrint = "<td class=\"d-print-none font-weight-bold\">";
             }else{
                 echo "<tr class=\"table-sm\">";
             }
@@ -421,7 +423,7 @@ if($_POST['mode']=="getItems"){
             echo $tdStyle;
             if(strlen(str_replace("\"","\\\"",$row['note']))>=1){
                 //echo "<span title='Note: ". $row['note'] ."' onClick='alert(\"" . str_replace("\"","\\\"",$row['note']) . "\");'>Y</span>";
-				echo "<p style=\"width: 100px\" class=\"d-print-none\">". $row['note'] ."</p>";
+				echo "<p style=\"width: 200px;\" class=\"d-print-none mx-auto\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"". $row['note'] ."\">". $row['note'] ."</p>";
 				echo "<h5 class=\"print\">" . $row['note']."</h5>";
             }else{
                 echo str_replace("\"","\\\"",$row['note']);
