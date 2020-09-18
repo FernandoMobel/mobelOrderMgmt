@@ -5,11 +5,37 @@
 table.table-sm td{
 padding-top:.3rem;
 padding-bottom:.3rem;
+height: 1px !important;
+}
+
+table{
+	text-align: center;
 }
 
 option{ white-space: normal; }
 
 .bootstrap-select .filter-option { white-space: normal; }
+
+p{
+	text-align: center;
+    line-height: 1.5em;
+    height: 1.5em;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+	width: 100%;
+}
+
+.print {display:none;}
+
+@media print {
+  .d-print-none {display:none;}
+  .print  {display:block!important;}
+  body {font-size: 1.3em !important;}
+  table td {font-size: .8em !important;overflow: visible !important;}
+  table th {font-size: .8em !important;overflow: visible !important;}
+}
+
 </style>
 <script src="js/MDB/js/popper.min.js"></script>
 
@@ -93,15 +119,16 @@ function submitToMobel(){
 
 
 
-function addRoom(){
+function addRoom(roomQty){
 	if(viewOnly>0){
 		alert(noChangeMsg);
 		return;
 	}
 	var data = {mode:"addRoom",oid:<?php echo $_GET["OID"]?>};
-	$.post("save.php",data,function(data, status){
+	$.post("save.php",data,function(data, status,jqXHR){
 	    if(status == "success"){
-	    	window.location.reload();
+	    	window.open(window.location.pathname+"?OID="+<?php echo $_GET["OID"]?>+"#rnewroom"+roomQty,"_self")
+			window.location.reload();
 	    }else{
 		    alert('Sorry, room could not be added.');
 		    window.location.reload();
@@ -187,15 +214,18 @@ function editItems(itemID, mod){
 		       function(data, status, jqXHR) {
 					
 					refresh = 0;
-					//$("allItemsEdit").append("myItem");
-					//$('.selectpicker').selectpicker('refresh');
+					// remove non-printable and other non-valid JSON chars
+					data = data.replace(/[\u0000-\u0019]+/g,"\\n"); 					
+					console.log(data);
 					myObj= JSON.parse(data);
 					document.getElementById("livesearch").innerHTML=myObj.name;
 					$('#note').val("");
 					$('#note').val(myObj.note);
 	       			$('#W').val(parseFloat(myObj.w));
+					$('#W2').val(parseFloat(myObj.w2));
 	       			$('#H').val(parseFloat(myObj.h));
 	       			$('#D').val(parseFloat(myObj.d));
+	       			$('#D2').val(parseFloat(myObj.d2));
 	       			$('#Qty').val(parseFloat(myObj.qty));
 	       			$('#HL').prop('checked',myObj.hingeLeft==1);
 	       			$('#HR').prop('checked',myObj.hingeRight==1);
@@ -212,6 +242,21 @@ function editItems(itemID, mod){
 		        	   $('#editItemTitle').text("Edit/Delete Mod");
 		        	   $('#editItemID').val(mod);
 		           }
+				   
+				   if(parseFloat(myObj.w2)>0){
+					   $('#W2lbl').show(); 
+					   $('#W2').show(); 
+				   }else{
+					   $('#W2lbl').hide(); 
+					   $('#W2').hide();
+				   }
+				   if(parseFloat(myObj.d2)>0){
+					   $('#D2lbl').show();
+					   $('#D2').show();
+				   }else{
+					   $('#D2lbl').hide();
+					   $('#D2').hide();
+				   }
     		         
 					
 		        });
@@ -223,7 +268,6 @@ function editItems(itemID, mod){
 }
 
 function cleanEdit(rqst){
-	console.log("cleanEdit is executing");
 	$('#editItemID').val(0);
 	$('#editOrderItemID').val(0);
 	$('#editOrderItemPID').val(0);
@@ -232,6 +276,8 @@ function cleanEdit(rqst){
 	$('#W').val("");
 	$('#H').val("");
 	$('#D').val("");
+	$('#W2').val("");
+	$('#D2').val("");
 	$('#Qty').val(1);
 	$('#HL').prop('checked',false);
 	$('#HR').prop('checked',false);
@@ -239,19 +285,26 @@ function cleanEdit(rqst){
 	$('#FR').prop('checked',false);
 	$('#deleteItemButton').show();
 	$('#deleteItemButton').val(0);
+	$('#W2lbl').hide();
+	$('#W2').hide();
+	$('#D2lbl').hide();
+	$('#D2').hide();
 	//Hide delete button when new item
 	if(rqst == "add"){
 		$('#deleteItemButton').hide();
 	}		
 }
 
-function solvefirst(W,H,D,name,catid) {
+function solvefirst(W,H,D,W2,H2,D2,name,catid) {
   return new Promise(resolve => {
   	//setTimeout(() => {
 	    refresh = 0;
 		$('#W').val(W);
 		$('#H').val(H);
 		$('#D').val(D);
+		$('#W2').val(W2);
+		//$('#H2').val(H2);
+		$('#D2').val(D2);
 		addItemID = catid;
 		$('#editItemID').val(catid);
 		$('#livesearch').val(name);
@@ -261,13 +314,27 @@ function solvefirst(W,H,D,name,catid) {
 		saveEditedItem('FL','finishLeft');
 		saveEditedItem('FR','finishRight');
     	saveEditedItem('note','note');
+		if(W2>0){
+			$('#W2lbl').show();		
+			$('#W2').show();		
+		}else{
+			$('#W2lbl').hide();
+			$('#W2').hide();
+		}
+		if(D2>0){
+			$('#D2lbl').show();
+			$('#D2').show();
+		}else{
+			$('#D2lbl').hide();
+			$('#D2').hide();
+		}
     	resolve('');
     	//}, 5000); set time out
   });
 }
 
-async function setSizes(W,H,D,name,catid) {
-  const result = await solvefirst(W,H,D,name,catid);
+async function setSizes(W,H,D,W2,H2,D2,name,catid) {
+  const result = await solvefirst(W,H,D,W2,H2,D2,name,catid);
   $('#editItemSearch').val(result);
 	document.getElementById("livesearch").innerHTML=name;
 	loadItems($("a.nav-link.roomtab.active").attr("value"));
@@ -435,6 +502,13 @@ function saveRoom(objectID){
             	    	}
             	    	if(objectID=="RoomNote"){
             	    		$('#RoomNote'.concat($("a.nav-link.roomtab.active").attr("value"))).val($('#RoomNote').val());
+							if($('#RoomNote').val()==""){
+								$('#RoomNotePreview'.concat($("a.nav-link.roomtab.active").attr("value"))).text('');
+								$('#RoomNotePrint'.concat($("a.nav-link.roomtab.active").attr("value"))).text('');
+							}else{
+								$('#RoomNotePreview'.concat($("a.nav-link.roomtab.active").attr("value"))).text('Room note: '.concat($('#RoomNote').val()));
+								$('#RoomNotePrint'.concat($("a.nav-link.roomtab.active").attr("value"))).text('Room note: '.concat($('#RoomNote').val()));
+							}
             	    	}
             	    	
             	    }
@@ -717,6 +791,31 @@ function fixDate(){
 	}
 }
 
+function printPrice(){
+	//this function add and remove classes for printing
+	var price = document.getElementById("roomTotal");
+	var printChk = document.getElementById("printChk");
+	var table = document.getElementById("itemListingTable");
+	var tdPrice = null;
+	if(printChk.checked == true){
+		price.classList.remove('d-print-none');
+		price.classList.add('d-print-block');
+		for (i=0; i<table.rows.length; i++){
+			tdPrice = document.getElementById("priceCol"+i);
+			tdPrice.classList.remove('d-print-none');
+			tdPrice.classList.add('d-print-block');			
+		}
+	}else {
+		price.classList.remove('d-print-block');
+		price.classList.add('d-print-none');
+		for (i=0; i<table.rows.length; i++){
+			tdPrice = document.getElementById("priceCol"+i);
+			tdPrice.classList.remove('d-print-block');
+			tdPrice.classList.add('d-print-none');
+		}
+	}
+}
+
 </script>
 
 
@@ -779,15 +878,15 @@ function fixDate(){
             echo "<input type=\"hidden\" value=\"".$row['oid']."\" id=\"OID\"><br/>";
             
             //echo "<div class=\"btn-group \">";
-            echo "<button data-toggle=\"modal\" onClick=\"setMinDate();hideSubmit();\" data-target=\"#orderOptions\" class=\"btn btn-primary text-nowrap px-2 py-2 mx-0  mt-0 \" data-toggle=\"modal\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles( ".$_GET["OID"].");\">Options<span class=\"ui-icon ui-icon-gear\"></span></button>&nbsp;";
-            echo "<button class=\"btn btn-primary text-nowrap px-2 py-2 mx-0 mt-0 \" data-toggle=\"modal\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles( ".$_GET["OID"].");\">Files<span class=\"ui-icon ui-icon-disk\"></span></button>&nbsp;";
+            echo "<button data-toggle=\"modal\" onClick=\"setMinDate();hideSubmit();\" data-target=\"#orderOptions\" class=\"btn btn-primary text-nowrap px-2 py-2 mx-0  mt-0 d-print-none\" data-toggle=\"modal\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles( ".$_GET["OID"].");\">Options<span class=\"ui-icon ui-icon-gear\"></span></button>&nbsp;";
+            echo "<button class=\"btn btn-primary text-nowrap px-2 py-2 mx-0 mt-0 d-print-none\" data-toggle=\"modal\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles( ".$_GET["OID"].");\">Files<span class=\"ui-icon ui-icon-disk\"></span></button>&nbsp;";
             
             if($row['status'] == "Quoting"){
                 if($row['tagName'] == "Tag name not set"){
-                    echo "<button type=\"button\" onClick=\"alert('Please set your tag name and refresh to submit your quote.')\">Submit to Mobel</button>";
+                    echo "<button class=\"d-print-none\" type=\"button\" onClick=\"alert('Please set your tag name and refresh to submit your quote.')\">Submit to Mobel</button>";
                     echo "<script>viewOnly = 0;</script>";
                 }else{
-                    echo "<button type=\"button\" data-toggle=\"modal\" onClick=\"setMinDate();showSubmit();\" data-target=\"#orderOptions\" class=\"btn btn-primary text-nowrap px-2 py-2  mt-0 mx-0 \">Submit<span class=\"ui-icon ui-icon-circle-triangle-e\"></span></button>";
+                    echo "<button type=\"button\" data-toggle=\"modal\" onClick=\"setMinDate();showSubmit();\" data-target=\"#orderOptions\" class=\"btn btn-primary text-nowrap px-2 py-2  mt-0 mx-0 d-print-none\">Submit<span class=\"ui-icon ui-icon-circle-triangle-e\"></span></button>";
                     echo "<script>viewOnly = 0;</script>";
                 }
             }else{
@@ -883,7 +982,8 @@ function fixDate(){
 <ul class="nav nav-tabs bg-dark">
     <?php 
     //$r =0;
-    opendb("select * from orderRoom where oid = ".$_GET["OID"]." order by name asc");
+	//echo window.location.href();
+    opendb("select * from orderRoom where oid = ".$_GET["OID"]." order by rid asc");
     $s = " active";
     $i = 0;
     //window.location.replace(window.location.href+'test');
@@ -902,7 +1002,7 @@ function fixDate(){
         echo "<li class=\"nav-item" . $s . "\"><a class=\"nav-link active\"href=\"#NoRooms\">No Rooms</a></li>";
         $roomCount = 0;
     }
-    echo "<li class=\"nav-item\"><a onclick=\"addRoom()\" id=\"addRoom\" class=\"nav-link text-muted\"  >Add</a></li>";
+    echo "<li class=\"nav-item d-print-none\"><a onclick=\"addRoom(".$i.")\" id=\"addRoom\" class=\"nav-link text-muted\"  >Add</a></li>";
     //href=\"#Add\"
     
     ?>
@@ -935,7 +1035,9 @@ function fixDate(){
     if($i!=0){
         //$RID = $r;
         $i=0;
-        opendb("select * from orderRoom where oid = ". $_GET["OID"] ." order by name asc");
+		$sql = "select * from orderRoom where oid = ". $_GET["OID"] ." order by rid asc";
+		//echo $sql;
+        opendb($sql);
         if($GLOBALS['$result']->num_rows > 0){
             foreach ($GLOBALS['$result'] as $row) {
                 //$i=$i+1;
@@ -947,21 +1049,32 @@ function fixDate(){
                 
                 echo "<div class=\"row\">";
                 
-                echo "<div class=\"col-2\"><button  class=\"btn btn-primary px-2 py-1 text-nowrap ml-0 editbutton\" type=\"button\" onClick=\"editRoom(".$row['rid']. ",'" . $row['name'] . "');\"  data-toggle=\"modal\" title=\"Edit room\" data-target=\"#editRoomModal\"><span class=\"ui-icon ui-icon-pencil\"></span></button>";
-                echo "<b><a  class=\"btn btn-primary px-3 py-1 mr-0 float-right\" target=\"_blank\" href=\"https://mos.mobel.ca/uploads/MobelCatalogue.pdf\">Catalogue</a></b></div>";
-                echo "<div class=\"col-10 text-left\"><button class=\"btn btn-primary px-3 py-1 ml-0 editbutton\" data-toggle=\"modal\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles(".$_GET["OID"] . ",$('a.nav-link.roomtab.active').attr('value'));\">Room Files<span class=\"ui-icon ui-icon-disk\"></span></button>";
-                
-                
+                echo "<div class=\"col-2\"><button  class=\"btn btn-primary px-2 py-1 text-nowrap ml-0 editbutton d-print-none\" type=\"button\" onClick=\"editRoom(".$row['rid']. ",'" . $row['name'] . "');\"  data-toggle=\"modal\" title=\"Edit room\" data-target=\"#editRoomModal\"><span class=\"ui-icon ui-icon-pencil\"></span></button>";
+                echo "<b><a  class=\"btn btn-primary px-3 py-1 mr-0 float-right d-print-none\" target=\"_blank\" href=\"https://mos.mobel.ca/uploads/MobelCatalogue.pdf\">Catalogue</a></b></div>";
+                echo "<div class=\"col text-left\"><button class=\"btn btn-primary px-3 py-1 ml-0 editbutton d-print-none\" data-toggle=\"modal\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles(".$_GET["OID"] . ",$('a.nav-link.roomtab.active').attr('value'));\">Room Files<span class=\"ui-icon ui-icon-disk\"></span></button>";
+                                
                 if($_SESSION["userType"] == 3){
                     //echo "<button onClick=\"alert('test');\">Testing Only</button>";
                 }
                 
-                
-                
-                
                 echo "</div>";
-                echo "</div>";
-    
+				
+				echo "<div class=\"col-9 text-left\">";
+				echo "<p class=\"d-print-none\" id=\"RoomNotePreview". $row['rid'] ."\">";
+				
+				if($row['note'])
+				echo "<b>Room note: </b>" . $row['note'] ;
+				
+				echo "</p>";
+				
+				echo "</div>";
+				if($row['note']){
+					echo "<h5 class=\"print\" id=\"RoomNotePrint". $row['rid'] ."\"><b>Room note: </b>" . $row['note']."</h5>";
+					echo "<div class=\"dropdown-divider mb-4\"></div>";
+				}
+				
+				echo "</div>";
+				
                 //echo "<button class=\"btn btn-primary ml-0 \" data-toggle=\"modal\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles( ".$_GET["OID"].");\">All Files<span class=\"ui-icon ui-icon-disk\"></span></button><br/>";
                 echo "<input type=\"hidden\" value=\"" . $row['note'] . "\" id=\"RoomNote". $row['rid'] ."\">";
                 ?>
@@ -1062,22 +1175,24 @@ function fixDate(){
                     <select onchange="$('#doorPDF').attr('href','header/'+$('option:selected', this).attr('doorPDFTag')); saveStyle('door','<?php echo "doorstyle" . $row['rid'];?>');" id="<?php echo "doorstyle" . $row['rid'];?>" class="custom-select">
                     
                     <?php
-                    opendb2("select d.* from door d, doorSpecies ds where d.id = ds.did and ds.sid = '" . $row['species'] . "'");
-                    if($GLOBALS['$result2']->num_rows > 0){
+					$sql = "select d.* from door d, doorSpecies ds where d.id = ds.did and ds.sid = '" . $row['species'] . "'";
+					//echo $sql;
+                    opendb2($sql);
+                    if($GLOBALS['$result2']->num_rows > 0){ 
+						$match = 0;
                         if(is_null($row['door'])){
-                            echo "<option doorPDFTag= \"" . $row2['PDF'] . "\"". "selected" ." value=\"\">" . "Choose a Door" . "</option>";
-                        }
-                        $match = 0;
+                            echo "<option doorPDFTag= \"DOORSTYLES.pdf\"". "selected" ." value=\"\">" . "Choose a Door" . "</option>";
+                        }                        
                 		foreach ($GLOBALS['$result2'] as $row2) {
-                		    if($row2['id']==$row['door']){
+							if($row2['id']==$row['door']){
                 		        echo "<option doorPDFTag= \"" . $row2['PDF'] . "\"". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
                 		        $match = 1;
                 		    }else{
                 		        echo "<option doorPDFTag= \"" . $row2['PDF'] . "\"   value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
                 		    }
                 		}
-                		if($match == 0){
-                		    echo "<option ". "selected" ." value=\"" . "Please choose a new door style" . "\">" . "" . "</option>";
+						if($match == 0){
+                		    echo "<option value=\"" . "Please choose a new door style" . "\">" . "Please choose a new door style" . "</option>";
                 		    $invalidHeaderMessage = $invalidHeaderMessage .  "<br>No door selected";
                 		}
                     }
@@ -1214,12 +1329,34 @@ function fixDate(){
                     <select onchange="saveStyle('sheen','<?php echo "sheen" . $row['rid'];?>');" id="<?php echo "sheen" . $row['rid'];?>" class="custom-select">
                     
                     <?php
-                    opendb2("select * from sheen where id in (
+                    $sql ="select * from sheen where id in (
                         select sid from finishTypeSheen where ftid in (
                         select finishType from frontFinish where id in (
-                        select frontFinish from orderRoom where rid = " . $row['rid'] . "))) order by name");
-                    $match = 0; //if match is 0, no sheens work. If 1, a matching sheen was found. If 2, sheens were found, but not what was selected.                   
-                    if($GLOBALS['$result2']->num_rows > 0){
+                        select frontFinish from orderRoom where rid = " . $row['rid'] . "))) order by name";
+					//echo $sql;
+					opendb2($sql);
+                    $match = 0; //if match is 0, no sheens work. If 1, a matching sheen was found. If 2, sheens were found, but not what was selected.
+					if($GLOBALS['$result2']->num_rows == 1){						
+						foreach ($GLOBALS['$result2'] as $row2) {
+                		    if($row2['id']==$row['sheen']){
+                		        echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+                		        $match = 1;
+                		    }else{
+                		        echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+                		    }
+                		}
+					}else if($GLOBALS['$result2']->num_rows > 1){
+						echo "<option disabled=\"disabled\" ". "selected" ." value=\"\">" . "Choose a Sheen" . "</option>";
+						foreach ($GLOBALS['$result2'] as $row2) {
+                		    if($row2['id']==$row['sheen']){
+                		        echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+                		        $match = 1;
+                		    }else{
+                		        echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+                		    }
+                		}
+					}
+                    /*if($GLOBALS['$result2']->num_rows > 0){
                         $match = 2;
                         if(is_null($row['sheen'])){
                             echo "<option disabled=\"disabled\" ". "selected" ." value=\"\">" . "Choose a Sheen" . "</option>";
@@ -1241,7 +1378,7 @@ function fixDate(){
                     if($match==2){
                         echo "<option disabled=\"disabled\"  ". "selected" ." value=\"null\">" . "Please choose your new sheen" . "</option>";
                         $invalidHeaderMessage = $invalidHeaderMessage . "<br>No sheen selected";
-                    }
+                    }*/
                     ?>
                     </select>
                     </div>
@@ -1432,7 +1569,22 @@ function fixDate(){
     <?php 
     if ($roomCount >0){
     ?>
-    <div class="d-flex d-print-none justify-content-between"><!-- onClick=allItems('allItems','allItems');  --> <button type="button"  onClick=cleanEdit("add"); class="btn btn-primary pt-2 pb-2" data-toggle="modal" data-target="#editItemModal">Add Item<span class="ui-icon ui-icon-plus"></span></button><span class="ml-auto" id="roomTotal"></span></div>
+    <div class="d-flex justify-content-between"><!-- onClick=allItems('allItems','allItems');  --> <button type="button"  onClick=cleanEdit("add"); class="btn btn-primary pt-2 pb-2 d-print-none" data-toggle="modal" data-target="#editItemModal">Add Item<span class="ui-icon ui-icon-plus"></span></button>
+	<span class="ml-auto d-print-none" id="roomTotal"></span>
+	</div>
+	
+	<?php
+	if($_SESSION["userType"]>1){
+	?>
+	<div class="d-print-none">
+		<input class="d-flex float-right" type="checkbox" id="printChk" name="printChk" onclick="printPrice()"></input>
+		<small class="d-flex float-right" for="printChk">Print price&nbsp</small><br>
+	</div>
+	<?php
+	}
+	?>
+	
+	
     <?php 
     }
     ?>
@@ -1485,14 +1637,22 @@ function fixDate(){
                         <div id="itemSizes"  class="col-auto text-left">
                             <span class="form-inline">
                             
-                            <label for="W">Width:</label>
-                            <textarea onchange="saveEditedItem('W','W');"  rows="1" cols="7" class="form-control" id="W"></textarea>&nbsp;
-                            
+                            <label for="W" data-toggle="tooltip" data-placement="top" title="Width">Width:</label>							
+                            <textarea data-toggle="tooltip" data-placement="top" title="Width" onchange="saveEditedItem('W','W');"  rows="1" cols="7" class="form-control" id="W"></textarea>&nbsp;
+                            <!--div id="W2div" class=""-->
+							<label id="W2lbl" for="W2" data-toggle="tooltip" data-placement="top" title="Right Width">Width Right:</label>
+                            <textarea data-toggle="tooltip" data-placement="top" title="Width" onchange="saveEditedItem('W2','W2');"  rows="1" cols="7" class="form-control" id="W2"></textarea>&nbsp;
+                            <!--/div-->
                             <label for="H">Height:</label>
                             <textarea onchange="saveEditedItem('H','H');" rows="1" cols="7" class="form-control" id="H"></textarea>&nbsp;
                             
-                            Depth:<textarea onchange="saveEditedItem('D','D');"  rows="1" cols="7" class="form-control" id="D"></textarea>
-                            </span>
+							<label for="D" data-toggle="tooltip" data-placement="top" title="Depth">Depth:</label>
+                            <textarea onchange="saveEditedItem('D','D');"  rows="1" cols="7" class="form-control" id="D"></textarea>
+							<!--div id="D2div" class="col-auto text-left"-->
+							<label id="D2lbl" for="D2" data-toggle="tooltip" data-placement="top" title="Right Width">Depth Right:</label>
+                            <textarea data-toggle="tooltip" data-placement="top" title="Width" onchange="saveEditedItem('D2','D2');"  rows="1" cols="7" class="form-control" id="D2"></textarea>
+                            <!--/div-->
+							</span>
                         </div>
                     </div>
                     <br/>
@@ -1786,6 +1946,10 @@ $(document).ready(function(){
 	  $(".nav-tabs a").click(function(){
 	    $(this).tab('show');
 	  });
+	  $('#W2lbl').hide();
+	  $('#W2').hide();
+	  $('#D2lbl').hide();
+	  $('#D2').hide();
 	});
 
 $(document).ready(function(){
@@ -1884,6 +2048,7 @@ $('#fileListing').on('click','#sendFile',
 	        }, false);
 	      }
 	      refreshFiles(); //refresh listing upon completion.
+		  console.log(myXhr);
 	      return myXhr;
 	      refreshFiles();
 	    }

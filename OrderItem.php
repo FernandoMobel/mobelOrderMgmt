@@ -111,14 +111,17 @@ if($_POST['mode']=="getFiles"){
     if($rid == 0){
         $rid = "NULL";
     }
-
+	
+	$result = opendb2("select account from mosOrder where oid =".$_POST["oid"]);
+	$row2 = mysqli_fetch_assoc($result);
+	
     opendb("select * from orderFiles where oid = ".$oid." and rid is null");
     
     if($GLOBALS['$result']->num_rows > 0){
         foreach ($GLOBALS['$result'] as $row) {
             echo "<tr>";
             //echo "<td>" . $row['oid'] . "</td>";
-            echo "<td><b><form action=\"download.php\" method=\"post\"><input name=\"OGName\" type=\"hidden\" value=\"". $row['name'] . "\"></input><input name=\"DealerFile\" type=\"hidden\" value=\"". $_SESSION["account"]."/".$_POST["oid"]."/" . $row['id'] . "." . strtolower(pathinfo($row['name'],PATHINFO_EXTENSION)). "\" ></input><input type=\"submit\" value=\"" . $row['name'] . "\"/></form></b></td>";
+            echo "<td><b><form action=\"download.php\" method=\"post\"><input name=\"OGName\" type=\"hidden\" value=\"". $row['name'] . "\"></input><input name=\"DealerFile\" type=\"hidden\" value=\"". $row2["account"]."/".$_POST["oid"]."/" . $row['id'] . "." . strtolower(pathinfo($row['name'],PATHINFO_EXTENSION)). "\" ></input><input type=\"submit\" value=\"" . $row['name'] . "\"/></form></b></td>";
             echo "<td>" . "N/A" . "</td>";
             echo "<td>" . "N/A" . "</td>";
             echo "<td>" . "N/A" . "</td>";
@@ -127,12 +130,12 @@ if($_POST['mode']=="getFiles"){
         }
     }
     
-    opendb("select F.oid as oid, F.name as fileName, R.name as roomName, F.id as id from orderFiles F, orderRoom R where F.iid is null and F.rid = R.rid and F.oid = ".$oid."");
+	opendb("select O.account, F.oid as oid, F.name as fileName, R.name as roomName, F.id as id from orderFiles F, orderRoom R, mosOrder O where F.iid is null and F.rid = R.rid and F.oid = ".$oid." and O.oid = F.oid");
     if($GLOBALS['$result']->num_rows > 0){
         foreach ($GLOBALS['$result'] as $row) {
             echo "<tr>";
             //echo "<td><b>" . $row['oid'] . "</b></td>";
-            echo "<td><b><form action=\"download.php\" method=\"post\"><input name=\"OGName\" type=\"hidden\" value=\"". $row['fileName'] . "\"></input><input name=\"DealerFile\" type=\"hidden\" value=\"". $_SESSION["account"]."/".$_POST["oid"]."/" . $row['id'] . "." . strtolower(pathinfo($row['fileName'],PATHINFO_EXTENSION)). "\" ></input><input type=\"submit\" value=\"" . $row['fileName'] . "\"/></form></b></td>";
+            echo "<td><b><form action=\"download.php\" method=\"post\"><input name=\"OGName\" type=\"hidden\" value=\"". $row['fileName'] . "\"></input><input name=\"DealerFile\" type=\"hidden\" value=\"". $row2['account']."/".$_POST["oid"]."/" . $row['id'] . "." . strtolower(pathinfo($row['fileName'],PATHINFO_EXTENSION)). "\" ></input><input type=\"submit\" value=\"" . $row['fileName'] . "\"/></form></b></td>";
             echo "<td>" . $row['roomName'] . "</td>";
             echo "<td>" . "N/A" . "</td>";
             echo "<td>" . "N/A" . "</td>";
@@ -148,7 +151,7 @@ order by rid, iid, mid");
         foreach ($GLOBALS['$result'] as $row) {
             echo "<tr>";
             //echo "<td><b>" . $row['oid'] . "</b></td>";
-            echo "<td><b><form action=\"download.php\" method=\"post\"><input name=\"OGName\" type=\"hidden\" value=\"". $row['fileName'] . "\"></input><input name=\"DealerFile\" type=\"hidden\" value=\"". $_SESSION["account"]."/".$_POST["oid"]."/" . $row['id'] . "." . strtolower(pathinfo($row['fileName'],PATHINFO_EXTENSION)). "\" ></input><input type=\"submit\" value=\"" . $row['fileName'] . "\"/></form></b></td>";
+            echo "<td><b><form action=\"download.php\" method=\"post\"><input name=\"OGName\" type=\"hidden\" value=\"". $row['fileName'] . "\"></input><input name=\"DealerFile\" type=\"hidden\" value=\"". $row2["account"]."/".$_POST["oid"]."/" . $row['id'] . "." . strtolower(pathinfo($row['fileName'],PATHINFO_EXTENSION)). "\" ></input><input type=\"submit\" value=\"" . $row['fileName'] . "\"/></form></b></td>";
             echo "<td>" . $row['roomName'] . "</td>";
             if(is_null($row['mid'])){
                 echo "<td>" . getItemID($row['rid'],$row['iid'],0) . "</td>";
@@ -213,16 +216,16 @@ if($_POST['mode']=="getNewItem"){
     
     $aFilter = $aFilter . ")";
     if($type=="mod"){
-        $sql = "select id,description, ifnull(w,'no width') as 'w',ifnull(h, 'no height') as 'h',ifnull(d,'no depth') as 'd',name from itemMods where ".$aFilter." order by description limit 150";
+        $sql = "select id,description, ifnull(w,'no width') as 'w',ifnull(h, 'no height') as 'h',ifnull(d,'no depth') as 'd',ifnull(w2,'no width') as 'w2',ifnull(h2, 'no height') as 'h2',ifnull(d2,'no depth') as 'd2',name from itemMods where ".$aFilter." order by description limit 150";
     }else{
-        $sql = "select id,description, ifnull(w,'no width') as 'w',ifnull(h, 'no height') as 'h',ifnull(d,'no depth') as 'd',name from item     where ".$aFilter." order by description limit 150";
+        $sql = "select id,description, ifnull(w,'no width') as 'w',ifnull(h, 'no height') as 'h',ifnull(d,'no depth') as 'd',ifnull(w2,'no width') as 'w2',ifnull(h2, 'no height') as 'h2',ifnull(d2,'no depth') as 'd2',name from item     where ".$aFilter." order by description limit 150";
     }
     //echo $sql;
     opendb($sql);
     if($GLOBALS['$result']->num_rows > 0){
         foreach ($GLOBALS['$result'] as $row){
             //the id returned is the id from the mod or items table (not the orders table)
-            echo "<option onClick=\"setSizes(".$row['w'].",".$row['h'].",".$row['d'].",'".$row['name']."',".$row['id'].");\" class=\"allItemList\" w=\"" . $row['w']. "\" h=\"" .$row['h']. "' d=\"" .$row['d']. "\" value=\"" . $row['id'] . "\">". $row['description'] . " Code: " .$row['name']. "</option>";
+            echo "<option onClick=\"setSizes(".$row['w'].",".$row['h'].",".$row['d'].",".$row['w2'].",".$row['h2'].",".$row['d2'].",'".$row['name']."',".$row['id'].");\" class=\"allItemList\" w=\"" . $row['w']. "\" h=\"" .$row['h']. "' d=\"" .$row['d']. "\" value=\"" . $row['id'] . "\">". $row['description'] . " Code: " .$row['name']. "</option>";
         }
     }
 }
@@ -307,24 +310,25 @@ if($_POST['mode']=="getItems"){
     */
     
     //opendb("select oi.*, case when round(price*(1.0+ (". $doorfactor . "-0.0 )*doorFactor  + ". $interiorfactor . "*interiorFactor),2) = 0 then 'NA' else qty*round( price*(1.0 + (". $doorfactor . " - 0.0)*doorFactor + ". $interiorfactor . "*interiorFactor),2) end as formattedPrice from orderItem oi where rid = '" .$RID. "' order by position,id asc");
-    $SQL = "select * from (SELECT oi.description, oi.note, oi.id as item, 0 as sid, oi.qty, oi.name, oi.price, oi.sizePrice, 0 as 'parentPercent', ds.factor as 'DFactor', irf.factor as 'IFactor', ff.factor as 'FFactor', ff.upcharge as 'FUpcharge', sh.factor as 'SFactor', gl.factor as 'GFactor', sp.finishedEndSizePrice as 'EFactor', (db.upcharge + dg.upcharge) as 'drawerCharge', sdf.upcharge as 'smallDrawerCharge', ldf.upcharge as 'largeDrawerCharge', oi.doorFactor as 'DApplies', oi.speciesFactor as 'SpeciesApplies', oi.interiorFactor as 'IApplies', oi.finishFactor as 'FApplies', oi.sheenFactor as 'SApplies', oi.glazeFactor as 'GApplies',oi.drawers, oi.smallDrawerFronts, oi.largeDrawerFronts, oi.H, oi.W, oi.D, oi.minSize, it.pricingMethod as methodID, oi.hingeLeft,oi.hingeRight,oi.finishLeft,oi.finishRight
+    $SQL = "select * from (SELECT oi.description, oi.note, oi.id as item, 0 as sid, oi.qty, oi.name, oi.price, oi.sizePrice, 0 as 'parentPercent', ds.factor as 'DFactor', irf.factor as 'IFactor', ff.factor as 'FFactor', ff.upcharge as 'FUpcharge', sh.factor as 'SFactor', gl.factor as 'GFactor', sp.finishedEndSizePrice as 'EFactor', (db.upcharge + dg.upcharge) as 'drawerCharge', sdf.upcharge as 'smallDrawerCharge', ldf.upcharge as 'largeDrawerCharge', oi.doorFactor as 'DApplies', oi.speciesFactor as 'SpeciesApplies', oi.interiorFactor as 'IApplies', oi.finishFactor as 'FApplies', oi.sheenFactor as 'SApplies', oi.glazeFactor as 'GApplies',oi.drawers, oi.smallDrawerFronts, oi.largeDrawerFronts, oi.H, oi.W, oi.D, oi.W2, oi.D2, oi.minSize, it.pricingMethod as methodID, oi.hingeLeft,oi.hingeRight,oi.finishLeft,oi.finishRight
     FROM  orderItem oi, orderRoom orr, doorSpecies ds, interiorFinish irf, item it, sheen sh, glaze gl, frontFinish ff,drawerBox db, drawerGlides dg, smallDrawerFront sdf, largeDrawerFront ldf, species sp
     WHERE it.id = oi.iid and oi.rid = orr.rid and orr.species = ds.sid and orr.species = sp.id and orr.door = ds.did and orr.interiorFinish = irf.id and orr.sheen = sh.id and orr.glaze = gl.id and orr.frontFinish = ff.id and orr.drawerBox = db.id and orr.drawerGlides = dg.id and orr.smallDrawerFront = sdf.id and orr.largeDrawerFront = ldf.id and orr.rid = '" .$RID. "'
     union all
-                           SELECT oi.description, oi.note, oi.pid,oi.id as sid,     oi.qty, oi.name, oi.price, oi.sizePrice, parentPercent       , ds.factor as 'DFactor', irf.factor as 'IFactor', ff.factor as 'FFactor', ff.upcharge as 'FUpcharge', sh.factor as 'SFactor', gl.factor as 'GFactor', sp.finishedEndSizePrice as 'EFactor', (db.upcharge + dg.upcharge) as 'drawerCharge', sdf.upcharge as 'smallDrawerCharge', ldf.upcharge as 'largeDrawerCharge', oi.doorFactor as 'DApplies', oi.speciesFactor as 'SpeciesApplies', oi.interiorFactor as 'IApplies', oi.finishFactor as 'FApplies', oi.sheenFactor as 'SApplies', oi.glazeFactor as 'GApplies',oi.drawers, oi.smallDrawerFronts, oi.largeDrawerFronts, oi.H, oi.W, oi.D, oi.minSize, it.pricingMethod as methodID, oi.hingeLeft,oi.hingeRight,oi.finishLeft,oi.finishRight
+                           SELECT oi.description, oi.note, oi.pid,oi.id as sid,     oi.qty, oi.name, oi.price, oi.sizePrice, parentPercent       , ds.factor as 'DFactor', irf.factor as 'IFactor', ff.factor as 'FFactor', ff.upcharge as 'FUpcharge', sh.factor as 'SFactor', gl.factor as 'GFactor', sp.finishedEndSizePrice as 'EFactor', (db.upcharge + dg.upcharge) as 'drawerCharge', sdf.upcharge as 'smallDrawerCharge', ldf.upcharge as 'largeDrawerCharge', oi.doorFactor as 'DApplies', oi.speciesFactor as 'SpeciesApplies', oi.interiorFactor as 'IApplies', oi.finishFactor as 'FApplies', oi.sheenFactor as 'SApplies', oi.glazeFactor as 'GApplies',oi.drawers, oi.smallDrawerFronts, oi.largeDrawerFronts, oi.H, oi.W, oi.D, oi.W2, oi.D2, oi.minSize, it.pricingMethod as methodID, oi.hingeLeft,oi.hingeRight,oi.finishLeft,oi.finishRight
     FROM  orderItemMods oi, orderRoom orr, doorSpecies ds, interiorFinish irf, itemMods it, sheen sh, glaze gl, frontFinish ff,drawerBox db, drawerGlides dg,  smallDrawerFront sdf, largeDrawerFront ldf, species sp
     WHERE it.id = oi.mid and oi.rid = orr.rid and orr.species = ds.sid and orr.species = sp.id and orr.door = ds.did and orr.interiorFinish = irf.id and orr.sheen = sh.id and orr.glaze = gl.id and orr.frontFinish = ff.id and orr.drawerBox = db.id and orr.drawerGlides = dg.id and orr.smallDrawerFront = sdf.id and orr.largeDrawerFront = ldf.id and orr.rid = '" .$RID. "') as T1 order by item,sid";
 
 
-//echo $SQL;
+	//echo $SQL;
     opendb($SQL);
     
     echo "<div class=\"col-12 container\">";
     if($GLOBALS['$result']->num_rows > 0){
+		$tableRow = 0;//count for every row in order to identify every price column to be printable
         ?>
         <input id="#orderTotal" type="hidden"></input>
         <table id="itemListingTable" class="table table-striped table-sm" style="width:100%">
-        <!-- display nowrap table-striped table-hover -->
+		<!-- display nowrap table-striped table-hover -->
         <thead >
               <tr>
                 <th class="font-weight-bold">Item</th>
@@ -337,7 +341,7 @@ if($_POST['mode']=="getItems"){
                 <th class="font-weight-bold" title="Finished End (B for Both, R for Right, L for Left)">F.E.</th>
                 <th class="font-weight-bold">Note</th>
                 <?php if($_SESSION["userType"]>1){
-                	?><th class="d-print-none font-weight-bold">Price</th><?php
+                	?><th id="priceCol<?php echo $tableRow ?>" class="d-print-none font-weight-bold">Price</th><?php
                 }?>
                 <th></th>
               </tr>
@@ -351,6 +355,7 @@ if($_POST['mode']=="getItems"){
         $isParent = -1;
         $roomFinishUpcharge = 0;
         foreach ($GLOBALS['$result'] as $row) {
+			$tableRow += 1;
             if($parentID !== $row['item']){ //new parent item
                 $parentID = $row['item'];
                 $isParent = 1;
@@ -369,19 +374,25 @@ if($_POST['mode']=="getItems"){
             }
             
             echo "";
-            $tdStyle = "<td class=\"borderless\">";			
+            $tdStyle = "<td class=\"borderless\">";	
+			$tdStyleNotPrint = "<td id=\"priceCol".$tableRow."\" class=\"d-print-none font-weight-bold\">";		
             if($isParent===1){
                 echo "<tr class=\"font-weight-bold\">";
                 $tdStyle = "<td class=\"font-weight-bold\">";
-				$tdStyleNotPrint = "<td class=\"d-print-none font-weight-bold\">";
             }else{
                 echo "<tr class=\"table-sm\">";
             }
             echo $tdStyle . $i . "." . $si . "</td>";
             echo $tdStyle . "<span title=\"". str_replace("\"","inch",$row['description'])."\">" . $row['name'] . "</span>" . "</td>";
-            echo $tdStyle . (float)$row['W'] . "</td>";
+			echo $tdStyle . (float)$row['W'] ;
+			if ((float)$row['W2']>0)
+				echo ", ".(float)$row['W2'];
+			echo "</td>";
             echo $tdStyle . (float)$row['H'] . "</td>";
-            echo $tdStyle . (float)$row['D'] . "</td>";
+            echo $tdStyle . (float)$row['D'];
+			if ((float)$row['D2']>0)
+				echo ", ".(float)$row['D2'];
+			echo "</td>";
             echo $tdStyle . (float)$row['qty'] . "</td>";
             $hinging = "";
             if($row['hingeLeft']==1){
@@ -408,13 +419,17 @@ if($_POST['mode']=="getItems"){
             
             //echo $tdStyle . $row['finishRight'] . "</td>";
             
+			$minWidth ="style=\"max-width:300px\"";
             echo $tdStyle;
             if(strlen(str_replace("\"","\\\"",$row['note']))>=1){
-                echo "<span title='Note: ". $row['note'] ."' onClick='alert(\"" . str_replace("\"","\\\"",$row['note']) . "\");'>Y</span>";
+                //echo "<span title='Note: ". $row['note'] ."' onClick='alert(\"" . str_replace("\"","\\\"",$row['note']) . "\");'>Y</span>";
+				echo "<p style=\"width: 200px;\" class=\"d-print-none mx-auto\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"". $row['note'] ."\">". $row['note'] ."</p>";
+				echo "<h5 class=\"print\">" . $row['note']."</h5>";
             }else{
                 echo str_replace("\"","\\\"",$row['note']);
             }
             echo "</td>";
+			$minWidth ="";
             $mixDoorSpeciesFactor = 0;
             if($row['DApplies'] == 1 || $row['SpeciesApplies']==1){
                 $mixDoorSpeciesFactor = 1;
@@ -614,13 +629,13 @@ if($_POST['mode'] == "editItemGetDetails"){
         $thisTable = "orderItemMods";
         $_POST['itemID'] = $_POST['mod'];
     }
-    $sql = "select " . $idField . " as iid, id,description, qty, price, minSize, doorFactor,interiorFactor, hingeLeft, hingeRight, finishLeft, finishRight,ifnull(w,'no width') as 'w',ifnull(h, 'no height') as 'h',ifnull(d,'no depth') as 'd',name, note from ". $thisTable ." where id = " . $_POST['itemID'];
+    $sql = "select " . $idField . " as iid, id,description, qty, price, minSize, doorFactor,interiorFactor, hingeLeft, hingeRight, finishLeft, finishRight,ifnull(w,'no width') as 'w',ifnull(h, 'no height') as 'h',ifnull(d,'no depth') as 'd',ifnull(w2,'no width') as 'w2',ifnull(h2, 'no height') as 'h2',ifnull(d2,'no depth') as 'd2',name, note from ". $thisTable ." where id = " . $_POST['itemID'];
     
     //echo "<option>Choose an item</option>";
     opendb($sql);
     if($GLOBALS['$result']->num_rows > 0){
         foreach ($GLOBALS['$result'] as $row) {
-            echo "{\"iid\":\"" . $row['iid']. "\",\"name\":\"" . $row['name']. "\",\"note\":\"" . str_replace("\"","\\\"",$row['note']). "\",\"description\":\"" . str_replace("\"","\\\"",$row['description']) . "\",\"w\":\"" . $row['w']. "\",\"h\":\"" . $row['h']. "\",\"d\":\"" . $row['d']. "\",\"qty\":\"" . $row['qty']. "\",\"minSize\":\"" . $row['minSize']. "\",\"hingeLeft\":\"" . $row['hingeLeft']. "\",\"hingeRight\":\"" . $row['hingeRight']. "\",\"finishLeft\":\"" . $row['finishLeft']. "\",\"finishRight\":\"" . $row['finishRight']. "\",\"id\":\"" . $row['id']. "\"}";
+            echo "{\"iid\":\"" . $row['iid']. "\",\"name\":\"" . $row['name']. "\",\"note\":\"" . str_replace("\"","\\\"",$row['note']). "\",\"description\":\"" . str_replace("\"","\\\"",$row['description']) . "\",\"w\":\"" . $row['w']. "\",\"h\":\"" . $row['h']. "\",\"d\":\"" . $row['d']. "\",\"w2\":\"" . $row['w2'] ."\",\"h2\":\"" . $row['h2']."\",\"d2\":\"" . $row['d2']."\",\"qty\":\"" . $row['qty']. "\",\"minSize\":\"" . $row['minSize']. "\",\"hingeLeft\":\"" . $row['hingeLeft']. "\",\"hingeRight\":\"" . $row['hingeRight']. "\",\"finishLeft\":\"" . $row['finishLeft']. "\",\"finishRight\":\"" . $row['finishRight']. "\",\"id\":\"" . $row['id']. "\"}";
             //\"fieldname\":\"fieldvalue\",
             //echo "<option class=\"allItemList\" w=\"" . $row['w']. "\" h=\"" .$row['h']. "' d=\"" .$row['d']. "\" value=\"" . $row['id'] . "\">". $row['description'] . $row['id'] . " " . $row['w']. " " .$row['h']. " " .$row['d']. " Name:" .$row['name']. "</option>";
         }
