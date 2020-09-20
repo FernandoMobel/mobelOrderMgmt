@@ -1338,23 +1338,23 @@ function printPrice(){
                     $match = 0; //if match is 0, no sheens work. If 1, a matching sheen was found. If 2, sheens were found, but not what was selected.
 					if($GLOBALS['$result2']->num_rows == 1){						
 						foreach ($GLOBALS['$result2'] as $row2) {
-                		    if($row2['id']==$row['sheen']){
                 		        echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-                		        $match = 1;
-                		    }else{
-                		        echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-                		    }
+								//If only one option then save Sheen
+								$sql = "update orderRoom set sheen = ".$row2['id']." WHERE rid = ". $row['rid']; 
+								opendb($sql);
                 		}
 					}else if($GLOBALS['$result2']->num_rows > 1){
 						echo "<option disabled=\"disabled\" ". "selected" ." value=\"\">" . "Choose a Sheen" . "</option>";
 						foreach ($GLOBALS['$result2'] as $row2) {
                 		    if($row2['id']==$row['sheen']){
-                		        echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+                		        echo "<option selected value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
                 		        $match = 1;
                 		    }else{
-                		        echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-                		    }
+                		        echo "<option value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";								
+                		    }							
                 		}
+					}else{
+						echo "<option disabled=\"disabled\" ". "selected" ." value=\"\"> Please choose another Finish</option>";
 					}
                     /*if($GLOBALS['$result2']->num_rows > 0){
                         $match = 2;
