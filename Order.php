@@ -983,7 +983,7 @@ function printPrice(){
     <?php 
     //$r =0;
 	//echo window.location.href();
-    opendb("select * from orderRoom where oid = ".$_GET["OID"]." order by rid asc");
+    opendb("select * from orderRoom where oid = ".$_GET["OID"]." order by name asc");
     $s = " active";
     $i = 0;
     //window.location.replace(window.location.href+'test');
@@ -1035,7 +1035,7 @@ function printPrice(){
     if($i!=0){
         //$RID = $r;
         $i=0;
-		$sql = "select * from orderRoom where oid = ". $_GET["OID"] ." order by rid asc";
+		$sql = "select * from orderRoom where oid = ". $_GET["OID"] ." order by name asc";
 		//echo $sql;
         opendb($sql);
         if($GLOBALS['$result']->num_rows > 0){
