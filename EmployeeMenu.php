@@ -76,21 +76,30 @@ function saveEmployeeSettings(objectID){
 	$.post("EmployeeMenuSettings.php",
 			myData, 
 			   function(data, status, jqXHR) {
-				    loadOrders(arr);
+					//$('#orders').empty();
+					window.location.reload();
 				});
+	loadOrders(arr);					
 }
 
 function loadOrders(objectID){
-	$("#orders").empty();
 	myData = { mode: "getOrders", id: objectID, value: objectID }; //$("#"+objectID).val()};
 	$.ajax({
 	    url: 'EmployeeMenuSettings.php',
 	    type: 'POST',
 	    data: myData,
-	    success: function(data, status, jqXHR) {
-    		           $('#orders').append(data);
-    		        }
-	  	});
+	    success: function(data, status, jqXHR) {						
+    		        
+    		    }
+	});	
+}
+
+function tableControls(data){
+	table = $('table').DataTable();
+	table.destroy();
+	table = $('table').DataTable({
+		"order": [[ 7, "asc" ]]
+	});	
 }
 </script>
 
@@ -124,27 +133,28 @@ if($GLOBALS['$result']->num_rows > 0){
 </div>
 </div> 
 
-<div class="col-sm-13 col-md-11 col-lg-9 mx-auto">
+<div class="col-sm-12 col-md-11 col-lg-11 mx-auto">
 <div class="card card-signin my-3">
 <div class="card-body">
 <?php 	
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 //Getting employee settings
 opendb2("select mainMenuDefaultStateFilter as state from employeeSettings where mosUser = " .$_SESSION["userid"]);
 if($GLOBALS['$result2']-> num_rows >0){	
 	foreach ($GLOBALS['$result2'] as $row2) {
 		$str = $row2['state'];
 		$state_ar = explode(', ', $str);//convert string to array to create control dinamically
-		opendb("select m.*,s.name as 'status', a.busName as 'company', concat(mu.firstName,' ',mu.lastName) as 'designer', email from mosOrder m, state s, account a, mosUser mu where s.id = m.state and m.account = a.id and m.mosUser = mu.id and m.state in (".$row2['state'].") order by m.state desc");
+		$sql ="select m.oid,a.busName as 'company', m.tagName, m.po, concat(mu.firstName,' ',mu.lastName) as 'designer', email, s.name as 'status', DATE(m.dateSubmitted) dateSubmitted, m.state from mosOrder m, state s, account a, mosUser mu where s.id = m.state and m.account = a.id and m.mosUser = mu.id and m.state in (".$row2['state'].") order by m.state desc";
+		opendb($sql);
 	}
 }else{
 	opendb2("INSERT INTO employeeSettings (mosUser) VALUES ( ".$_SESSION["userid"] .")");//new user
-	//opendb("select m.*,s.name as 'status' from mosOrder m, state s where s.id = m.state and m.state > 1 and m.state <> 10 order by m.state desc");
-	opendb2("select m.*,s.name as 'status', a.busName as 'company', concat(mu.firstName,' ',mu.lastName) as 'designer', email from mosOrder m, state s, account a, mosUser mu where s.id = m.state and m.account = a.id and m.mosUser = mu.id and m.state > 1 and m.state <> 10 order by m.state desc");
+	opendb2("select m.*,DATE(m.dateSubmitted) dateSubmitted,s.name as 'status', a.busName as 'company', concat(mu.firstName,' ',mu.lastName) as 'designer', email, m.state from mosOrder m, state s, account a, mosUser mu where s.id = m.state and m.account = a.id and m.mosUser = mu.id and m.state > 1 and m.state <> 10 order by m.state desc");
 }
-echo "<br/><div class=\"container\">";
+echo "<br/><div class=\"container-fluid\">";
     ?>
-    <div id="orderView">
-		<div class="container">
+    <!--div -->
+		<div class="container-fluid" id="orderView">
 			<div class="row">
 				<div class="col-5 my-1">
 					<a class="btn btn-primary btn-sm" data-toggle="collapse" href="#collapse1" role="button" aria-expanded="false" aria-controls="collapse1">Filter
@@ -184,7 +194,7 @@ echo "<br/><div class=\"container\">";
 			</div>
 		</div>
 		<hr style="height:1px;border-width:0;color:gray;background-color:gray">
-	</div>
+	<!--/div-->
 	<table id="example" class="table" style="width:100%" >
 	<thead class="thead-light">
 		<tr>
@@ -198,7 +208,7 @@ echo "<br/><div class=\"container\">";
 			<th>Designer</th>
 			<th>UserName</th>
 			<th>Status</th>
-			<!--th >Update Status</th-->
+			<th data-toggle="tooltip" title="YYYY-MM-DD">Submited Date</th>
 		</tr>
 	</thead>
 	<tfoot class="thead-light">
@@ -210,7 +220,7 @@ echo "<br/><div class=\"container\">";
 			<th>Designer</th>
 			<th>UserName</th>
 			<th>Status</th>
-			<!--th >Update Status</th-->
+			<th data-toggle="tooltip" title="YYYY-MM-DD">Submited Date</th>
 		</tr>
 	</tfoot>
 	<tbody id="orders">
@@ -240,7 +250,8 @@ if($GLOBALS['$result']->num_rows > 0){
 				}
 			}
 			echo "</select>";
-			echo  "</td>";		
+			echo  "</td>";	
+			echo "<td  data-toggle=\"tooltip\" title=\"YYYY-MM-DD\"><b><a href=\"Order.php?OID=" . $row['oid'] . "\">".$row['dateSubmitted']."</b></td>";			
 			echo "</tr>";
 		}
 		?>
@@ -259,4 +270,10 @@ if($GLOBALS['$result']->num_rows > 0){
 </div>
 </div>    
 
+
 <?php include 'includes/foot.php';?>
+<script>
+$(document).ready(function () {
+	tableControls();
+});
+</script>
