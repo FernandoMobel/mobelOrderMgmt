@@ -61,10 +61,11 @@ if($_POST['mode'] == "saveEditedItem"){
     if(itemUpdateConstraintsOK("orderItem",$_POST['column'])==0){
         //header("HTTP/1.1 500 Internal Server Error");
     }else{
+		$value = str_replace("'","\'",$_POST['id']);
         if(is_numeric($_POST['id'])){
-            $sql = "update orderItem set ". $_POST['column'] . " = " .$_POST['id'] . " where id = '" . $_POST['itemID'] . "' and rid = '". $_POST['rid'] . "'";
+            $sql = "update orderItem set ". $_POST['column'] . " = " .$value. " where id = '" . $_POST['itemID'] . "' and rid = '". $_POST['rid'] . "'";
         }else{
-            $sql = "update orderItem set ". $_POST['column'] . " = '".$_POST['id'] ."' where id = '" . $_POST['itemID'] . "' and rid = '". $_POST['rid'] . "'";
+            $sql = "update orderItem set ". $_POST['column'] . " = '".$value."' where id = '" . $_POST['itemID'] . "' and rid = '". $_POST['rid'] . "'";
         }
         opendb($sql);
     }
@@ -74,10 +75,11 @@ if($_POST['mode'] == "saveEditedMod"){
     if(itemUpdateConstraintsOK("orderItemMods",$_POST['column'])==0){
         //header("HTTP/1.1 500 Internal Server Error");
     }else{
+		$value = str_replace("'","\'",$_POST['id']);
         if(is_numeric($_POST['id'])){
-            $sql = "update orderItemMods set ". $_POST['column'] . " = " .$_POST['id'] . " where id = '" . $_POST['itemID'] . "' and rid = '". $_POST['rid'] . "'";
+            $sql = "update orderItemMods set ". $_POST['column'] . " = " .$value. " where id = '" . $_POST['itemID'] . "' and rid = '". $_POST['rid'] . "'";
         }else{
-            $sql = "update orderItemMods set ". $_POST['column'] . " = '".$_POST['id'] ."' where id = '" . $_POST['itemID'] . "' and rid = '". $_POST['rid'] . "'";
+            $sql = "update orderItemMods set ". $_POST['column'] . " = '".$value."' where id = '" . $_POST['itemID'] . "' and rid = '". $_POST['rid'] . "'";
         }
         opendb($sql);
     }
