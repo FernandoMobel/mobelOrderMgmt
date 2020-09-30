@@ -208,7 +208,7 @@ echo "<br/><div class=\"container-fluid\">";
 			<th>Designer</th>
 			<th>UserName</th>
 			<th>Status</th>
-			<th data-toggle="tooltip" title="YYYY-MM-DD">Submited Date</th>
+			<th data-toggle="tooltip" title="YYYY-MM-DD">Submitted Date</th>
 		</tr>
 	</thead>
 	<tfoot class="thead-light">
@@ -220,7 +220,7 @@ echo "<br/><div class=\"container-fluid\">";
 			<th>Designer</th>
 			<th>UserName</th>
 			<th>Status</th>
-			<th data-toggle="tooltip" title="YYYY-MM-DD">Submited Date</th>
+			<th data-toggle="tooltip" title="YYYY-MM-DD">Submitted Date</th>
 		</tr>
 	</tfoot>
 	<tbody id="orders">

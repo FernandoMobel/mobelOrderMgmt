@@ -175,8 +175,18 @@ body {
       if(array_key_exists("userType",$_SESSION)){
           if($_SESSION["userType"]==3){
               ?>
-              <li class="nav-item">
-            <a class="nav-link" href="EmployeeMenu.php">Mobel Only</a>
+              <li class="nav-item">            
+				<div class="btn-group">
+					<a class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Mobel Only</a>	<!---->			
+					<div class="dropdown-menu">
+						<a class="dropdown-item" href="EmployeeMenu.php">Order Management</a>
+						<a class="dropdown-item" href="itemList.php">Item Managment</a>
+						<!--a class="dropdown-item" href="registerJobs.php">Register Jobs</a>
+						<a class="dropdown-item" href="schedules.php">Schedules</a-->
+						<!--div class="dropdown-divider"></div>
+						<a class="dropdown-item" href="#">Separated link</a-->
+					</div>
+				</div>
           </li>
               <?php 
           }
