@@ -62,13 +62,25 @@ function saveOrder(objectID){
 	       function(data, status, jqXHR){
         		if(data == "success"){
         	    	$("#"+objectID).css("border-color", "#00b828");
+					if(objectID=="CLid"){//reload page when updating Cabinet Line
+						resetOrderDefault("<?php echo $_GET["OID"] ?>");
+						window.location.reload();
         	    	//$("#"+objectID).attr('title',data);
+					}
         	    }else{
         	    	$("#"+objectID).css("border-color", "#ff0000");
         	    	//$("#"+objectID).attr('title',data);
         	    	alert(data);
         	    }
 	        });
+}
+
+function resetOrderDefault(orderId){
+	myData = { mode: "resetOrder", oid: orderId};
+	$.post("OrderItem2.php",
+		myData,
+			function(data, status, jqXHR){				
+			});
 }
 
 
@@ -189,9 +201,9 @@ function showResult(str) {
 	}
 	
     if($('#editOrderItemPID').val()=="0"){
-    	xmlhttp.send("filter="+str+"&mode=getNewItem&com=and&type=item&startsWith="+$("#startsWith").val());
+    	xmlhttp.send("filter="+str+"&mode=getNewItem&com=and&type=item&startsWith="+$("#startsWith").val()+"&cabinetLine="+$("#CLid").val());
     }else{
-    	xmlhttp.send("filter="+str+"&mode=getNewItem&com=and&type=mod&startsWith="+$("#startsWith").val());
+    	xmlhttp.send("filter="+str+"&mode=getNewItem&com=and&type=mod&startsWith="+$("#startsWith").val()+"&cabinetLine="+$("#CLid").val());
     }
 }
 
@@ -216,7 +228,6 @@ function editItems(itemID, mod){
 					refresh = 0;
 					// remove non-printable and other non-valid JSON chars
 					data = data.replace(/[\u0000-\u0019]+/g,"\\n"); 					
-					console.log(data);
 					myObj= JSON.parse(data);
 					document.getElementById("livesearch").innerHTML=myObj.name;
 					$('#note').val("");
@@ -375,14 +386,13 @@ function saveEditedItem(objectID,col){
 	$.post("save.php",myData,function(data, status, jqXHR) {
 		if(status == "success"){
 	    	$("#"+objectID).css("border-color", "#00b828");
-
 	    	if(refresh>0){
 		    	loadItems($("a.nav-link.roomtab.active").attr("value"));
 		    	refresh = 0;
 	    	}
 	    	if(data.length>1){
 	    		$("#"+objectID).css("border-color", "#ba0000");
-	    		alert(data);
+				alert(data);
 	    	}
 	    	//return 1;
 	    }
@@ -983,7 +993,7 @@ function printPrice(){
     <?php 
     //$r =0;
 	//echo window.location.href();
-    opendb("select * from orderRoom where oid = ".$_GET["OID"]." order by rid asc");
+    opendb("select * from orderRoom where oid = ".$_GET["OID"]." order by name asc");
     $s = " active";
     $i = 0;
     //window.location.replace(window.location.href+'test');
@@ -1035,7 +1045,7 @@ function printPrice(){
     if($i!=0){
         //$RID = $r;
         $i=0;
-		$sql = "select * from orderRoom where oid = ". $_GET["OID"] ." order by rid asc";
+		$sql = "select * from orderRoom where oid = ". $_GET["OID"] ." order by name asc";
 		//echo $sql;
         opendb($sql);
         if($GLOBALS['$result']->num_rows > 0){
@@ -1050,7 +1060,11 @@ function printPrice(){
                 echo "<div class=\"row\">";
                 
                 echo "<div class=\"col-2\"><button  class=\"btn btn-primary px-2 py-1 text-nowrap ml-0 editbutton d-print-none\" type=\"button\" onClick=\"editRoom(".$row['rid']. ",'" . $row['name'] . "');\"  data-toggle=\"modal\" title=\"Edit room\" data-target=\"#editRoomModal\"><span class=\"ui-icon ui-icon-pencil\"></span></button>";
-                echo "<b><a  class=\"btn btn-primary px-3 py-1 mr-0 float-right d-print-none\" target=\"_blank\" href=\"https://mos.mobel.ca/uploads/MobelCatalogue.pdf\">Catalogue</a></b></div>";
+                
+				echo "<b><a  class=\"btn btn-primary px-3 py-1 mr-0 float-right d-print-none\" target=\"_blank\" href=\"https://mos.mobel.ca/uploads/MobelCatalogue.pdf\"";
+				if($CLid==3)//delete when getting a catalog pdf for span
+					echo "hidden";
+				echo ">Catalogue</a></b></div>";
                 echo "<div class=\"col text-left\"><button class=\"btn btn-primary px-3 py-1 ml-0 editbutton d-print-none\" data-toggle=\"modal\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles(".$_GET["OID"] . ",$('a.nav-link.roomtab.active').attr('value'));\">Room Files<span class=\"ui-icon ui-icon-disk\"></span></button>";
                                 
                 if($_SESSION["userType"] == 3){
@@ -1077,471 +1091,442 @@ function printPrice(){
 				
                 //echo "<button class=\"btn btn-primary ml-0 \" data-toggle=\"modal\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles( ".$_GET["OID"].");\">All Files<span class=\"ui-icon ui-icon-disk\"></span></button><br/>";
                 echo "<input type=\"hidden\" value=\"" . $row['note'] . "\" id=\"RoomNote". $row['rid'] ."\">";
-                ?>
-                <div class="row">
-                
-                	<div class="col-2 text-right">
-                    <label for="species">Species</label>
-                    </div>
-                    <div class="col-4">
-                    <select onchange="saveStyle('species','<?php echo "species" . $row['rid'];?>');" id="<?php echo "species" . $row['rid'];?>" class="custom-select">
+                 
+				?>
+				<!--div id="cabLineOp"-->
+					<div class="row">
+						<div class="col-2 text-right">
+							<label for="species">Species</label>
+						</div>
+						<div class="col-4">
+							<select onchange="saveStyle('species','<?php echo "species" . $row['rid'];?>');" id="<?php echo "species" . $row['rid'];?>" class="custom-select">
+							<?php
+							$sql = "select * from species s where s.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$CLid.") order by s.name";
+							echo $sql;
+							opendb2($sql);
+							if($GLOBALS['$result2']->num_rows > 0){
+								if(is_null($row['species'])){
+									echo "<option ". "selected" ." value=\"\">" . "Choose a Species" . "</option>";
+								}
+								foreach ($GLOBALS['$result2'] as $row2) {
+									if($row2['id']==$row['species']){
+										echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									}else{
+										echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									}
+								}
+							}else{
+								$invalidHeaderMessage = $invalidHeaderMessage .  "<br>No species selected";
+							}
+							?>
+							</select>
+						</div>
+						
+						<div class="col-2 text-right">
+							<?php
+							if($CLid==3){
+								echo "<label for=\"interiorFinish\">Backing</label>";
+							}else{
+								echo "<label for=\"interiorFinish\">Interior Finish</label>";
+							}
+							?>							
+						</div>
+						<div class="col-4">
+							<select onchange="saveStyle('interiorFinish','<?php echo "interiorFinish" . $row['rid'];?>');" id="<?php echo "interiorFinish" . $row['rid'];?>" class="custom-select">						
+							<?php
+							opendb2("select * from interiorFinish inf where inf.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$CLid.") order by inf.name");
+							if($GLOBALS['$result2']->num_rows > 0){
+								if(is_null($row['interiorFinish'])){
+									echo "<option ". "selected" ." value=\"\">" . "Choose an Interior Finish" . "</option>";
+								}
+								foreach ($GLOBALS['$result2'] as $row2) {
+									if($row2['id']==$row['interiorFinish']){
+										echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									}else{
+										echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									}
+								}
+							}else{
+								$invalidHeaderMessage = $invalidHeaderMessage .  "<br>No interior finish selected";
+							}
+							?>
+							</select>
+						</div>
+					</div>
 
-                    <?php
-                    opendb2("select * from species order by name");
-                    if($GLOBALS['$result2']->num_rows > 0){
-                        if(is_null($row['species'])){
-                            echo "<option ". "selected" ." value=\"\">" . "Choose a Species" . "</option>";
-                        }
-                		foreach ($GLOBALS['$result2'] as $row2) {
-                		    if($row2['id']==$row['species']){
-                		        echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-                		    }else{
-                		        echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-                		    }
-                		}
-                    }else{
-                        $invalidHeaderMessage = $invalidHeaderMessage .  "<br>No species selected";
-                    }
-                    ?>
-                    </select>
-                    </div>
-                    
-                    
-                    
-                 	<div class="col-2 text-right">
-                    <label for="interiorFinish">Interior Finish</label>
-                    </div>
-                    <div class="col-4">
-                    <select onchange="saveStyle('interiorFinish','<?php echo "interiorFinish" . $row['rid'];?>');" id="<?php echo "interiorFinish" . $row['rid'];?>" class="custom-select">
-                    
-                    <?php
-                    opendb2("select * from interiorFinish order by name");
-                    if($GLOBALS['$result2']->num_rows > 0){
-                        if(is_null($row['interiorFinish'])){
-                            echo "<option ". "selected" ." value=\"\">" . "Choose an Interior Finish" . "</option>";
-                        }
-                		foreach ($GLOBALS['$result2'] as $row2) {
-                		    if($row2['id']==$row['interiorFinish']){
-                		        echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-                		    }else{
-                		        echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-                		    }
-                		}
-                    }else{
-                        $invalidHeaderMessage = $invalidHeaderMessage .  "<br>No interior finish selected";
-                    }
-                    ?>
-                    </select>
-                    </div>
-            	</div>
+					<div class="row">
+					   <!-- 
+						<div class="col-2 text-right">
+						<label for="edge">Edge</label>
+						</div>
+						
+						<div class="col-4">
+						<select onchange="saveStyle('edge','<?php echo "edge" . $row['rid'];?>');" id="<?php echo "edge" . $row['rid'];?>" class="custom-select">
+						
+						<?php
+						opendb2("select * from edge order by name");
+						if($GLOBALS['$result2']->num_rows > 0){
+							if(is_null($row['edge'])){
+								echo "<option ". "selected" ." value=\"\">" . "Choose an Edge" . "</option>";
+							}
+							foreach ($GLOBALS['$result2'] as $row2) {
+								if($row2['id']==$row['edge']){
+									echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+								}else{
+									echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+								}
+							}
+						}
+						?>
+						</select>
+						</div>
+						 -->
+
+						<div class="col-2 text-right">
+							<?php
+							if($CLid==3){
+								echo "<label  for=\"doorstyle\"><a id=\"doorPDF\" href=\"header/SPANSTYLES.pdf\" target=\"_blank\">Style</a></label>";
+							}else{
+								echo "<label  for=\"doorstyle\"><a id=\"doorPDF\" href=\"header/DOORSTYLES.pdf\" target=\"_blank\">Door Style</a></label>";
+							}
+							?>							
+						</div>						
+						<div class="col-4">
+							<select onchange="$('#doorPDF').attr('href','header/'+$('option:selected', this).attr('doorPDFTag')); saveStyle('door','<?php echo "doorstyle" . $row['rid'];?>');" id="<?php echo "doorstyle" . $row['rid'];?>" class="custom-select">						
+							<?php
+							$sql = "select d.* from door d, doorSpecies ds where d.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$CLid.") and d.id = ds.did and ds.sid = '" . $row['species'] . "'";
+							//echo $sql;
+							opendb2($sql);
+							if($GLOBALS['$result2']->num_rows > 0){ 
+								$match = 0;
+								if(is_null($row['door'])){
+									echo "<option doorPDFTag= \"DOORSTYLES.pdf\"". "selected" ." value=\"\">" . "Choose a Door" . "</option>";
+								}                        
+								foreach ($GLOBALS['$result2'] as $row2) {
+									if($row2['id']==$row['door']){
+										echo "<option doorPDFTag= \"" . $row2['PDF'] . "\"". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+										$match = 1;
+									}else{
+										echo "<option doorPDFTag= \"" . $row2['PDF'] . "\"   value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									}
+								}
+								if($match == 0 && !is_null($row['door'])){
+									echo "<option value=\"" . "Please choose a new door style" . "\">" . "Please choose a new door style" . "</option>";
+									$invalidHeaderMessage = $invalidHeaderMessage .  "<br>No door selected";
+								}
+							}
+							?>
+							</select>
+						</div>
+						
+						<div class="col-2 text-right">
+							<?php
+							if($CLid==3){
+								echo "<label  for=\"frontFinish\">Color</label>";
+							}else{
+								echo "<label for=\"frontFinish\">Finish</label>";
+							}
+							?>							
+						</div>
+						<div class="col-4">
+							<select onchange="saveStyle('frontFinish','<?php echo "frontFinish" . $row['rid'];?>');" id="<?php echo "frontFinish" . $row['rid'];?>" class="custom-select">						
+							<?php
+							opendb2("select * from frontFinish where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") and finishType in (select ftid from finishTypeMaterial where mid in (select mid from species where id in (select species from orderRoom where rid = " . $row['rid'] . "))) order by name");
+							if($GLOBALS['$result2']->num_rows > 0){
+								if(is_null($row['frontFinish'])){
+									echo "<option ". "selected" ." value=\"\">" . "Choose a Finish" . "</option>";
+								}
+								$match = 0;
+								foreach ($GLOBALS['$result2'] as $row2) {
+									if($row2['id']==$row['frontFinish']){
+										echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+										$match = 1;
+									}else{
+										echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									}
+								}
+								if($match == 0 && !is_null($row['frontFinish'])){
+									echo "<option ". "selected" ." value=\"" . "Please choose a new finish" . "\">" . "" . "</option>";
+									$invalidHeaderMessage = $invalidHeaderMessage . "<br>No finish selected";
+								}
+							}
+							?>
+							</select>
+						</div>
+					</div>
                 	
-                	
-                	
-            	<div class="row">
-            	   <!-- 
-                    <div class="col-2 text-right">
-                    <label for="edge">Edge</label>
-                    </div>
-                    
-                    <div class="col-4">
-                    <select onchange="saveStyle('edge','<?php echo "edge" . $row['rid'];?>');" id="<?php echo "edge" . $row['rid'];?>" class="custom-select">
-                    
-                    <?php
-                    opendb2("select * from edge order by name");
-                    if($GLOBALS['$result2']->num_rows > 0){
-                        if(is_null($row['edge'])){
-                            echo "<option ". "selected" ." value=\"\">" . "Choose an Edge" . "</option>";
-                        }
-                		foreach ($GLOBALS['$result2'] as $row2) {
-                		    if($row2['id']==$row['edge']){
-                		        echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-                		    }else{
-                		        echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-                		    }
-                		}
-                    }
-                    ?>
-                    </select>
-                    </div>
-                     -->
-                    
-                    
-                    
-                    <div class="col-2 text-right">
-                    <label  for="doorstyle"><a id="doorPDF" href="header/DOORSTYLES.pdf" target="_blank">Door Style</a></label>
-                    </div>
-                    
-                    <div class="col-4">
-                    <select onchange="$('#doorPDF').attr('href','header/'+$('option:selected', this).attr('doorPDFTag')); saveStyle('door','<?php echo "doorstyle" . $row['rid'];?>');" id="<?php echo "doorstyle" . $row['rid'];?>" class="custom-select">
-                    
-                    <?php
-					$sql = "select d.* from door d, doorSpecies ds where d.id = ds.did and ds.sid = '" . $row['species'] . "'";
-					//echo $sql;
-                    opendb2($sql);
-                    if($GLOBALS['$result2']->num_rows > 0){ 
-						$match = 0;
-                        if(is_null($row['door'])){
-                            echo "<option doorPDFTag= \"DOORSTYLES.pdf\"". "selected" ." value=\"\">" . "Choose a Door" . "</option>";
-                        }                        
-                		foreach ($GLOBALS['$result2'] as $row2) {
-							if($row2['id']==$row['door']){
-                		        echo "<option doorPDFTag= \"" . $row2['PDF'] . "\"". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-                		        $match = 1;
-                		    }else{
-                		        echo "<option doorPDFTag= \"" . $row2['PDF'] . "\"   value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-                		    }
-                		}
-						if($match == 0){
-                		    echo "<option value=\"" . "Please choose a new door style" . "\">" . "Please choose a new door style" . "</option>";
-                		    $invalidHeaderMessage = $invalidHeaderMessage .  "<br>No door selected";
-                		}
-                    }
-                    ?>
-                    </select>
-                    </div>
-                    
-                    
-                    
-                    <div class="col-2 text-right">
-                    <label for="frontFinish">Finish</label>
-                    </div>
-                    <div class="col-4">
-                    <select onchange="saveStyle('frontFinish','<?php echo "frontFinish" . $row['rid'];?>');" id="<?php echo "frontFinish" . $row['rid'];?>" class="custom-select">
-                    
-                    <?php
-                    opendb2("select * from frontFinish where finishType in (select ftid from finishTypeMaterial where mid in (select mid from species where id in (select species from orderRoom where rid = " . $row['rid'] . "))) order by name");
-                    if($GLOBALS['$result2']->num_rows > 0){
-                        if(is_null($row['frontFinish'])){
-                            echo "<option ". "selected" ." value=\"\">" . "Choose a Finish" . "</option>";
-                        }
-                        $match = 0;
-                		foreach ($GLOBALS['$result2'] as $row2) {
-                		    if($row2['id']==$row['frontFinish']){
-                		        echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-                		        $match = 1;
-                		    }else{
-                		        echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-                		    }
-                		}
-                		if($match == 0){
-                		    echo "<option ". "selected" ." value=\"" . "Please choose a new finish" . "\">" . "" . "</option>";
-                		    $invalidHeaderMessage = $invalidHeaderMessage . "<br>No finish selected";
-                		}
-                    }
-                    ?>
-                    </select>
-                    </div>
-            	</div>
-                	
-                	
-                	
-            	<div class="row">
-            		<div class="col-2 text-right">
-                    <label for="drawerBox">Drawer Box</label>
-                    </div>
-                    
-                    <div class="col-4">
-                    <select onchange="saveStyle('drawerBox','<?php echo "drawerBox" . $row['rid'];?>');" id="<?php echo "drawerBox" . $row['rid'];?>" class="custom-select">
-                    
-                    <?php
-                    opendb2("select * from drawerBox order by name");
-                    if($GLOBALS['$result2']->num_rows > 0){
-                        if(is_null($row['drawerBox'])){
-                            echo "<option ". "selected" ." value=\"\">" . "Choose a Drawer Box" . "</option>";
-                        }
-                		foreach ($GLOBALS['$result2'] as $row2) {
-                		    if($row2['id']==$row['drawerBox']){
-                		        echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-                		    }else{
-                		        echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-                		    }
-                		}
-                    }
-                    ?>
-                    </select>
-                    </div>
-            	
-            	
-            	
-            	
-                    <div class="col-2 text-right">
-                    <label for="glaze">Glaze</label>
-                    </div>
-                    
-                    <div class="col-4">
-                    <select onchange="saveStyle('glaze','<?php echo "glaze" . $row['rid'];?>');" id="<?php echo "glaze" . $row['rid'];?>" class="custom-select">
-                    
-                    <?php
-                    opendb2("select * from glaze order by name");
-                    if($GLOBALS['$result2']->num_rows > 0){
-                        if(is_null($row['glaze'])){
-                            echo "<option ". "selected" ." value=\"\">" . "Choose a Glaze" . "</option>";
-                            $invalidHeaderMessage = $invalidHeaderMessage . "<br>No glaze selected";
-                        }
-                		foreach ($GLOBALS['$result2'] as $row2) {
-                		    if($row2['id']==$row['glaze']){
-                		        echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-                		    }else{
-                		        echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-                		    }
-                		}
-                    }
-                        
-                    
-                    ?>
-                    </select>
-                    </div>
-            	</div>
-                	
-                	
-                	
-            	<div class="row">
-                    
-                    <div class="col-2 text-right">
-                    	<label for="smallDrawerFront">Small Drawer Front</label>
-                    </div>
-                    <div class="col-4">
-                        <select onchange="saveStyle('smallDrawerFront','<?php echo "smallDrawerFront" . $row['rid'];?>');" id="<?php echo "smallDrawerFront" . $row['rid'];?>" class="custom-select">
-                        
-                        <?php
-                        opendb2("select * from smallDrawerFront order by name");
-                        if($GLOBALS['$result2']->num_rows > 0){
-                            if(is_null($row['smallDrawerFront'])){
-                                echo "<option ". "selected" ." value=\"\">" . "Choose a Small Drawer Front" . "</option>";
-                            }
-                    		foreach ($GLOBALS['$result2'] as $row2) {
-                    		    if($row2['id']==$row['smallDrawerFront']){
-                    		        echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-                    		    }else{
-                    		        echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-                    		    }
-                    		}
-                        }
-                        ?>
-                        </select>
-                    </div>
-                    
-                    
-                    <div class="col-2 text-right">
-                    <label for="sheen">Sheen</label>
-                    </div>
-                    <div class="col-4">
-                    <select onchange="saveStyle('sheen','<?php echo "sheen" . $row['rid'];?>');" id="<?php echo "sheen" . $row['rid'];?>" class="custom-select">
-                    
-                    <?php
-                    $sql ="select * from sheen where id in (
-                        select sid from finishTypeSheen where ftid in (
-                        select finishType from frontFinish where id in (
-                        select frontFinish from orderRoom where rid = " . $row['rid'] . "))) order by name";
-					//echo $sql;
-					opendb2($sql);
-                    $match = 0; //if match is 0, no sheens work. If 1, a matching sheen was found. If 2, sheens were found, but not what was selected.
-					if($GLOBALS['$result2']->num_rows == 1){						
-						foreach ($GLOBALS['$result2'] as $row2) {
-                		    if($row2['id']==$row['sheen']){
-                		        echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-                		        $match = 1;
-                		    }else{
-                		        echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-                		    }
-                		}
-					}else if($GLOBALS['$result2']->num_rows > 1){
-						echo "<option disabled=\"disabled\" ". "selected" ." value=\"\">" . "Choose a Sheen" . "</option>";
-						foreach ($GLOBALS['$result2'] as $row2) {
-                		    if($row2['id']==$row['sheen']){
-                		        echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-                		        $match = 1;
-                		    }else{
-                		        echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-                		    }
-                		}
-					}
-                    /*if($GLOBALS['$result2']->num_rows > 0){
-                        $match = 2;
-                        if(is_null($row['sheen'])){
-                            echo "<option disabled=\"disabled\" ". "selected" ." value=\"\">" . "Choose a Sheen" . "</option>";
-                            $invalidHeaderMessage = $invalidHeaderMessage . "<br>No sheen selected";
-                            $match = 3;
-                        }
-                		foreach ($GLOBALS['$result2'] as $row2) {
-                		    if($row2['id']==$row['sheen']){
-                		        echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-                		        $match = 1;
-                		    }else{
-                		        echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-                		    }
-                		}
-                    }
-                    if($match==0){
-                        echo "<option ". "selected" ." value=\"\">" . "" . "</option>";
-                    }
-                    if($match==2){
-                        echo "<option disabled=\"disabled\"  ". "selected" ." value=\"null\">" . "Please choose your new sheen" . "</option>";
-                        $invalidHeaderMessage = $invalidHeaderMessage . "<br>No sheen selected";
-                    }*/
-                    ?>
-                    </select>
-                    </div>
-                    
-            	</div>
-                	
-                	
-                	
-            	<div class="row">
-            		<div class="col-2 text-right">
-                    	<label for="largeDrawerFront">Large Drawer Front</label>
-                    </div>
-                    
-                    <div class="col-4">
-                    <select onchange="saveStyle('largeDrawerFront','<?php echo "LargeDrawerFront" . $row['rid'];?>');" id="<?php echo "LargeDrawerFront" . $row['rid'];?>" class="custom-select">
-                    
-                    <?php
-                    opendb2("select * from largeDrawerFront order by name");
-                    if($GLOBALS['$result2']->num_rows > 0){
-                        if(is_null($row['largeDrawerFront'])){
-                            echo "<option ". "selected" ." value=\"\">" . "Choose a Large Drawer Front" . "</option>";
-                        }
-                		foreach ($GLOBALS['$result2'] as $row2) {
-                		    if($row2['id']==$row['largeDrawerFront']){
-                		        echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-                		    }else{
-                		        echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-                		    }
-                		}
-                    }
-                    ?>
-                    </select>
-                    </div>
-            	
-            	
-            	
-            	
-            		<div class="col-2 text-right">
-                    <label for="hinge">Hinge</label>
-                    </div>
-                    
-                    <div class="col-4">
-                    <select onchange="saveStyle('hinge','<?php echo "hinge" . $row['rid'];?>');" id="<?php echo "hinge" . $row['rid'];?>" class="custom-select">
-                    
-                    <?php
-                    opendb2("select * from hinge order by name");
-                    if($GLOBALS['$result2']->num_rows > 0){
-                        if(is_null($row['hinge'])){
-                            echo "<option ". "selected" ." value=\"\">" . "Choose a Hinge" . "</option>";
-                        }
-                		foreach ($GLOBALS['$result2'] as $row2) {
-                		    if($row2['id']==$row['hinge']){
-                		        echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-                		    }else{
-                		        echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-                		    }
-                		}
-                    }
-                    ?>
-                    </select>
-                    </div>
-                    
-                    
-                    
-                    
-                    <div class="col-2 text-right">
-                    <label for="drawerGlides">Drawer Glides</label>
-                    </div>
-                    <div class="col-4">
-                    <select onchange="saveStyle('drawerGlides','<?php echo "drawerGlides" . $row['rid'];?>');" id="<?php echo "drawerGlides" . $row['rid'];?>" class="custom-select">
-                    
-                    <?php
-                    opendb2("select * from drawerGlides order by name");
-                    if($GLOBALS['$result2']->num_rows > 0){
-                        if(is_null($row['drawerGlides'])){
-                            echo "<option ". "selected" ." value=\"\">" . "Choose a Drawer Glide" . "</option>";
-                        }
-                		foreach ($GLOBALS['$result2'] as $row2) {
-                		    if($row2['id']==$row['drawerGlides']){
-                		        echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-                		    }else{
-                		        echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-                		    }
-                		}
-                    }
-                    ?>
-                    </select>
-                    </div>
-                    
-                    <div class="col-2 text-right">
-                    <label for="finishedEnd">Finished End</label>
-                    </div>
-                    <div class="col-4">
-                    <select onchange="saveStyle('finishedEnd','<?php echo "finishedEnd" . $row['rid'];?>');" id="<?php echo "finishedEnd" . $row['rid'];?>" class="custom-select">
-                    
-                    <?php
-                    opendb2("select * from finishedEnd order by name");
-                    if($GLOBALS['$result2']->num_rows > 0){
-                        if(is_null($row['finishedEnd'])){
-                            echo "<option ". "selected" ." value=\"\">" . "Choose a Finished End" . "</option>";
-                        }
-                		foreach ($GLOBALS['$result2'] as $row2) {
-                		    if($row2['id']==$row['finishedEnd']){
-                		        echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-                		    }else{
-                		        echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-                		    }
-                		}
-                    }
-                    ?>
-                    </select>
-                    </div>
-                    
-            	</div>
-                	
-                	
-            	<div class="row">
-            	</div>
-            	
-            	
-            	<div class="row">
-            	<!-- 
-                    <div class="col-2 text-right">
-                    <label for="exteriorFinish">Exterior Finish</label>
-                    </div>
-                    
-                    <div class="col-4">
-                    <select onchange="saveStyle('exteriorFinish','<?php echo "exteriorFinish" . $row['rid'];?>');" id="<?php echo "exteriorFinish" . $row['rid'];?>" class="custom-select">
-                    
-                    <?php
-                    opendb2("select * from exteriorFinish order by name");
-                    if($GLOBALS['$result2']->num_rows > 0){
-                        if(is_null($row['exteriorFinish'])){
-                            echo "<option ". "selected" ." value=\"\">" . "Choose an Exterior Finish" . "</option>";
-                        }
-                		foreach ($GLOBALS['$result2'] as $row2) {
-                		    if($row2['id']==$row['exteriorFinish']){
-                		        echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-                		    }else{
-                		        echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-                		    }
-                		}
-                    }
-                    ?>
-                    </select>
-                    </div>
-                     -->
-                    
-                    
-                    
-                    
-            	</div>
-    
-            	<!-- <div class="row">
-                    <div class="col-12 text-center">
-                    <a class="btn btn-primary" data-toggle="collapse" href="#tabs" role="button">hide</a>
-                    </div>
-                </div> -->
-                	
-                
-                <?php
-                echo "</div>";
-                $i++;
+					<div class="row">
+						<div class="col-2 text-right">
+							<label for="drawerBox">Drawer Box</label>
+						</div>						
+						<div class="col-4">
+							<select onchange="saveStyle('drawerBox','<?php echo "drawerBox" . $row['rid'];?>');" id="<?php echo "drawerBox" . $row['rid'];?>" class="custom-select">						
+							<?php
+							opendb2("select * from drawerBox where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name");
+							if($GLOBALS['$result2']->num_rows > 0){
+								if(is_null($row['drawerBox'])){
+									echo "<option ". "selected" ." value=\"\">" . "Choose a Drawer Box" . "</option>";
+								}
+								foreach ($GLOBALS['$result2'] as $row2) {
+									if($row2['id']==$row['drawerBox']){
+										echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									}else{
+										echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									}
+								}
+							}
+							?>
+							</select>
+						</div>
+
+						<div class="col-2 text-right">
+							<label for="glaze">Glaze</label>
+						</div>						
+						<div class="col-4">
+							<select onchange="saveStyle('glaze','<?php echo "glaze" . $row['rid'];?>');" id="<?php echo "glaze" . $row['rid'];?>" class="custom-select">
+							
+							<?php
+							opendb2("select * from glaze where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name");
+							if($GLOBALS['$result2']->num_rows > 0){
+								if(is_null($row['glaze'])){
+									echo "<option ". "selected" ." value=\"\">" . "Choose a Glaze" . "</option>";
+									$invalidHeaderMessage = $invalidHeaderMessage . "<br>No glaze selected";
+								}
+								foreach ($GLOBALS['$result2'] as $row2) {
+									if($row2['id']==$row['glaze']){
+										echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									}else{
+										echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									}
+								}
+							}
+								
+							
+							?>
+							</select>
+						</div>
+					</div>
+
+					<div class="row">						
+						<div class="col-2 text-right">
+							<label for="smallDrawerFront">Small Drawer Front</label>
+						</div>
+						<div class="col-4">
+							<select onchange="saveStyle('smallDrawerFront','<?php echo "smallDrawerFront" . $row['rid'];?>');" id="<?php echo "smallDrawerFront" . $row['rid'];?>" class="custom-select">
+							
+							<?php
+							opendb2("select * from smallDrawerFront where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name");
+							if($GLOBALS['$result2']->num_rows > 0){
+								if(is_null($row['smallDrawerFront'])){
+									echo "<option ". "selected" ." value=\"\">" . "Choose a Small Drawer Front" . "</option>";
+								}
+								foreach ($GLOBALS['$result2'] as $row2) {
+									if($row2['id']==$row['smallDrawerFront']){
+										echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									}else{
+										echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									}
+								}
+							}
+							?>
+							</select>
+						</div>
+						
+						<div class="col-2 text-right">
+							<label for="sheen">Sheen</label>
+						</div>
+						<div class="col-4">
+							<select onchange="saveStyle('sheen','<?php echo "sheen" . $row['rid'];?>');" id="<?php echo "sheen" . $row['rid'];?>" class="custom-select">
+							
+							<?php
+							$sql ="select * from sheen where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") and id in (
+								select sid from finishTypeSheen where ftid in (
+								select finishType from frontFinish where id in (
+								select frontFinish from orderRoom where rid = " . $row['rid'] . "))) order by name";
+							echo $sql;
+							opendb2($sql);
+							$match = 0; //if match is 0, no sheens work. If 1, a matching sheen was found. If 2, sheens were found, but not what was selected.
+							if($GLOBALS['$result2']->num_rows == 1){						
+								foreach ($GLOBALS['$result2'] as $row2) {
+										echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+										//If only one option then save Sheen
+										$sql = "update orderRoom set sheen = ".$row2['id']." WHERE rid = ". $row['rid']; 
+										opendb($sql);
+								}
+							}else if($GLOBALS['$result2']->num_rows > 1){
+								echo "<option disabled=\"disabled\" ". "selected" ." value=\"\">" . "Choose a Sheen" . "</option>";
+								foreach ($GLOBALS['$result2'] as $row2) {
+									if($row2['id']==$row['sheen']){
+										echo "<option selected value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+										$match = 1;
+									}else{
+										echo "<option value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";								
+									}							
+								}
+							}else{
+								echo "<option disabled=\"disabled\" ". "selected" ." value=\"\"> Please choose another Finish</option>";
+							}
+							/*if($GLOBALS['$result2']->num_rows > 0){
+								$match = 2;
+								if(is_null($row['sheen'])){
+									echo "<option disabled=\"disabled\" ". "selected" ." value=\"\">" . "Choose a Sheen" . "</option>";
+									$invalidHeaderMessage = $invalidHeaderMessage . "<br>No sheen selected";
+									$match = 3;
+								}
+								foreach ($GLOBALS['$result2'] as $row2) {
+									if($row2['id']==$row['sheen']){
+										echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+										$match = 1;
+									}else{
+										echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									}
+								}
+							}
+							if($match==0){
+								echo "<option ". "selected" ." value=\"\">" . "" . "</option>";
+							}
+							if($match==2){
+								echo "<option disabled=\"disabled\"  ". "selected" ." value=\"null\">" . "Please choose your new sheen" . "</option>";
+								$invalidHeaderMessage = $invalidHeaderMessage . "<br>No sheen selected";
+							}*/
+							?>
+							</select>
+						</div>						
+					</div>
+
+					<div class="row">
+						<div class="col-2 text-right">
+							<label for="largeDrawerFront">Large Drawer Front</label>
+						</div>						
+						<div class="col-4">
+							<select onchange="saveStyle('largeDrawerFront','<?php echo "LargeDrawerFront" . $row['rid'];?>');" id="<?php echo "LargeDrawerFront" . $row['rid'];?>" class="custom-select">
+							
+							<?php
+							opendb2("select * from largeDrawerFront where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name");
+							if($GLOBALS['$result2']->num_rows > 0){
+								if(is_null($row['largeDrawerFront'])){
+									echo "<option ". "selected" ." value=\"\">" . "Choose a Large Drawer Front" . "</option>";
+								}
+								foreach ($GLOBALS['$result2'] as $row2) {
+									if($row2['id']==$row['largeDrawerFront']){
+										echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									}else{
+										echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									}
+								}
+							}
+							?>
+							</select>
+						</div>
+					
+						<div class="col-2 text-right">
+							<label for="hinge">Hinge</label>
+						</div>						
+						<div class="col-4">
+							<select onchange="saveStyle('hinge','<?php echo "hinge" . $row['rid'];?>');" id="<?php echo "hinge" . $row['rid'];?>" class="custom-select">
+							
+							<?php
+							opendb2("select * from hinge order by name");
+							if($GLOBALS['$result2']->num_rows > 0){
+								if(is_null($row['hinge'])){
+									echo "<option ". "selected" ." value=\"\">" . "Choose a Hinge" . "</option>";
+								}
+								foreach ($GLOBALS['$result2'] as $row2) {
+									if($row2['id']==$row['hinge']){
+										echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									}else{
+										echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									}
+								}
+							}
+							?>
+							</select>
+						</div>
+
+						<div class="col-2 text-right">
+							<label for="drawerGlides">Drawer Glides</label>
+						</div>
+						<div class="col-4">
+							<select onchange="saveStyle('drawerGlides','<?php echo "drawerGlides" . $row['rid'];?>');" id="<?php echo "drawerGlides" . $row['rid'];?>" class="custom-select">
+							
+							<?php
+							opendb2("select * from drawerGlides where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name");
+							if($GLOBALS['$result2']->num_rows > 0){
+								if(is_null($row['drawerGlides'])){
+									echo "<option ". "selected" ." value=\"\">" . "Choose a Drawer Glide" . "</option>";
+								}
+								foreach ($GLOBALS['$result2'] as $row2) {
+									if($row2['id']==$row['drawerGlides']){
+										echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									}else{
+										echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									}
+								}
+							}
+							?>
+							</select>
+						</div>
+						
+						<div class="col-2 text-right">
+							<label for="finishedEnd">Finished End</label>
+						</div>
+						<div class="col-4">
+							<select onchange="saveStyle('finishedEnd','<?php echo "finishedEnd" . $row['rid'];?>');" id="<?php echo "finishedEnd" . $row['rid'];?>" class="custom-select">							
+							<?php
+							opendb2("select * from finishedEnd where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name");
+							if($GLOBALS['$result2']->num_rows > 0){
+								if(is_null($row['finishedEnd'])){
+									echo "<option ". "selected" ." value=\"\">" . "Choose a Finished End" . "</option>";
+								}
+								foreach ($GLOBALS['$result2'] as $row2) {
+									if($row2['id']==$row['finishedEnd']){
+										echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									}else{
+										echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									}
+								}
+							}
+							?>
+							</select>
+						</div>						
+					</div>
+
+					<div class="row">
+					</div>
+            	            	
+					<div class="row">
+						<!-- 
+						<div class="col-2 text-right">
+						<label for="exteriorFinish">Exterior Finish</label>
+						</div>
+						
+						<div class="col-4">
+						<select onchange="saveStyle('exteriorFinish','<?php echo "exteriorFinish" . $row['rid'];?>');" id="<?php echo "exteriorFinish" . $row['rid'];?>" class="custom-select">
+						
+						<?php
+						opendb2("select * from exteriorFinish order by name");
+						if($GLOBALS['$result2']->num_rows > 0){
+							if(is_null($row['exteriorFinish'])){
+								echo "<option ". "selected" ." value=\"\">" . "Choose an Exterior Finish" . "</option>";
+							}
+							foreach ($GLOBALS['$result2'] as $row2) {
+								if($row2['id']==$row['exteriorFinish']){
+									echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+								}else{
+									echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+								}
+							}
+						}
+						?>
+						</select>
+						</div>
+						 -->
+					</div>             	
+                <!--/div-->
+				<?php
+				
+				echo "</div>";
+				$i++;
             }
         }
     }
@@ -1772,77 +1757,72 @@ function printPrice(){
             <hr>
           	
             <div class="col-12 " >
-            <div class="row">
-                <div class="col-3">
-                This is a:
-                <?php 
-                
-                echo "<select onchange=\"saveOrder('isPriority');fixDate();showOrderOptions('isPriority');\" class=\"form-control \"  id=\"isPriority\"><option ";
-                if($isPriority==0){
-                    echo "selected";
-                }
-                echo " value=\"0\">standard order.</option><option ";
-                
-                if($isPriority>0){
-                    echo "selected";
-                }
-                echo " value=\"1\">service order.</option></select>";
-                
-                ?>
-                
-                </div>
-                <div class="col-3">
-                Required Date: 
-                <?php 
-                echo "<input title=\"Some factors may increase your lead time. We will inform you as soon as possible once your quote is submitted.\" type=\"text\" maxlength=\"10\" data-provide=\"datepicker\" data-date-format=\"yyyy-mm-dd\" onchange=\"saveOrder('dateRequired');\" class=\"form-control date\"  value=\"". substr($dateRequired,0,10) ."\" id=\"dateRequired\">";
-                ?>
-                </div>
-                <div class="col-1 text-center service">
-                Warranty: 
-                <?php 
-                echo "<input type=\"checkbox\"";
-                if($isWarranty>0){
-                    echo " checked ";
-                }
-                echo "onchange=\"saveOrder('isWarranty');\" class=\"form-control  \"  id=\"isWarranty\">";
-                ?>
-            	</div>
-            	<div class="col-3 service">
-            	Original Order Number: 
-                <?php 
-                echo "<input type=\"text\" maxlength=\"30\"";
-                echo "value=\"".$fromOrder."\"";
-                echo "onchange=\"saveOrder('fromOrder');\" class=\"form-control  \"  id=\"fromOrder\">";
-                ?>
-            	</div>
-            	
-            	
-                <div class="col-2">
-                
-                <?php 
-                if($_SESSION["CLGroup"]>3){
-                    echo "Line:<select onchange=\"saveOrder('CLid');\" class=\"form-control \"  id=\"CLid\"><option ";
-                    //showOrderOptions('CLid');
-                    if($CLid==1){
-                        echo "selected";
-                    }
-                    echo " value=\"1\">Designer</option><option ";
-                    
-                    if($CLid==2){
-                        echo "selected";
-                    }
-                    echo " value=\"2\">Builder</option><option ";
-                    
-                    if($CLid==3){
-                        echo "selected";
-                    }
-                    echo " value=\"3\">Span</option></select>";
-                }
-                ?>
-                
-                </div>
-            </div>
-            </div>
+				<div class="row">
+					<div class="col-3">
+						This is a:
+						<?php 
+						
+						echo "<select onchange=\"saveOrder('isPriority');fixDate();showOrderOptions('isPriority');\" class=\"form-control \"  id=\"isPriority\"><option ";
+						if($isPriority==0){
+							echo "selected";
+						}
+						echo " value=\"0\">standard order.</option><option ";
+						
+						if($isPriority>0){
+							echo "selected";
+						}
+						echo " value=\"1\">service order.</option></select>";
+						
+						?>					
+					</div>
+					<div class="col-2">
+						Required Date: 
+						<?php 
+						echo "<input title=\"Some factors may increase your lead time. We will inform you as soon as possible once your quote is submitted.\" type=\"text\" maxlength=\"10\" data-provide=\"datepicker\" data-date-format=\"yyyy-mm-dd\" onchange=\"saveOrder('dateRequired');\" class=\"form-control date\"  value=\"". substr($dateRequired,0,10) ."\" id=\"dateRequired\">";
+						?>
+					</div>
+					<div class="col-1 text-center service">
+						Warranty: 
+						<?php 
+						echo "<input type=\"checkbox\"";
+						if($isWarranty>0){
+							echo " checked ";
+						}
+						echo "onchange=\"saveOrder('isWarranty');\" class=\"form-control  \"  id=\"isWarranty\">";
+						?>
+					</div>
+					<div class="col-3 service">
+						Original Order Number: 
+						<?php 
+						echo "<input type=\"text\" maxlength=\"30\"";
+						echo "value=\"".$fromOrder."\"";
+						echo "onchange=\"saveOrder('fromOrder');\" class=\"form-control  \"  id=\"fromOrder\">";
+						?>
+					</div>					
+					<div class="col-3">               
+						<?php 
+						//Cabinet Lines functionality start
+						if($_SESSION["CLGroup"]>3){
+							echo "Line:<select onchange=\"saveOrder('CLid');\" class=\"form-control \" id=\"CLid\">";
+							$sql = "select * from cabinetLine cl where cl.id in (select clg.CLid from cabinetLineGroups clg where clg.CLGid = ".$_SESSION["CLGroup"].")";
+							//echo $sql;
+							$result = opendb($sql);
+							if($result->num_rows >0){
+								while ( $row = $result->fetch_assoc())  {
+									echo "<option ";
+									if($CLid==$row["id"]) echo "selected "; 
+									echo "class=\"form-control \"  value=\"".$row["id"]."\">".$row["CabinetLine"]."</option>";
+								}
+							}else{
+								echo "<option selected>No Cabinet Line was found for your profile, please check with the administrator</option>";
+							}
+							echo "</select>";
+						}
+						//Cabinet Lines functionality end
+						?>					
+					</div>
+				</div>
+			</div>
             <br/>
             
             
@@ -1953,9 +1933,16 @@ $(document).ready(function(){
 	});
 
 $(document).ready(function(){
-	  $('[href="' + window.location.hash + '"]').tab('show');
-	  loadItems($("a.nav-link.roomtab.active").attr("value"));
-	});
+	$('[href="' + window.location.hash + '"]').tab('show');
+	loadItems($("a.nav-link.roomtab.active").attr("value"));
+	$(".modal").draggable({
+		handle: ".modal-header"
+    });
+	$(".modal-content").resizable({
+		minHeight: 630,
+		minWidth: 500
+    });
+});
 
 
 
@@ -2048,8 +2035,7 @@ $('#fileListing').on('click','#sendFile',
 	        }, false);
 	      }
 	      refreshFiles(); //refresh listing upon completion.
-		  console.log(myXhr);
-	      return myXhr;
+		  return myXhr;
 	      refreshFiles();
 	    }
 	  });

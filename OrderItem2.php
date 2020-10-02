@@ -216,16 +216,16 @@ if($_POST['mode']=="getNewItem"){
     
     $aFilter = $aFilter . ")";
     if($type=="mod"){
-        $sql = "select id,description, ifnull(w,'no width') as 'w',ifnull(h, 'no height') as 'h',ifnull(d,'no depth') as 'd',ifnull(w2,'no width') as 'w2',ifnull(h2, 'no height') as 'h2',ifnull(d2,'no depth') as 'd2',name from itemMods where ".$aFilter." order by description limit 150";
+        $sql = "select id,description, ifnull(w,'no width') as 'w',ifnull(h, 'no height') as 'h',ifnull(d,'no depth') as 'd',ifnull(w2,'no width') as 'w2',ifnull(h2, 'no height') as 'h2',ifnull(d2,'no depth') as 'd2',name from itemMods where (".$aFilter.") and CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$_POST['cabinetLine'].") order by description limit 150";
     }else{
-        $sql = "select id,description, ifnull(w,'no width') as 'w',ifnull(h, 'no height') as 'h',ifnull(d,'no depth') as 'd',ifnull(w2,'no width') as 'w2',ifnull(h2, 'no height') as 'h2',ifnull(d2,'no depth') as 'd2',name from item     where ".$aFilter." order by description limit 150";
+        $sql = "select id,description, ifnull(w,'no width') as 'w',ifnull(h, 'no height') as 'h',ifnull(d,'no depth') as 'd',ifnull(w2,'no width') as 'w2',ifnull(h2, 'no height') as 'h2',ifnull(d2,'no depth') as 'd2',name from item     where (".$aFilter.") and CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$_POST['cabinetLine'].") order by description limit 150";
     }
     //echo $sql;
     opendb($sql);
     if($GLOBALS['$result']->num_rows > 0){
         foreach ($GLOBALS['$result'] as $row){
             //the id returned is the id from the mod or items table (not the orders table)
-            echo "<option onClick=\"setSizes(".$row['w'].",".$row['h'].",".$row['d'].",".$row['w2'].",".$row['h2'].",".$row['d2'].",'".$row['name']."',".$row['id'].");\" class=\"allItemList\" w=\"" . $row['w']. "\" h=\"" .$row['h']. "' d=\"" .$row['d']. "\" value=\"" . $row['id'] . "\">". $row['description'] . " Code: " .$row['name']. "</option>";
+            echo "<option onClick=\"setSizes(".$row['w'].",".$row['h'].",".$row['d'].",".$row['w2'].",".$row['h2'].",".$row['d2'].",'".$row['name']."',".$row['id'].");\" class=\"allItemList\" w=\"" . $row['w']. "\" h=\"" .$row['h']. "\" d=\"" .$row['d']. "\" value=\"" . $row['id'] . "\">". $row['description'] . " Code: " .$row['name']. "</option>";
         }
     }
 }
@@ -286,6 +286,11 @@ if($_POST['mode']=="getItems"){
         $RID = -1;
     }
     
+	$sql = "select CLid from mosOrder where oid = ".$_POST['oid'];
+	$result = opendb2($sql);
+
+	$CLid = $result->fetch_assoc();
+	//echo $CLid['CLid'];
 
     /*
     $doorfactor = 1.0;
@@ -312,11 +317,11 @@ if($_POST['mode']=="getItems"){
     //opendb("select oi.*, case when round(price*(1.0+ (". $doorfactor . "-0.0 )*doorFactor  + ". $interiorfactor . "*interiorFactor),2) = 0 then 'NA' else qty*round( price*(1.0 + (". $doorfactor . " - 0.0)*doorFactor + ". $interiorfactor . "*interiorFactor),2) end as formattedPrice from orderItem oi where rid = '" .$RID. "' order by position,id asc");
     $SQL = "select * from (SELECT oi.description, oi.note, oi.id as item, 0 as sid, oi.qty, oi.name, oi.price, oi.sizePrice, 0 as 'parentPercent', ds.factor as 'DFactor', irf.factor as 'IFactor', ff.factor as 'FFactor', ff.upcharge as 'FUpcharge', sh.factor as 'SFactor', gl.factor as 'GFactor', sp.finishedEndSizePrice as 'EFactor', (db.upcharge + dg.upcharge) as 'drawerCharge', sdf.upcharge as 'smallDrawerCharge', ldf.upcharge as 'largeDrawerCharge', oi.doorFactor as 'DApplies', oi.speciesFactor as 'SpeciesApplies', oi.interiorFactor as 'IApplies', oi.finishFactor as 'FApplies', oi.sheenFactor as 'SApplies', oi.glazeFactor as 'GApplies',oi.drawers, oi.smallDrawerFronts, oi.largeDrawerFronts, oi.H, oi.W, oi.D, oi.W2, oi.D2, oi.minSize, it.pricingMethod as methodID, oi.hingeLeft,oi.hingeRight,oi.finishLeft,oi.finishRight
     FROM  orderItem oi, orderRoom orr, doorSpecies ds, interiorFinish irf, item it, sheen sh, glaze gl, frontFinish ff,drawerBox db, drawerGlides dg, smallDrawerFront sdf, largeDrawerFront ldf, species sp
-    WHERE it.id = oi.iid and oi.rid = orr.rid and orr.species = ds.sid and orr.species = sp.id and orr.door = ds.did and orr.interiorFinish = irf.id and orr.sheen = sh.id and orr.glaze = gl.id and orr.frontFinish = ff.id and orr.drawerBox = db.id and orr.drawerGlides = dg.id and orr.smallDrawerFront = sdf.id and orr.largeDrawerFront = ldf.id and orr.rid = '" .$RID. "'
+    WHERE it.id = oi.iid and oi.rid = orr.rid and orr.species = ds.sid and orr.species = sp.id and orr.door = ds.did and orr.interiorFinish = irf.id and orr.sheen = sh.id and orr.glaze = gl.id and orr.frontFinish = ff.id and orr.drawerBox = db.id and orr.drawerGlides = dg.id and orr.smallDrawerFront = sdf.id and orr.largeDrawerFront = ldf.id and orr.rid = '" .$RID. "' and it.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$CLid['CLid'].")
     union all
                            SELECT oi.description, oi.note, oi.pid,oi.id as sid,     oi.qty, oi.name, oi.price, oi.sizePrice, parentPercent       , ds.factor as 'DFactor', irf.factor as 'IFactor', ff.factor as 'FFactor', ff.upcharge as 'FUpcharge', sh.factor as 'SFactor', gl.factor as 'GFactor', sp.finishedEndSizePrice as 'EFactor', (db.upcharge + dg.upcharge) as 'drawerCharge', sdf.upcharge as 'smallDrawerCharge', ldf.upcharge as 'largeDrawerCharge', oi.doorFactor as 'DApplies', oi.speciesFactor as 'SpeciesApplies', oi.interiorFactor as 'IApplies', oi.finishFactor as 'FApplies', oi.sheenFactor as 'SApplies', oi.glazeFactor as 'GApplies',oi.drawers, oi.smallDrawerFronts, oi.largeDrawerFronts, oi.H, oi.W, oi.D, oi.W2, oi.D2, oi.minSize, it.pricingMethod as methodID, oi.hingeLeft,oi.hingeRight,oi.finishLeft,oi.finishRight
     FROM  orderItemMods oi, orderRoom orr, doorSpecies ds, interiorFinish irf, itemMods it, sheen sh, glaze gl, frontFinish ff,drawerBox db, drawerGlides dg,  smallDrawerFront sdf, largeDrawerFront ldf, species sp
-    WHERE it.id = oi.mid and oi.rid = orr.rid and orr.species = ds.sid and orr.species = sp.id and orr.door = ds.did and orr.interiorFinish = irf.id and orr.sheen = sh.id and orr.glaze = gl.id and orr.frontFinish = ff.id and orr.drawerBox = db.id and orr.drawerGlides = dg.id and orr.smallDrawerFront = sdf.id and orr.largeDrawerFront = ldf.id and orr.rid = '" .$RID. "') as T1 order by item,sid";
+    WHERE it.id = oi.mid and oi.rid = orr.rid and orr.species = ds.sid and orr.species = sp.id and orr.door = ds.did and orr.interiorFinish = irf.id and orr.sheen = sh.id and orr.glaze = gl.id and orr.frontFinish = ff.id and orr.drawerBox = db.id and orr.drawerGlides = dg.id and orr.smallDrawerFront = sdf.id and orr.largeDrawerFront = ldf.id and orr.rid = '" .$RID. "' and it.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$CLid['CLid'].")) as T1 order by item,sid";
 
 
 	//echo $SQL;
@@ -667,6 +672,12 @@ if($_POST['mode'] == "copy"){
     copyItem($_POST['rid'],$_POST['id'],$_POST['Drid']);
     //get all field names from order, room, item, mod. Skip first field (id field). 
     //contruct SQL to copy from each area
+}
+
+if($_POST['mode'] == "resetOrder"){
+	$sql = "update orderRoom set door=null, species=9, edge=null, frontFinish=null, glaze=13, sheen=7, hinge=1, smallDrawerFront=4, largeDrawerFront=4, drawerGlides=3, drawerBox=5, interiorFinish=15, finishedEnd=2  where oid =".$_POST['oid'];
+	//echo $sql;
+	opendb($sql);
 }
 
 function copyItem($Sroom, $Sitem, $Droom){
