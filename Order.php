@@ -215,8 +215,8 @@ function editItems(itemID, mod){
 					
 					refresh = 0;
 					// remove non-printable and other non-valid JSON chars
-					data = data.replace(/[\u0000-\u0019]+/g,"\\n"); 					
-					console.log(data);
+					data = data.replace(/[\u0000-\u0019]+/g,"\\n"); 
+					//console.log(data);
 					myObj= JSON.parse(data);
 					document.getElementById("livesearch").innerHTML=myObj.name;
 					$('#note').val("");
@@ -1953,9 +1953,16 @@ $(document).ready(function(){
 	});
 
 $(document).ready(function(){
-	  $('[href="' + window.location.hash + '"]').tab('show');
-	  loadItems($("a.nav-link.roomtab.active").attr("value"));
-	});
+	$('[href="' + window.location.hash + '"]').tab('show');
+	loadItems($("a.nav-link.roomtab.active").attr("value"));
+	$(".modal").draggable({
+		handle: ".modal-header"
+    });
+	$(".modal-content").resizable({
+		minHeight: 630,
+		minWidth: 500
+    });
+});
 
 
 
