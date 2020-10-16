@@ -97,9 +97,9 @@ function loadOrders(objectID){
 function tableControls(data){
 	table = $('table').DataTable();
 	table.destroy();
-	table = $('table').DataTable({
+	/*table = $('table').DataTable({
 		"order": [[ 7, "asc" ]]
-	});	
+	});*/	
 }
 </script>
 
@@ -144,12 +144,12 @@ if($GLOBALS['$result2']-> num_rows >0){
 	foreach ($GLOBALS['$result2'] as $row2) {
 		$str = $row2['state'];
 		$state_ar = explode(', ', $str);//convert string to array to create control dinamically
-		$sql ="select m.oid,a.busName as 'company', m.tagName, m.po, concat(mu.firstName,' ',mu.lastName) as 'designer', email, s.name as 'status', DATE(m.dateSubmitted) dateSubmitted, m.state from mosOrder m, state s, account a, mosUser mu where s.id = m.state and m.account = a.id and m.mosUser = mu.id and m.state in (".$row2['state'].") order by m.state desc";
+		$sql ="select m.oid,a.busName as 'company', m.tagName, m.po, concat(mu.firstName,' ',mu.lastName) as 'designer', email, s.name as 'status', DATE(m.dateSubmitted) dateSubmitted, m.state from mosOrder m, state s, account a, mosUser mu where s.id = m.state and m.account = a.id and m.mosUser = mu.id and m.state in (".$row2['state'].") order by m.dateSubmitted asc";
 		opendb($sql);
 	}
 }else{
 	opendb2("INSERT INTO employeeSettings (mosUser) VALUES ( ".$_SESSION["userid"] .")");//new user
-	opendb2("select m.*,DATE(m.dateSubmitted) dateSubmitted,s.name as 'status', a.busName as 'company', concat(mu.firstName,' ',mu.lastName) as 'designer', email, m.state from mosOrder m, state s, account a, mosUser mu where s.id = m.state and m.account = a.id and m.mosUser = mu.id and m.state > 1 and m.state <> 10 order by m.state desc");
+	opendb2("select m.*,DATE(m.dateSubmitted) dateSubmitted,s.name as 'status', a.busName as 'company', concat(mu.firstName,' ',mu.lastName) as 'designer', email, m.state from mosOrder m, state s, account a, mosUser mu where s.id = m.state and m.account = a.id and m.mosUser = mu.id and m.state > 1 and m.state <> 10 order by m.dateSubmitted asc");
 }
 echo "<br/><div class=\"container-fluid\">";
     ?>
@@ -189,7 +189,7 @@ echo "<br/><div class=\"container-fluid\">";
 				<div id="searchOrderBtn" class="col">
 				</div>
 				<div class= "col-3 my-1">					
-					<input id="openOrder" class="form-control" type="number" onkeyup="getOrderID(this.value)" placeholder="Search Order ID">					
+					<input id="openOrder" class="form-control" type="number" min-value="0" onkeyup="getOrderID(this.value)" placeholder="Search Order ID">					
 				</div>
 			</div>
 		</div>
