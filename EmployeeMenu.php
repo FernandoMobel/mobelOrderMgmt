@@ -102,6 +102,13 @@ function tableControls(data){
 	});*/	
 }
 </script>
+<style>
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+</style>
 
 <div class="navbar navbar-expand-sm bg-light navbar-light">
 <div class="col-sm-12 col-md-11 col-lg-11 mx-auto">
@@ -189,7 +196,7 @@ echo "<br/><div class=\"container-fluid\">";
 				<div id="searchOrderBtn" class="col">
 				</div>
 				<div class= "col-3 my-1">					
-					<input id="openOrder" class="form-control" type="number" min-value="0" onkeyup="getOrderID(this.value)" placeholder="Search Order ID">					
+					<input id="openOrder" class="form-control" type="number" min="1" onkeyup="getOrderID(this.value)" placeholder="Search Order ID">					
 				</div>
 			</div>
 		</div>
