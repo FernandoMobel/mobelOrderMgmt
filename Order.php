@@ -79,7 +79,8 @@ function resetOrderDefault(orderId){
 	myData = { mode: "resetOrder", oid: orderId};
 	$.post("OrderItem.php",
 		myData,
-			function(data, status, jqXHR){				
+			function(data, status, jqXHR){	
+			//console.log(jqXHR);			
 			});
 }
 
@@ -1430,7 +1431,7 @@ function printPrice(){
 							<select onchange="saveStyle('hinge','<?php echo "hinge" . $row['rid'];?>');" id="<?php echo "hinge" . $row['rid'];?>" class="custom-select">
 							
 							<?php
-							opendb2("select * from hinge order by name");
+							opendb2("select * from hinge where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name");
 							if($GLOBALS['$result2']->num_rows > 0){
 								if(is_null($row['hinge'])){
 									echo "<option ". "selected" ." value=\"\">" . "Choose a Hinge" . "</option>";
