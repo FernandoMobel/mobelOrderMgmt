@@ -50,6 +50,7 @@ if($_POST['mode']=="updateItemById"){
 	//Update Item
 	$sql = "update item set name = '".strtoupper($obj["name"])."', description = '".strtoupper($obj["description"])."', price=".$obj["price"].", sizePrice =".$obj["sizePrice"];
 	$sql .= ", minSize=".$obj["minSize"].", W =".$obj["W"].", H=".$obj["H"].", D = ".$obj["D"].", lastModified=CURDATE()";
+	$sql .= ", minW=".$obj["minW"].", minH=".$obj["minH"].", minD=".$obj["minD"];
 	if(count($obj)==29){
 		$sql .= " , isCabinet = 1";
 	}else{
@@ -60,7 +61,8 @@ if($_POST['mode']=="updateItemById"){
 	if($GLOBALS['$result'] > 0){
 		//Update Order Items
 		$sql = "UPDATE orderItem oit SET name = '".strtoupper($obj["name"])."', description = '".strtoupper($obj["description"])."', price=".$obj["price"].", sizePrice =".$obj["sizePrice"];
-		$sql .= ", minSize=".$obj["minSize"].", W =".$obj["W"].", H=".$obj["H"].", D = ".$obj["D"];
+		$sql .= ", minSize=".$obj["minSize"]; //.", W =".$obj["W"].", H=".$obj["H"].", D = ".$obj["D"];
+		$sql .= ", minW=".$obj["minW"].", minH=".$obj["minH"].", minD=".$obj["minD"];
 		$sql .= " where oit.id in (SELECT oi.id FROM orderRoom orr, orderItem oi, mosOrder mo where orr.rid = oi.rid and mo.oid = orr.oid and mo.state = 1 and oi.iid = ".$id.")";
 		opendb2($sql);
 	}
@@ -134,7 +136,14 @@ if($_POST['mode']=="getItemById"){
 	echo json_encode($itemData); 
 }
 
-
-
+if($_POST['mode']=="getImage"){
+	$path = "uploads/ItemImages/".substr($_POST['id'], -2)."/";
+	$files = glob($path . $_POST['id'] . ".*", GLOB_ERR);
+	if(count($files)>0){
+		echo $files[0];
+	}else{
+		echo "false";
+	};
+}
 
 ?>

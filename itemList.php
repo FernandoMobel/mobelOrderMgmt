@@ -1,4 +1,3 @@
-
 <?php include 'includes/nav.php';?>
 <?php include 'includes/db.php';?>
 <?php
@@ -9,6 +8,22 @@ div.sticky {
   position: -webkit-sticky;
   position: sticky;
   top: 0;
+}
+card ,h1,h2,h3,h4 {
+  color: white;
+  //font-size: .95vw;
+}
+
+.catlabel {
+  background: rgba(20,50,255,0.9)
+}
+
+.catalog {
+  background: rgba(20,50,255,0.7)
+}
+
+.catalog:hover {
+  opacity: 0.3;
 }
 </style>
 <script>
@@ -56,7 +71,7 @@ function enableUpdView(){
 	$('#enableUpdBtn').hide();
 	$('#updateBtn').hide();
 	const mainDiv = document.getElementById("itemsMainDiv");
-	mainDiv.className = 'col-lg-8 col-sm-5 mx-auto';
+	mainDiv.className = 'col-lg-7 col-sm-5 mx-auto';
 	document.getElementById("name").placeholder = "";
 	document.getElementById("description").placeholder = "";
 	document.getElementById("price").placeholder = "";
@@ -140,36 +155,75 @@ function clearInputs(){
 function loadItemData(id) {
 	document.getElementById("lbTitle").innerText = "Update Item";
 	$('#livesearch').empty();
+	$('#fileName').text('');
+	$('#progressBar').css('width', '0%');
+	
 	myData = { mode: "getItemById", id: id };
-		$.ajax({
-	    url: 'itemActions.php',
-	    type: 'POST',
-	    data: myData,
-	    success: function(data, status, jqXHR) {
-						var item = JSON.parse(jqXHR["responseText"]);
-						//console.log(item[0]);
-						document.getElementById("itemID").innerHTML =item[0].id;
-						document.getElementById("name").value =item[0].name;
-						document.getElementById("description").value =item[0].description;
-						document.getElementById("price").value =item[0].price;
-						document.getElementById("sizePrice").value =item[0].sizePrice;
-						document.getElementById("minSize").value =item[0].minSize;
-						document.getElementById("W").value =item[0].W;
-						document.getElementById("H").value =item[0].H;
-						document.getElementById("D").value =item[0].D;
-						document.getElementById("drawers").value =item[0].drawers;
-						document.getElementById("smallDrawerFronts").value =item[0].smallDrawerFronts;
-						document.getElementById("largeDrawerFronts").value =item[0].largeDrawerFronts;
-						if (item[0].isCabinet==="1"){
-							document.getElementById("isCabinet").checked = true;
-						}else{
-							document.getElementById("isCabinet").checked = false;
-						}
-						$('#clearBtn').show();
-						$('#updateBtn').show();
-						$('#divForm').show();
+	$.ajax({
+	url: 'itemActions.php',
+	type: 'POST',
+	data: myData,
+	success: function(data, status, jqXHR) {					
+					var item = JSON.parse(jqXHR["responseText"]);
+					$("#itemImg").removeAttr("src");
+					imageExists(item[0].id);//Checking if image exists
+					document.getElementById("editItemSearch").value ="";
+					document.getElementById("itemID").innerHTML =item[0].id;
+					document.getElementById("name").value =item[0].name;
+					document.getElementById("itemName").innerHTML =item[0].name;
+					document.getElementById("description").value =item[0].description;
+					document.getElementById("itemDescription").innerHTML =item[0].description;
+					document.getElementById("price").value =item[0].price;
+					document.getElementById("sizePrice").value =item[0].sizePrice;
+					document.getElementById("minSize").value =item[0].minSize;
+					document.getElementById("W").value =item[0].W;
+					document.getElementById("H").value =item[0].H;
+					document.getElementById("D").value =item[0].D;
+					document.getElementById("minW").value =item[0].minW;
+					document.getElementById("minH").value =item[0].minH;
+					document.getElementById("minD").value =item[0].minD;
+					document.getElementById("maxW").value =item[0].maxW;
+					document.getElementById("maxH").value =item[0].maxH;
+					document.getElementById("maxD").value =item[0].maxD;
+					document.getElementById("drawers").value =item[0].drawers;
+					document.getElementById("smallDrawerFronts").value =item[0].smallDrawerFronts;
+					document.getElementById("largeDrawerFronts").value =item[0].largeDrawerFronts;
+					if (item[0].isCabinet==="1"){
+						document.getElementById("isCabinet").checked = true;
+					}else{
+						document.getElementById("isCabinet").checked = false;
 					}
-	  	});
+					$('#clearBtn').show();
+					$('#updateBtn').show();
+					$('#divForm').show();
+					$('#itemImage').show();
+				}
+	});
+}
+
+function imageExists(itemId){
+	myData = { mode: "getImage", id: itemId};
+
+	$.ajax({
+	url: 'itemActions.php',
+	type: 'POST',
+	data: myData,
+	success: function(data, status, jqXHR) {
+				$image=jqXHR["responseText"];
+				if($image!="false"){
+					$('#imgExist').attr('value', $image);
+					$('#itemImg').attr('src', './'+$image+'#'+ new Date().getTime());
+					$('#fileAlert').hide();
+				}else{
+					$('#imgExist').attr('value', '0');
+					$('#fileAlert').show();
+					$('#fileAlert').removeClass('alert-danger');
+					$('#fileAlert').removeClass('alert-warning');
+					$('#fileAlert').addClass('alert-info');
+					$('#fileAlert').html('There is no image, please upload a nice one..');
+				}
+			}
+	});
 }
 
 function showResult(str) {
@@ -193,33 +247,215 @@ function showResult(str) {
 							option.setAttribute('value',el["name"]+' - '+el["description"]);
 							option.textContent= el["name"]+' - '+el["description"];
 							option.setAttribute('onclick', 'loadItemData("'+el["id"]+'")');
-							div.appendChild(option);
+							div.appendChild(option);							
 					   });
     		        }
 	  	});
-		console.log(div);
 }
+
+function uploadImage(){
+	var myForm, myFile, files, file;
+	if(!$('#imgExist').val()=='0'){
+		
+	}
+	myForm = document.getElementById('imageAjax');
+	myFile = document.getElementById('fileToUpload');
+	files = myFile.files;
+	var formData = new FormData();
+	file = files[0]; 
+	console.log(files);
+	// Check the file type
+	if (!file.type.match('image.*')) {
+		$('#fileAlert').show();
+		$('#fileAlert').removeClass('alert-info');
+		$('#fileAlert').addClass('alert-warning');
+		$('#fileAlert').html('The file selected is not an image.');
+		$('#fileName').text('Select an image please');
+		return;
+	}else if(file.size/1000000>5){ //Check file size. limit - 5mb
+		$('#fileAlert').show();
+		$('#fileAlert').removeClass('alert-info');
+		$('#fileAlert').addClass('alert-warning');
+		$('#fileAlert').html('Sorry, your file is too large, there is a 5MB limit');
+		$('#fileName').text('Select an image please');
+		return;
+	}
+	$('#fileName').text(file.name);
+	
+	// Add the file and others to the AJAX request
+    formData.append('fileToUpload', file, file.name);
+    formData.append('itemID', $('#itemID').html());
+    formData.append('mode', 'uploadItemImg');
+    formData.append('imgExist', $('#imgExist').val());
+
+    // Set up the request
+    var xhr = new XMLHttpRequest();
+
+    // Open the connection
+    xhr.open('POST', 'upload.php', true);
+	//Progress bar
+	xhr.upload.addEventListener("progress", function (event) {
+        if (event.lengthComputable) {
+            var complete = (event.loaded / event.total * 100 | 0);
+            $('#progressBar').css('width', complete + '%');
+        }
+    });
+    // Set up a handler for when the task for the request is complete 
+    xhr.onload = function () {
+      if (xhr.status == 200) {
+        $('#fileAlert').html('Upload complete!');
+		$('#fileAlert').removeClass('alert-info');
+		$('#fileAlert').removeClass('alert-warning');
+		$('#fileAlert').addClass('alert-success');
+		$('#imgExist').val(xhr['responseText'].trim());
+		$("#itemImg").attr("src", xhr['responseText'].trim()+'#'+ new Date().getTime());
+		console.log('hecho...');
+      } else {
+        $('#fileAlert').html('Upload error. Try again.');
+		$('#fileAlert').removeClass('alert-info');
+		$('#fileAlert').removeClass('alert-warning');
+		$('#fileAlert').addClass('alert-danger');
+      }
+    };
+
+    // Send the data.
+    xhr.send(formData);
+}
+
 </script>
 <div class="container-fluid">
 	<div class="row">
-		<!--------------************************************** Find Item Box Start **************************************-------------->
-		<div id="divFindItem" class="col-lg-4 col-sm-7 mx-auto">
+		<div id="divFindItem" class="col-lg-5 col-sm-7 mx-auto">
+			<!--------------************************************** Find Item Box Start **************************************-------------->
 			<div class="card my-3">
 				<h5 class="card-header">Find Item</h5>
 				<div class="card-body">					
 					<div class="input-group mb-3">
 						<div class="input-group-prepend">
-							<span class="input-group-text">Item</span>
+							<span class="input-group-text">Search:</span>
 						</div>
 						<input class="form-control" name="editItemSearch" autocomplete="off" type="text"  id="editItemSearch" onkeyup="showResult(this.value)" autofocus>
 					</div>					
 					<div id="livesearch">
 					</div>
+					<!--------------************************************** Catalogue Start **************************************-------------->
+					<!--div class="container">
+						<div class="row my-3">
+							<div class="col">
+								<div class="card h-100"  style="background:transparent url('./img/snk.jpg') no-repeat center center /cover; min-height: 150px">
+									<div class="catalog h-100">
+										<h1 class="mx-3 my-3">70</h1>
+									</div>
+									<h4 class="catlabel text-center m-0">CABINETS</h4>
+								</div>
+							</div>
+							<div class="col">
+								<div class="card h-100"  style="background:transparent url('./img/sq1.jpg') no-repeat center center /cover; min-height: 150px">
+									<div class="catalog h-100">
+										<h1 class="mx-3 my-3">6</h1>
+									</div>
+									<h4 class="catlabel text-center m-0">DECORATIVE HOODS</h4>
+								</div>
+							</div>
+							<div class="col">
+								<div class="card h-100"  style="background:transparent url('./img/tall.jpg') no-repeat center center /cover; min-height: 150px">
+									<div class="catalog h-100">
+										<h1 class="mx-3 my-3">59</h1>
+									</div>
+									<h4 class="catlabel text-center m-0">TALL CABINETS</h4>
+								</div>
+							</div>
+							<div class="col">
+								<div class="card h-100"  style="background:transparent url('./img/sq2.jpg') no-repeat center center /cover; min-height: 150px">
+									<div class="catalog h-100">
+										<h1 class="mx-3 my-3">33</h1>
+									</div>
+									<h4 class="catlabel text-center m-0">VANITY CABINETS</h4>
+								</div>
+							</div>
+						</div>
+						<div class="row my-3">
+							<div class="col-8">
+								<div class="card h-100"  style="background:transparent url('./img/w2.png') no-repeat center center /cover; min-height: 250px">
+									<div class="catalog h-100">
+										<h1 class="mx-3 my-3">81</h1>
+									</div>
+									<h4 class="catlabel text-center m-0">BASE CABINETS</h4>
+								</div>
+							</div>
+							<div class="col-4">
+								<div class="card h-100"  style="background:transparent url('./img/w1.jpg') no-repeat center center /cover; min-height: 250px">
+									<div class="catalog h-100">
+										<h1 class="mx-3 my-3">33</h1>
+									</div>
+									<h4 class="catlabel text-center m-0">FINISHED ENDS & PANELS</h4>
+								</div>
+							</div>
+						</div>
+						<div class="row my-3">
+							<div class="col-4">
+								<div class="card h-100"  style="background:transparent url('./img/w3.jpg') no-repeat center center /cover; min-height: 200px">
+									<div class="catalog h-100">
+										<h1 class="mx-3 my-3">7</h1>
+									</div>
+									<h4 class="catlabel text-center m-0">FILLERS</h4>
+								</div>
+							</div>
+							<div class="col-3">
+								<div class="card h-100"  style="background:transparent url('./img/w4.jpg') no-repeat center center /cover; min-height: 200px">
+									<div class="catalog h-100">
+										<h1 class="mx-3 my-3">6</h1>
+									</div>
+									<h4 class="catlabel text-center m-0">MOULDINGS</h4>
+								</div>
+							</div>
+							<div class="col-5">
+								<div class="card h-100"  style="background:transparent url('./img/sq1.png') no-repeat center center /cover; min-height: 200px">
+									<div class="catalog h-100">
+										<h1 class="mx-3 my-3">294</h1>
+									</div>
+									<h4 class="catlabel text-center m-0">ALL</h4>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!--------------************************************** Catalogue End **************************************-------------->
+				</div>				
+			</div>
+			<!--------------************************************** Find Item Box End **************************************-------------->
+			<!--------------************************************** Item Image Start **************************************-------------->
+			<div id="itemImage" class="card my-3">
+				<div class="card-header">
+					<h5 id="itemName"></h5>
+					<small id="itemDescription"></small>
+				</div>
+				<div class="card-body">					
+					<img id="itemImg" class="img-fluid">
+					
+					<div id="fileAlert" class="alert alert-info text-center" role="alert">
+					  There is no image, please upload a nice one..
+					</div>
+					<div class="progress" style="height: 2px;">
+					  <div id="progressBar" class="progress-bar  progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%"></div>
+					</div>
+					<form id="imageAjax" action="upload.php" method="POST">
+						<div class="input-group">
+							<div class="input-group-prepend">
+								<span class="input-group-text" id="inputGroupFileAddon01">Select an Image file</span>
+							</div>
+							<div class="custom-file">
+								<input onchange="uploadImage();" type="file" class="custom-file-input" name="fileToUpload" id="fileToUpload" aria-describedby="fileToUpload">
+								<label id="fileName" class="custom-file-label" for="fileToUpload">Choose file</label>							
+							</div>
+						</div>
+						<input type="hidden" id="imgExist" name="imgExist" value="0"/>
+					</form>					
 				</div>
 			</div>
+			<!--------------************************************** Item Image End **************************************-------------->
 		</div>
-		<!--------------************************************** Find Item Box End **************************************-------------->
-		<div id="itemsMainDiv" class="col-lg-8 col-sm-5 mx-auto">
+		<!--------------************************************** Find Item End **************************************-------------->
+		<div id="itemsMainDiv" class="col-lg-7 col-sm-5 mx-auto">
 			<div class="card sticky my-3">
 				<h5 class="card-header">
 					<label id="lbTitle" >Item Actions</label>
@@ -236,7 +472,7 @@ function showResult(str) {
 						  <div class="input-group-prepend">
 							<span class="input-group-text">Item Name</span>
 						  </div>
-						  <input type="text" class="form-control" name="name" id="name" maxlength="99" aria-describedby="name" style="text-transform:uppercase"">
+						  <input type="text" class="form-control" name="name" id="name" maxlength="99" aria-describedby="name" style="text-transform:uppercase">
 						</div>
 						<small id="ordReq" class="form-text text-muted alert-danger" hidden>Order name is mandatory</small>
 					  </div>
@@ -304,6 +540,70 @@ function showResult(str) {
 								</div>
 							</div>
 					  </div>
+					  <div class="row">
+						<div class="col">
+							<div class="form-group">
+								<div class="input-group mb-3">
+									<div class="input-group-prepend">
+										<span class="input-group-text">Min Width</span>
+									</div>
+									<input type="number" step="0.0001" min="0" class="form-control" name="minW" id="minW" value="0" aria-describedby="minW">
+								</div>
+							</div>
+						</div>
+						<div class="col">
+							<div class="form-group">
+								<div class="input-group mb-3">
+									<div class="input-group-prepend">
+										<span class="input-group-text">Min Height</span>
+									</div>
+									<input type="number" step="0.0001" min="0" class="form-control" name="minH" id="minH" value="0" aria-describedby="minH">
+								</div>
+							</div>
+						</div>
+						<div class="col">
+							<div class="form-group">
+								<div class="input-group mb-3">
+									<div class="input-group-prepend">
+										<span class="input-group-text">Min Depth</span>
+									</div>
+									<input type="number" step="0.0001" min="0" class="form-control" name="minD" id="minD" value="0" aria-describedby="minD">
+								</div>
+							</div>
+						</div>
+					  </div>
+					  <div class="row">
+						<div class="col">
+							<div class="form-group">
+								<div class="input-group mb-3">
+									<div class="input-group-prepend">
+										<span class="input-group-text">Max Width</span>
+									</div>
+									<input type="number" step="0.0001" min="0" class="form-control" name="maxW" id="maxW" value="0" aria-describedby="maxW">
+								</div>
+							</div>
+						</div>
+						<div class="col">
+							<div class="form-group">
+								<div class="input-group mb-3">
+									<div class="input-group-prepend">
+										<span class="input-group-text">Max Height</span>
+									</div>
+									<input type="number" step="0.0001" min="0" class="form-control" name="maxH" id="maxH" value="0" aria-describedby="maxH">
+								</div>
+							</div>
+						</div>
+						<div class="col">
+							<div class="form-group">
+								<div class="input-group mb-3">
+									<div class="input-group-prepend">
+										<span class="input-group-text">Max Depth</span>
+									</div>
+									<input type="number" step="0.0001" min="0" class="form-control" name="maxD" id="maxD" value="0" aria-describedby="maxD">
+								</div>
+							</div>
+						</div>
+					  </div>
 					  <!--------------*******************-------------- Only for new items Start--------------*******************-------------->
 					  <div id="divNewItems1">
 						<div class="dropdown-divider mb-4"></div>
@@ -333,59 +633,7 @@ function showResult(str) {
 										<input type="number" step="0.0001" min="0" class="form-control" name="D2" id="D2" value="0" aria-describedby="D2">
 									</div>
 								</div>
-							</div>
-							<div class="col">
-								<div class="form-group">
-									<div class="input-group mb-3">
-										<div class="input-group-prepend">
-											<span class="input-group-text">Min Width</span>
-										</div>
-										<input type="number" step="0.0001" min="0" class="form-control" name="minW" id="minW" value="0" aria-describedby="minW">
-									</div>
-								</div>
-								<div class="form-group">
-									<div class="input-group mb-3">
-										<div class="input-group-prepend">
-											<span class="input-group-text">Min Height</span>
-										</div>
-										<input type="number" step="0.0001" min="0" class="form-control" name="minH" id="minH" value="0" aria-describedby="minH">
-									</div>
-								</div>
-								<div class="form-group">
-									<div class="input-group mb-3">
-										<div class="input-group-prepend">
-											<span class="input-group-text">Min Depth</span>
-										</div>
-										<input type="number" step="0.0001" min="0" class="form-control" name="minD" id="minD" value="0" aria-describedby="minD">
-									</div>
-								</div>
-							</div>
-							<div class="col">
-								<div class="form-group">
-									<div class="input-group mb-3">
-										<div class="input-group-prepend">
-											<span class="input-group-text">Max Width</span>
-										</div>
-										<input type="number" step="0.0001" min="0" class="form-control" name="maxW" id="maxW" value="0" aria-describedby="maxW">
-									</div>
-								</div>
-								<div class="form-group">
-									<div class="input-group mb-3">
-										<div class="input-group-prepend">
-											<span class="input-group-text">Max Height</span>
-										</div>
-										<input type="number" step="0.0001" min="0" class="form-control" name="maxH" id="maxH" value="0" aria-describedby="maxH">
-									</div>
-								</div>
-								<div class="form-group">
-									<div class="input-group mb-3">
-										<div class="input-group-prepend">
-											<span class="input-group-text">Max Depth</span>
-										</div>
-										<input type="number" step="0.0001" min="0" class="form-control" name="maxD" id="maxD" value="0" aria-describedby="maxD">
-									</div>
-								</div>
-							</div>
+							</div>	
 						</div>
 						<div class="dropdown-divider mb-4"></div>
 						<div class="row">
@@ -395,7 +643,7 @@ function showResult(str) {
 										<div class="input-group-prepend">
 											<span class="input-group-text">Door Factor</span>
 										</div>
-										<input type="number" min="0" class="form-control" name="doorFactor" id="doorFactor" value="0" aria-describedby="doorFactor">
+										<input type="number" min="0" class="form-control" name="doorFactor" id="doorFactor" value="0" max="1" aria-describedby="doorFactor">
 									</div>
 								</div>
 								<div class="form-group">
@@ -594,6 +842,7 @@ function showResult(str) {
 <script>
 $(document).ready(function(){
 	  $('#updateBtn').hide();
+	  $('#itemImage').hide();
 	  $('#clearBtn').hide();
 	  $('#createBtn').hide();
 	  $('#divNewItems1').hide();
