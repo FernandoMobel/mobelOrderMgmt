@@ -90,7 +90,7 @@ function sendmail($to,$subject,$body)
 {
     $headers = "MIME-Version: 1.0" . "\r\n";
     $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
-    $headers .= 'Bcc: markelgers@gmail.com' . "\r\n";
+    $headers .= 'Bcc: fernando@mobel.ca' . "\r\n";
     $headers .= 'From: '."orders@mobel.ca"."\r\n".
         'Reply-To: '."orders@mobel.ca"."\r\n" .
         'MIME-Version: 1.0\r\n' .
@@ -256,7 +256,7 @@ if($_POST['mode'] == "submitToMobel"){
     }
     
     $msg .= "</p><p>Thanks,</p><p>Mobel</p></body></html>";
-    sendmail("markelgers@gmail.com; orders@mobel.ca", "Order Submitted", $msg);
+    sendmail("fernando@mobel.ca; orders@mobel.ca", "Order Submitted", $msg);
     //sendmail("markelgers@gmail.com", "Order Submitted", $msg);
 }
 
