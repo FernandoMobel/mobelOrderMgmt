@@ -16,14 +16,23 @@ if(isset($_SESSION["username"])){
 <title>Mobel Ordering System (MOS)</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
-<link rel="stylesheet" href="js/bootstrap431/css/bootstrap.min.css">
-<link rel="stylesheet" href="js/bootstrapselect1139/dist/css/bootstrap-select.css">
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css">
-<!-- Material Design Bootstrap -->
-<link rel="stylesheet" href="js/MDB/css/mdb.min.css">
-<link rel="stylesheet" href="js/MDB/css/addons/datatables.min.css">
-<link rel="stylesheet" href="js/jqueryui112/jquery-ui.min.css">
+<?php 
+$local = "";
+if(strcmp($_SERVER['SERVER_NAME'],"localhost")==0 || strcmp($_SERVER['SERVER_NAME'],"192.168.16.199")==0){
+	$local = "/mobelOrderMgmt";
+}
+
+echo "<link rel=\"stylesheet\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/js/bootstrap431/css/bootstrap.min.css\">" ;
+echo "<link rel=\"stylesheet\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/js/bootstrapselect1139/dist/css/bootstrap-select.css\">" ;
+echo "<link rel=\"stylesheet\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/js/MDB/css/mdb.min.css\">";
+echo "<link rel=\"stylesheet\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/js/MDB/css/addons/datatables.min.css\">";
+echo "<link rel=\"stylesheet\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/js/jqueryui112/jquery-ui.min.css\">";
+
+?>
+<!-- Calendar scripts-->
+<!--link href='js/Calendar/main.css' rel='stylesheet' />
+<script src='js/Calendar/main.js'></script-->
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.7.1/css/bootstrap-datepicker3.standalone.min.css" />
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
