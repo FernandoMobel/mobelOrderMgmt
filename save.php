@@ -14,7 +14,11 @@ if(isset($_SESSION["username"])){
 <?php
 if($_POST['mode'] == "setStyle"){
     $sql = "update orderRoom set ". $_POST['column'] . " = '" .$_POST['id'] . "' where oid = '" . $_POST['oid'] . "' and rid = '". $_POST['rid'] . "'";
-    opendb($sql);
+	opendb($sql);
+	if(strcmp($_POST['column'],"species")==0){
+		$sql = "update orderRoom set frontFinish = null where oid = '" . $_POST['oid'] . "' and rid = '". $_POST['rid'] . "'";
+		opendb($sql);
+	}
     
     //echo $sql;
 }
@@ -352,7 +356,7 @@ function itemUpdateConstraintsOK($table){
         $msg = "ok";
         return 1;
     }
-    
+	
     opendb($sql);
 	if($GLOBALS['$result']->num_rows > 0){
         foreach ($GLOBALS['$result'] as $row) {
@@ -362,7 +366,7 @@ function itemUpdateConstraintsOK($table){
     
     if(strcmp($msg,"ok")<>0){
         if(strcmp($table, "orderItemMods")==0 and strcmp($_POST['column'],"qty")==0){
-            return 1;
+			return 1;
         }else{
             echo $msg;
             return 0;
