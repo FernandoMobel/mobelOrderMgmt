@@ -1,13 +1,13 @@
 <?php
-session_start();
+session_start(); 
 if(isset($_SESSION["username"])){
     if(($_SESSION["username"]=="" || $_SESSION["username"]=="invalid") && $_SERVER['REQUEST_URI']!="/index2.php"){
-        header("Location: index2.php");
+        header("Location: auth2.php");
         //exit();
     }
 }else{
     $_SESSION["username"]="invalid";
-    header("Location: index2.php");
+    header("Location: auth2.php");
 }
 ?>
 <!DOCTYPE html>
