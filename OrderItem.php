@@ -221,9 +221,9 @@ if($_POST['mode']=="getNewItem"){
 		$CL = $_POST['cabinetLine'];
 	} 
     if($type=="mod"){
-        $sql = "select id,description, ifnull(w,'no width') as 'w',ifnull(h, 'no height') as 'h',ifnull(d,'no depth') as 'd',ifnull(w2,'no width') as 'w2',ifnull(h2, 'no height') as 'h2',ifnull(d2,'no depth') as 'd2',name from itemMods where (".$aFilter.") and CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$CL.") order by description limit 150";
+        $sql = "select id,description, ifnull(w,'no width') as 'w',ifnull(h, 'no height') as 'h',ifnull(d,'no depth') as 'd',ifnull(w2,'no width') as 'w2',ifnull(h2, 'no height') as 'h2',ifnull(d2,'no depth') as 'd2',name from itemMods where (".$aFilter.") and CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$CL.") and visible is null order by description limit 150";
     }else{
-        $sql = "select id,description, ifnull(w,'no width') as 'w',ifnull(h, 'no height') as 'h',ifnull(d,'no depth') as 'd',ifnull(w2,'no width') as 'w2',ifnull(h2, 'no height') as 'h2',ifnull(d2,'no depth') as 'd2',name from item     where (".$aFilter.") and CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$CL.") order by description limit 150";
+        $sql = "select id,description, ifnull(w,'no width') as 'w',ifnull(h, 'no height') as 'h',ifnull(d,'no depth') as 'd',ifnull(w2,'no width') as 'w2',ifnull(h2, 'no height') as 'h2',ifnull(d2,'no depth') as 'd2',name from item     where (".$aFilter.") and CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$CL.") and visible is null order by description limit 150";
     }
     //echo $sql;
     opendb($sql);
