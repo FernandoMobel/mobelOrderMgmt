@@ -1,7 +1,12 @@
 
-
 <?php include_once 'includes/nav.php';?>
-
+<?php
+//Captcha key
+//$siteKey = "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"; //Dev
+$siteKey = "6LfxicQZAAAAAE8yKFKr2KCg0q3-7jwbh-5hodVP"; //Prd
+if(!isset($_SESSION["attp"]))
+	$_SESSION["attp"]=0;
+?> 
 <div class="container">
     <div class="row">
       <div class="col-sm-9 col-md-7 col-lg-5 mx-auto">
@@ -22,6 +27,10 @@
                 <label class="custom-control-label" for="customCheck1">Remember password</label>
               </div>
               <button class="btn btn-lg btn-primary btn-block text-uppercase" type="submit">Sign in</button>
+			  <?php
+				if($_SESSION["attp"] > 2)
+					echo "<br/><div class=\"g-recaptcha d-flex justify-content-center\" data-sitekey=\"".$siteKey."\"></div>";
+			  ?>			  
             </form>
           </div>
         </div>

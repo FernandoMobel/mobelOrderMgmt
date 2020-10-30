@@ -1,13 +1,18 @@
 <?php
-session_start();
-if(isset($_SESSION["username"])){
-    if(($_SESSION["username"]=="" || $_SESSION["username"]=="invalid") && $_SERVER['REQUEST_URI']!="/index.php"){
-        header("Location: index.php");
-        //exit();
-    }
+session_start(); 
+/* For local environment */
+$local = "";
+if(strcmp($_SERVER['SERVER_NAME'],"localhost")==0 || strcmp($_SERVER['SERVER_NAME'],"192.168.16.199")==0){
+	$local = "/mobelOrderMgmt";
+}
+/*Is authorized?*/
+if(isset($_SESSION["auth"])){
+	if(!$_SESSION["auth"] && $_SERVER['REQUEST_URI']!= $local."/index.php"){
+		header("Location: index.php");
+	}
 }else{
-    $_SESSION["username"]="invalid";
-    header("Location: index.php");
+	$_SESSION["auth"]=false;
+	header("Location: index.php");
 }
 ?>
 <!DOCTYPE html>
@@ -16,17 +21,22 @@ if(isset($_SESSION["username"])){
 <title>Mobel Ordering System (MOS)</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
-<link rel="stylesheet" href="js/bootstrap431/css/bootstrap.min.css">
-<link rel="stylesheet" href="js/bootstrapselect1139/dist/css/bootstrap-select.css">
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css">
-<!-- Material Design Bootstrap -->
-<link rel="stylesheet" href="js/MDB/css/mdb.min.css">
-<link rel="stylesheet" href="js/MDB/css/addons/datatables.min.css">
-<link rel="stylesheet" href="js/jqueryui112/jquery-ui.min.css">
+<?php 
+/* Scripts static address*/
+echo "<link rel=\"stylesheet\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/js/bootstrap431/css/bootstrap.min.css\">" ;
+echo "<link rel=\"stylesheet\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/js/bootstrapselect1139/dist/css/bootstrap-select.css\">" ;
+echo "<link rel=\"stylesheet\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/js/MDB/css/mdb.min.css\">";
+echo "<link rel=\"stylesheet\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/js/MDB/css/addons/datatables.min.css\">";
+echo "<link rel=\"stylesheet\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/js/jqueryui112/jquery-ui.min.css\">";
+
+?>
+<!-- Calendar scripts-->
+<!--link href='js/Calendar/main.css' rel='stylesheet' />
+<script src='js/Calendar/main.js'></script-->
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.7.1/css/bootstrap-datepicker3.standalone.min.css" />
-
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
 <style>
 :root {
@@ -156,46 +166,41 @@ body {
 
 <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
   <a class="navbar-brand" href="https://mobel.ca"><img id="logo" alt="logo" src="https://mobel.ca/wp-content/uploads/2019/01/Logo.png"/></a>
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
-    <span class="navbar-toggler-icon"></span>
-  </button>
-  <div class="collapse navbar-collapse" id="collapsibleNavbar">
-    <ul class="navbar-nav">
+  <?php
+  if ($_SESSION["auth"]){
+  ?>
+	  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
+		<span class="navbar-toggler-icon"></span>
+	  </button>
+	  <div class="collapse navbar-collapse" id="collapsibleNavbar">
+		<ul class="navbar-nav">
 
-      <li class="nav-item">
-        <a class="nav-link" href="newOrder.php">New</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="viewOrder.php">Orders</a>
-      </li> 
-      <li class="nav-item">
-        <a class="nav-link" href="myAccount.php">Account</a>
-      </li>
-      <?php
-      if(array_key_exists("userType",$_SESSION)){
-          if($_SESSION["userType"]==3){
-              ?>
-              <li class="nav-item">            
-				<div class="btn-group">
-					<a class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Mobel Only</a>	<!---->			
-					<div class="dropdown-menu">
-						<a class="dropdown-item" href="EmployeeMenu.php">Order Management</a>
-						<a class="dropdown-item" href="itemList.php">Item Managment</a>
-						<!--a class="dropdown-item" href="registerJobs.php">Register Jobs</a>
-						<a class="dropdown-item" href="schedules.php">Schedules</a-->
-						<!--div class="dropdown-divider"></div>
-						<a class="dropdown-item" href="#">Separated link</a-->
-					</div>
-				</div>
-          </li>
-              <?php 
-          }
-      }
-      ?>
-      <li class="nav-item">
-        <a class="nav-link" href="logOut.php">Log Out</a>
-      </li>
-      
-    </ul>
-  </div>  
+		  <li class="nav-item">
+			<a class="nav-link" href="newOrder.php">New</a>
+		  </li>
+		  <li class="nav-item">
+			<a class="nav-link" href="viewOrder.php">Orders</a>
+		  </li> 
+		  <li class="nav-item">
+			<a class="nav-link" href="myAccount.php">Account</a>
+		  </li>
+		  <?php
+		  if(array_key_exists("userType",$_SESSION)){
+			  if($_SESSION["userType"]==3){
+				  ?>
+				  <li class="nav-item">
+				<a class="nav-link" href="EmployeeMenu.php">Mobel Only</a>
+			  </li>
+				  <?php 
+			  }
+		  }
+		  ?>
+		  <li class="nav-item">
+			<a class="nav-link" href="logOut.php">Log Out</a>
+		  </li>
+		</ul>
+	</div>  
+	<?php
+	}
+	?>
 </nav>
