@@ -685,6 +685,12 @@ if($_POST['mode'] == "resetOrder"){
 	opendb($sql);
 }
 
+if ($_POST['mode'] == "switchUser"){
+	$sql = "update mosOrder set mosUser= ".$_POST['newUser']." where oid =".$_POST['oid'];
+	echo $sql;
+	opendb($sql);
+}
+
 function copyItem($Sroom, $Sitem, $Droom){
     //copies item Sitem in room Sroom to Droom.
     $myList = fieldList("orderItem");
@@ -727,8 +733,5 @@ function fieldList($tableName){
     }
     return substr($Fields,0,$strlen($Fields)-1);
 }
-
-
-
 
 ?>

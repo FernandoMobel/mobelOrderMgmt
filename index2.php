@@ -4,11 +4,8 @@
 //Captcha key
 //$siteKey = "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"; //Dev
 $siteKey = "6LfxicQZAAAAAE8yKFKr2KCg0q3-7jwbh-5hodVP"; //Prd
-$count = 0;
-if(isset($_GET["attp"]))
-	$count = htmlspecialchars($_GET["attp"]);
-
-
+if(!isset($_SESSION["attp"]))
+	$_SESSION["attp"]=0;
 ?> 
 <div class="container">
     <div class="row">
@@ -31,8 +28,8 @@ if(isset($_GET["attp"]))
               </div>
               <button class="btn btn-lg btn-primary btn-block text-uppercase" type="submit">Sign in</button>
 			  <?php
-				if($count > 2)
-					echo "<br/><div class=\"g-recaptcha\" data-sitekey=\"".$siteKey."\"></div>";
+				if($_SESSION["attp"] > 2)
+					echo "<br/><div class=\"g-recaptcha d-flex justify-content-center\" data-sitekey=\"".$siteKey."\"></div>";
 			  ?>			  
             </form>
           </div>

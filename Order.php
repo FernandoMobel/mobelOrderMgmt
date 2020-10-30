@@ -881,11 +881,9 @@ function printPrice(){
             
             echo "<div class=\"col-sm-3 col-md-3 col-lg-3  align-self-center\">";
             
-            echo "<label for=\"OID\">For Order Number ".$row['oid'];
-            
-            
-                
-            echo "</label>";
+            echo "<label for=\"OID\">For Order Number ".$row['oid']."</label>";
+			echo "<label class=\"print\">Required: ".substr($dateRequired,0,10)."</label>";
+                        
             echo "<input type=\"hidden\" value=\"".$row['oid']."\" id=\"OID\"><br/>";
             
             //echo "<div class=\"btn-group \">";
@@ -1216,7 +1214,7 @@ function printPrice(){
 									}
 								}
 								if($match == 0 && !is_null($row['door'])){
-									echo "<option value=\"" . "Please choose a new door style" . "\">" . "Please choose a new door style" . "</option>";
+									echo "<option selected value=\"" . "Please choose a new door style" . "\">" . "Please choose a new door style" . "</option>";
 									$invalidHeaderMessage = $invalidHeaderMessage .  "<br>No door selected";
 								}
 							}
@@ -1251,7 +1249,7 @@ function printPrice(){
 									}
 								}
 								if($match == 0 && !is_null($row['frontFinish'])){
-									echo "<option ". "selected" ." value=\"" . "Please choose a new finish" . "\">" . "" . "</option>";
+									echo "<option ". "selected" ." value=\"" . "Please choose a new finish" . "\">" . "Please choose a new finish" . "</option>";
 									$invalidHeaderMessage = $invalidHeaderMessage . "<br>No finish selected";
 								}
 							}
@@ -1783,7 +1781,7 @@ function printPrice(){
 					<div class="col-2">
 						Required Date: 
 						<?php 
-						echo "<input title=\"Some factors may increase your lead time. We will inform you as soon as possible once your quote is submitted.\" type=\"text\" maxlength=\"10\" data-provide=\"datepicker\" data-date-format=\"yyyy-mm-dd\" onchange=\"saveOrder('dateRequired');\" class=\"form-control date\"  value=\"". substr($dateRequired,0,10) ."\" id=\"dateRequired\">";
+						echo "<input title=\"Some factors may increase your lead time. We will inform you as soon as possible once your quote is submitted.\" type=\"text\" maxlength=\"10\" data-provide=\"datepicker\" data-date-format=\"yyyy-mm-dd\" onchange=\"saveOrder('dateRequired');\" class=\"form-control datepicker\"  value=\"". substr($dateRequired,0,10) ."\" id=\"dateRequired\">";
 						?>
 					</div>
 					<div class="col-1 text-center service">
@@ -1935,6 +1933,9 @@ $(document).ready(function(){
 	  $('#W2').hide();
 	  $('#D2lbl').hide();
 	  $('#D2').hide();
+	  $('.datepicker').datepicker({ 
+			startDate: new Date()
+		});
 	});
 
 $(document).ready(function(){

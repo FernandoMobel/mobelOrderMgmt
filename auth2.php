@@ -2,23 +2,24 @@
 
 <?php include_once 'includes/db.php';?>
 <?php 
+$_SESSION["auth"] = false;
 $captcha;
 $ip = $_SERVER['REMOTE_ADDR'];
 opendb("SELECT count(ipAddress) AS failedLoginAttempt FROM failedLogin WHERE ipAddress = '".$ip."'  AND date BETWEEN DATE_SUB( NOW() , INTERVAL 1 DAY ) AND NOW()");
 if($GLOBALS['$result']->num_rows > 0){
 	foreach ($GLOBALS['$result'] as $row) {
-		$count = $row['failedLoginAttempt'];
+		$_SESSION["attp"] = $row['failedLoginAttempt'];
 	}
 }
 	
-if($count>3){
+if($_SESSION["attp"]>2){
 		if(isset($_POST['g-recaptcha-response'])){
           $captcha=$_POST['g-recaptcha-response'];
         }else{
-			header("Location: index2.php?pw=wrong&attp=".$count);
+			header("Location: index2.php");
 		}
 		if(!$captcha){
-			header("Location: index2.php?pw=wrong&attp=".$count);
+			header("Location: index2.php");
 		}else{
 			//change secret key for prod
 			//$secretKey = "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe";//Dev
@@ -43,6 +44,7 @@ if($count>3){
 						$_SESSION["account"] = $row['account'];
 						$_SESSION["CLGroup"] = $row['CLGroup'];
 						$_SESSION["defaultCLid"] = $row['defaultCLid'];
+						$_SESSION["auth"] = true;
 					}
 					opendb("select leadTime, siteMode from webNotes");
 					if($GLOBALS['$result']->num_rows > 0){
@@ -54,10 +56,10 @@ if($count>3){
 					header("Location: viewOrder.php");
 				}else{	
 					opendb("INSERT INTO failedLogin(ipAddress, date) VALUES ('".$ip."',NOW())");
-					header("Location: index2.php?pw=wrong&attp=".$count);
+					header("Location: index2.php");
 				}
-			} else {
-					header("Location: index2.php?pw=wrong&attp=".$count);
+			} else {					
+					header("Location: index2.php");
 			}	
 		}
 	}else{
@@ -76,6 +78,7 @@ if($count>3){
 				$_SESSION["account"] = $row['account'];
 				$_SESSION["CLGroup"] = $row['CLGroup'];
 				$_SESSION["defaultCLid"] = $row['defaultCLid'];
+				$_SESSION["auth"]=true;
 			}
 			opendb("select leadTime, siteMode from webNotes");
 			if($GLOBALS['$result']->num_rows > 0){
@@ -87,7 +90,7 @@ if($count>3){
 			header("Location: viewOrder.php");
 		}else{	
 			opendb("INSERT INTO failedLogin(ipAddress, date) VALUES ('".$ip."',NOW())");
-			header("Location: index2.php?pw=wrong&attp=".$count);
+			header("Location: index2.php");
 		}
 	}
 closedb();

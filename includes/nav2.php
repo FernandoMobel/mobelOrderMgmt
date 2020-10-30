@@ -1,15 +1,19 @@
 <?php
 session_start(); 
-/*if(isset($_SESSION["username"])){
-    if(($_SESSION["username"]=="" || $_SESSION["username"]=="invalid") && $_SERVER['REQUEST_URI']!="/index2.php"){
-        //header("Location: auth2.php");
-        //exit();
-		echo $_SERVER['REQUEST_URI'];
-    }
+/* For local environment */
+$local = "";
+if(strcmp($_SERVER['SERVER_NAME'],"localhost")==0 || strcmp($_SERVER['SERVER_NAME'],"192.168.16.199")==0){
+	$local = "/mobelOrderMgmt";
+}
+/*Is authorized?*/
+if(isset($_SESSION["auth"])){
+	if(!$_SESSION["auth"] && $_SERVER['REQUEST_URI']!= $local."/index2.php"){
+		header("Location: index2.php");
+	}
 }else{
-    $_SESSION["username"]="invalid";
-    header("Location: auth2.php");
-}*/
+	$_SESSION["auth"]=false;
+	header("Location: index2.php");
+}
 ?>
 <!DOCTYPE html>
 <html>
@@ -19,11 +23,7 @@ session_start();
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css">
 <?php 
-$local = "";
-if(strcmp($_SERVER['SERVER_NAME'],"localhost")==0 || strcmp($_SERVER['SERVER_NAME'],"192.168.16.199")==0){
-	$local = "/mobelOrderMgmt";
-}
-
+/* Scripts static address*/
 echo "<link rel=\"stylesheet\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/js/bootstrap431/css/bootstrap.min.css\">" ;
 echo "<link rel=\"stylesheet\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/js/bootstrapselect1139/dist/css/bootstrap-select.css\">" ;
 echo "<link rel=\"stylesheet\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/js/MDB/css/mdb.min.css\">";
@@ -166,36 +166,41 @@ body {
 
 <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
   <a class="navbar-brand" href="https://mobel.ca"><img id="logo" alt="logo" src="https://mobel.ca/wp-content/uploads/2019/01/Logo.png"/></a>
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
-    <span class="navbar-toggler-icon"></span>
-  </button>
-  <div class="collapse navbar-collapse" id="collapsibleNavbar">
-    <ul class="navbar-nav">
+  <?php
+  if ($_SESSION["auth"]){
+  ?>
+	  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
+		<span class="navbar-toggler-icon"></span>
+	  </button>
+	  <div class="collapse navbar-collapse" id="collapsibleNavbar">
+		<ul class="navbar-nav">
 
-      <li class="nav-item">
-        <a class="nav-link" href="newOrder.php">New</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="viewOrder.php">Orders</a>
-      </li> 
-      <li class="nav-item">
-        <a class="nav-link" href="myAccount.php">Account</a>
-      </li>
-      <?php
-      if(array_key_exists("userType",$_SESSION)){
-          if($_SESSION["userType"]==3){
-              ?>
-              <li class="nav-item">
-            <a class="nav-link" href="EmployeeMenu.php">Mobel Only</a>
-          </li>
-              <?php 
-          }
-      }
-      ?>
-      <li class="nav-item">
-        <a class="nav-link" href="logOut.php">Log Out</a>
-      </li>
-      
-    </ul>
-  </div>  
+		  <li class="nav-item">
+			<a class="nav-link" href="newOrder.php">New</a>
+		  </li>
+		  <li class="nav-item">
+			<a class="nav-link" href="viewOrder.php">Orders</a>
+		  </li> 
+		  <li class="nav-item">
+			<a class="nav-link" href="myAccount.php">Account</a>
+		  </li>
+		  <?php
+		  if(array_key_exists("userType",$_SESSION)){
+			  if($_SESSION["userType"]==3){
+				  ?>
+				  <li class="nav-item">
+				<a class="nav-link" href="EmployeeMenu.php">Mobel Only</a>
+			  </li>
+				  <?php 
+			  }
+		  }
+		  ?>
+		  <li class="nav-item">
+			<a class="nav-link" href="logOut.php">Log Out</a>
+		  </li>
+		</ul>
+	</div>  
+	<?php
+	}
+	?>
 </nav>

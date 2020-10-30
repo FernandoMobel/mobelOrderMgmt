@@ -32,53 +32,62 @@ function savePw(){
 </script>
 
 <div class="navbar navbar-expand-sm bg-light navbar-light">
-<div class="col-sm-12 col-md-11 col-lg-11 mx-auto">
-<div class="row">
-<?php
-opendb("select m.firstName,m.lastName,a.description,m.email from account a, mosuser m where a.id = m.account and email = '" . $_SESSION["username"] . "'");
+	<div class="col-sm-12 col-md-11 col-lg-11 mx-auto">
+		<?php
+		$sql = "select m.firstName,m.lastName,a.description,m.email, m.phone from account a, mosuser m where a.id = m.account and email = '" . $_SESSION["username"] . "'";
+		opendb($sql);
+		//echo $sql;
 
-if($GLOBALS['$result']->num_rows > 0){
-    foreach ($GLOBALS['$result'] as $row) {
-        echo "<div class=\"col-sm-2 col-md-2 col-lg-2\">";
-        echo "<label for=\"account\">Account:</label>";
-        echo "<textarea onchange=\"alert('Sorry, only Mobel can update your company or account name.');\" class=\"form-control noresize\" id=\"account\">";
-        echo $row['description'];
-        echo "</textarea>";
-        echo "</div>";
-        
-        echo "<div class=\"col-sm-3 col-md-3 col-lg-3\">";
-        echo "<label for=\"email\">Email Address:</label>";
-        echo "<textarea onchange=\"alert('Sorry, only Mobel can update your email address.');\" class=\"form-control noresize\"  id=\"email\">";
-        echo $row['email'];
-        echo "</textarea>";
-        echo "</div>";
-        
-        echo "<div class=\"col-sm-3 col-md-3 col-lg-3\">";
-        echo "<label for=\"firstName\">First Name:</label>";
-        echo "<textarea onchange=\"saveUser('firstName');\" class=\"form-control noresize\" id=\"firstName\">";
-        echo $row['firstName'];
-        echo "</textarea>";
-        echo "</div>";
-        
-        echo "<div class=\"col-sm-2 col-md-2 col-lg-2\">";
-        echo "<label for=\"lastName\">Last Name:</label>";
-        echo "<textarea onchange=\"saveUser('lastName');\" class=\"form-control noresize\"  id=\"lastName\">";
-        echo $row['lastName'];
-        echo "</textarea>";
-        echo "</div>";
-        
-        //echo "<div class=\"col-sm-2 col-md-2 col-lg-2  align-self-center\">";
-        //echo "<div class=\"btn-group\">";
-        //if($row['status'] == "Quoting"){
-            //echo "<button type=\"button\" data-toggle=\"modal\" data-target=\"#submitToMobel\"class=\"btn btn-primary\">Reset My Password</button>";
-        //}
-        //echo "</div></div>";
-    }
-}
-//<form class="form-signin"  method="post">
-?>
-</div>
-</div>
+		if($GLOBALS['$result']->num_rows > 0){
+			foreach ($GLOBALS['$result'] as $row) {
+				echo "<div class=\"row\">";
+					echo "<div class=\"col-md-6 col-lg-2\">";
+					echo "<label for=\"account\">Account:</label>";
+					echo "<textarea disabled onchange=\"alert('Sorry, only Mobel can update your company or account name.');\" class=\"form-control noresize\" id=\"account\">";
+					echo $row['description'];
+					echo "</textarea>";
+					echo "</div>";
+					
+					echo "<div class=\"col-md-6 col-lg-4\">";
+					echo "<label for=\"email\">Email Address:</label>";
+					echo "<textarea disabled onchange=\"alert('Sorry, only Mobel can update your email address.');\" class=\"form-control noresize\"  id=\"email\">";
+					echo $row['email'];
+					echo "</textarea>";
+					echo "</div>";
+					
+					echo "<div class=\"col-md-6 col-lg-2\">";
+					echo "<label for=\"firstName\">First Name:</label>";
+					echo "<textarea onchange=\"saveUser('firstName');\" class=\"form-control noresize\" id=\"firstName\">";
+					echo $row['firstName'];
+					echo "</textarea>";
+					echo "</div>";
+					
+					echo "<div class=\"col-md-6 col-lg-2\">";
+					echo "<label for=\"lastName\">Last Name:</label>";
+					echo "<textarea onchange=\"saveUser('lastName');\" class=\"form-control noresize\"  id=\"lastName\">";
+					echo $row['lastName'];
+					echo "</textarea>";
+					echo "</div>";
+					
+					echo "<div class=\"col-md-6 col-lg-2\">";
+					echo "<label for=\"phone\">Phone:</label>";
+					echo "<textarea onchange=\"saveUser('phone');\" class=\"form-control noresize\"  id=\"phone\">";
+					echo $row['phone'];
+					echo "</textarea>";
+					echo "</div>";
+				echo "</div>";
+				
+				//echo "<div class=\"col-sm-2 col-md-2 col-lg-2  align-self-center\">";
+				//echo "<div class=\"btn-group\">";
+				//if($row['status'] == "Quoting"){
+					//echo "<button type=\"button\" data-toggle=\"modal\" data-target=\"#submitToMobel\"class=\"btn btn-primary\">Reset My Password</button>";
+				//}
+				//echo "</div></div>";
+			}
+		}
+		//<form class="form-signin"  method="post">
+		?>
+	</div>
 </div> 
 
 <div class="container">

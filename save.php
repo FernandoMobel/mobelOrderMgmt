@@ -111,7 +111,7 @@ if($_POST['mode'] == "setCurrentLeadtime"){
 }
 
 if($_POST['mode'] == "submitToMobel"){
-    
+    $CLid = 1;
     $sql = "update mosOrder set dateSubmitted = now(), state = '2', leadTime = (select currentLeadtime from settings) where oid = '" . $_POST['oid'] . "' and state = 1";
     opendb($sql);
     $sql = "select * from mosOrder o, accountAddress aA, account a, mosUser mu where o.mosUser = mu.id and o.account = a.id and o.shipAddress = aA.id and o.oid = '" . $_POST['oid'] . "'";
@@ -129,17 +129,18 @@ if($_POST['mode'] == "submitToMobel"){
             $msg .= "Tag Name: " . $row['tagName'] . "<br/>";
             //$msg .= "PO: " . $row['po'] . "<br/>";
             $msg .= "Ship To: " . $row['unit'] . " " . $row['street']. " " . $row['city']. ", ". $row['province']. ", ". $row['country']. " ". $row['postalCode']. "<br/>";
+			$CLid = $row['CLid'];
         }
     
     $msg .= "<br/>";
     //$SQL = "sele * from (SELECT oi.note,                                       oi.id as item, 0 as sid, oi.qty, oi.name, oi.price, oi.sizePrice, 0 as 'parentPercent', ds.factor as 'DFactor', irf.factor as 'IFactor', ff.factor as 'FFactor', sh.factor as 'SFactor', gl.factor as 'GFactor', sp.finishedEndSizePrice as 'EFactor', (db.upcharge + dg.upcharge) as 'drawerCharge', sdf.upcharge as 'smallDrawerCharge', ldf.upcharge as 'largeDrawerCharge', oi.doorFactor as 'DApplies', oi.interiorFactor as 'IApplies', oi.finishFactor as 'FApplies', oi.sheenFactor as 'SApplies', oi.glazeFactor as 'GApplies',oi.drawers, oi.smallDrawerFronts, oi.largeDrawerFronts, oi.H, oi.W, oi.D, oi.minSize, it.pricingMethod as methodID, oi.hingeLeft,oi.hingeRight,oi.finishLeft,oi.finishRight
     $SQL = "select * from (SELECT oi.note, orr.rid as rid, orr.name as roomName, oi.id as item, 0 as sid, oi.qty, oi.name, oi.price, oi.sizePrice, 0 as 'parentPercent', ds.factor as 'DFactor', irf.factor as 'IFactor', ff.factor as 'FFactor', ff.upcharge as 'FUpcharge', sh.factor as 'SFactor', gl.factor as 'GFactor', sp.finishedEndSizePrice as 'EFactor', (db.upcharge + dg.upcharge) as 'drawerCharge', sdf.upcharge as 'smallDrawerCharge', ldf.upcharge as 'largeDrawerCharge', oi.doorFactor as 'DApplies', oi.interiorFactor as 'IApplies', oi.finishFactor as 'FApplies', oi.sheenFactor as 'SApplies', oi.glazeFactor as 'GApplies',oi.drawers, oi.smallDrawerFronts, oi.largeDrawerFronts, oi.H, oi.W, oi.D, oi.minSize, it.pricingMethod as methodID, oi.hingeLeft,oi.hingeRight,oi.finishLeft,oi.finishRight,orr.species,orr.interiorFinish,orr.door,orr.frontFinish,orr.drawerBox,orr.glaze,orr.smallDrawerFront,orr.sheen,orr.largeDrawerFront,orr.hinge,orr.drawerGlides,orr.finishedEnd 
     FROM  orderItem oi, orderRoom orr, doorSpecies ds, interiorFinish irf, item it, sheen sh, glaze gl, frontFinish ff,drawerBox db, drawerGlides dg, smallDrawerFront sdf, largeDrawerFront ldf, species sp
-    WHERE it.id = oi.iid and oi.rid = orr.rid and orr.species = ds.sid and orr.door = ds.did and orr.interiorFinish = irf.id and orr.oid = '" .$_POST['oid']. "' and orr.species = sp.id and orr.sheen = sh.id and orr.glaze = gl.id and orr.frontFinish = ff.id and orr.drawerBox = db.id and orr.drawerGlides = dg.id and orr.smallDrawerFront = sdf.id and orr.largeDrawerFront = ldf.id
+    WHERE it.id = oi.iid and oi.rid = orr.rid and orr.species = ds.sid and orr.door = ds.did and orr.interiorFinish = irf.id and orr.oid = '" .$_POST['oid']. "' and orr.species = sp.id and orr.sheen = sh.id and orr.glaze = gl.id and orr.frontFinish = ff.id and orr.drawerBox = db.id and orr.drawerGlides = dg.id and orr.smallDrawerFront = sdf.id and orr.largeDrawerFront = ldf.id and it.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$CLid.")
     union all
                            SELECT oi.note, orr.rid as rid, orr.name as roomName, oi.pid as item, oi.id as sid, oi.qty, oi.name, oi.price, oi.sizePrice, 0 as 'parentPercent', ds.factor as 'DFactor', irf.factor as 'IFactor', ff.factor as 'FFactor', ff.upcharge as 'FUpcharge', sh.factor as 'SFactor', gl.factor as 'GFactor', sp.finishedEndSizePrice as 'EFactor', (db.upcharge + dg.upcharge) as 'drawerCharge', sdf.upcharge as 'smallDrawerCharge', ldf.upcharge as 'largeDrawerCharge', oi.doorFactor as 'DApplies', oi.interiorFactor as 'IApplies', oi.finishFactor as 'FApplies', oi.sheenFactor as 'SApplies', oi.glazeFactor as 'GApplies',oi.drawers, oi.smallDrawerFronts, oi.largeDrawerFronts, oi.H, oi.W, oi.D, oi.minSize, it.pricingMethod as methodID, oi.hingeLeft,oi.hingeRight,oi.finishLeft,oi.finishRight,orr.species,orr.interiorFinish,orr.door,orr.frontFinish,orr.drawerBox,orr.glaze,orr.smallDrawerFront,orr.sheen,orr.largeDrawerFront,orr.hinge,orr.drawerGlides,orr.finishedEnd
     FROM  orderItemMods oi, orderRoom orr, doorSpecies ds, interiorFinish irf, itemMods it, sheen sh, glaze gl, frontFinish ff,drawerBox db, drawerGlides dg, smallDrawerFront sdf, largeDrawerFront ldf, species sp
-    WHERE it.id = oi.mid and oi.rid = orr.rid and orr.species = ds.sid and orr.door = ds.did and orr.interiorFinish = irf.id and orr.oid = '" .$_POST['oid']. "' and orr.species = sp.id and orr.sheen = sh.id and orr.glaze = gl.id and orr.frontFinish = ff.id and orr.drawerBox = db.id and orr.drawerGlides = dg.id and orr.smallDrawerFront = sdf.id and orr.largeDrawerFront = ldf.id) as T1 order by roomName,item,sid";
+    WHERE it.id = oi.mid and oi.rid = orr.rid and orr.species = ds.sid and orr.door = ds.did and orr.interiorFinish = irf.id and orr.oid = '" .$_POST['oid']. "' and orr.species = sp.id and orr.sheen = sh.id and orr.glaze = gl.id and orr.frontFinish = ff.id and orr.drawerBox = db.id and orr.drawerGlides = dg.id and orr.smallDrawerFront = sdf.id and orr.largeDrawerFront = ldf.id and it.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$CLid.")) as T1 order by roomName,item,sid";
     //SELECT orr.rid as rid, orr.name as roomName, oi.pid,oi.id as sid, oi.qty, oi.name, oi.price, oi.sizePrice, parentPercent, ds.factor as 'DFactor', irf.factor as 'IFactor', oi.doorFactor as 'DApplies', oi.interiorFactor as 'IApplies', oi.H, oi.W, oi.D, oi.minSize, it.pricingMethod as methodID,oi.hingeLeft,oi.hingeRight,oi.finishLeft,oi.finishRight,orr.species,orr.interiorFinish,orr.door,orr.frontFinish,orr.drawerBox,orr.glaze,orr.smallDrawerFront,orr.sheen,orr.largeDrawerFront,orr.hinge,orr.drawerGlides,orr.finishedEnd
     
     opendb($SQL);
@@ -337,7 +338,7 @@ function itemUpdateConstraintsOK($table){
     if(strcmp($_POST['column'],"H")==0){
         $sql = "select case
         when " . $_POST['id'] . " < i.minH then \"Sorry, this height is below the minimum.\"
-        when i.maxH <> 0 and " . $_POST['id'] . " > i.maxW then \"Sorry, this height is beyond the maximum.\"
+        when i.maxH <> 0 and " . $_POST['id'] . " > i.maxH then \"Sorry, this height is beyond the maximum.\"
         else \"ok\" end as allowed from " . $table . " i where i.id = " . $_POST['itemID'] . ";";
     }
     if(strcmp($_POST['column'],"D")==0){
