@@ -34,7 +34,7 @@ function savePw(){
 <div class="navbar navbar-expand-sm bg-light navbar-light">
 	<div class="col-sm-12 col-md-11 col-lg-11 mx-auto">
 		<?php
-		$sql = "select m.firstName,m.lastName,a.description,m.email, m.phone from account a, mosuser m where a.id = m.account and email = '" . $_SESSION["username"] . "'";
+		$sql = "select m.firstName,m.lastName,a.description,m.email, m.phone from account a, mosUser m where a.id = m.account and email = '" . $_SESSION["username"] . "'";
 		opendb($sql);
 		//echo $sql;
 
