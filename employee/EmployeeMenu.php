@@ -138,12 +138,12 @@ input::-webkit-inner-spin-button {
 	  <li class="nav-item">
 		<a class="nav-link active" id="orderView" onclick="navtab(this.id)"><b>Orders</b></a>
 	  </li>
-	  <li class="nav-item">
+	  <!--li class="nav-item">
 		<a class="nav-link" id="itemView" onclick="navtab(this.id)"><b>Items</b></a>
 	  </li>
 	  <li class="nav-item">
 		<a class="nav-link" id="headersView" onclick="navtab(this.id)"><b>Headers</b></a>
-	  </li>
+	  </li-->
 	  <li class="nav-item">
 		<a class="nav-link" id="calendarView" onclick="navtab(this.id)"><b>Calendar</b></a>
 	  </li>
