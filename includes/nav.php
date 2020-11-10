@@ -26,6 +26,7 @@ if(isset($_SESSION["auth"])){
 /* Scripts static address*/
 echo "<link rel=\"stylesheet\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/js/bootstrap431/css/bootstrap.min.css\">" ;
 echo "<link rel=\"stylesheet\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/js/bootstrapselect1139/dist/css/bootstrap-select.css\">" ;
+echo "<link rel=\"stylesheet\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/js/bootstrap-select/dist/css/bootstrap-multiselect.css\">" ;
 echo "<link rel=\"stylesheet\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/js/MDB/css/mdb.min.css\">";
 echo "<link rel=\"stylesheet\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/js/MDB/css/addons/datatables.min.css\">";
 echo "<link rel=\"stylesheet\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/js/jqueryui112/jquery-ui.min.css\">";
@@ -174,33 +175,28 @@ body {
 	  </button>
 	  <div class="collapse navbar-collapse" id="collapsibleNavbar">
 		<ul class="navbar-nav">
-
-		  <li class="nav-item">
-			<a class="nav-link" href="newOrder.php">New</a>
-		  </li>
-		  <li class="nav-item">
-			<a class="nav-link" href="viewOrder.php">Orders</a>
-		  </li> 
-		  <li class="nav-item">
-			<a class="nav-link" href="myAccount.php">Account</a>
-		  </li>
-		  <?php
-		  if(array_key_exists("userType",$_SESSION)){
-			  if($_SESSION["userType"]==3){
-				  ?>
-				  <li class="nav-item">
-				<a class="nav-link" href="EmployeeMenu.php">Mobel Only</a>
-			  </li>
-				  <?php 
-			  }
-		  }
-		  ?>
-		  <li class="nav-item">
-			<a class="nav-link" href="logOut.php">Log Out</a>
-		  </li>
-		</ul>
-	</div>  
-	<?php
+		<?php
+			echo "<li class=\"nav-item\">";
+			echo "<a class=\"nav-link\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/newOrder.php\">New</a>";
+			echo "</li>";
+			echo "<li class=\"nav-item\">";
+			echo "<a class=\"nav-link\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/viewOrder.php\">Orders</a>";
+			echo "</li>"; 
+			echo "<li class=\"nav-item\">";
+			echo "<a class=\"nav-link\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/myAccount.php\">Account</a>";
+			echo "</li>";
+			if(array_key_exists("userType",$_SESSION)){
+				if($_SESSION["userType"]==3){				  
+						echo "<li class=\"nav-item\">";
+						echo "<a class=\"nav-link\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/employee/EmployeeMenu.php\">Mobel Only</a>";
+						echo "</li>";
+				}
+			}
+			echo "<li class=\"nav-item\">";
+			echo "<a class=\"nav-link\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/logOut.php\">Log Out</a>";
+			echo "</li>";	
+		echo "</ul>";
+	echo "</div>";
 	}
 	?>
 </nav>

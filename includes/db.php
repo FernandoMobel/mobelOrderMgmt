@@ -1,8 +1,11 @@
 <?php
-$GLOBALS['$conn'] = new mysqli("138.197.170.161", "dqnrmrwrfh", "vuVE9j9wRw", "dqnrmrwrfh");
-$GLOBALS['$conn2'] = new mysqli("138.197.170.161", "dqnrmrwrfh", "vuVE9j9wRw", "dqnrmrwrfh");
-
-
+if(strcmp($_SERVER['SERVER_NAME'],"localhost")==0 || strcmp($_SERVER['SERVER_NAME'],"192.168.16.199")==0){
+	$GLOBALS['$conn'] = new mysqli("127.0.0.1", "dqnrmrwrfh", "vuVE9j9wRw", "dqnrmrwrfh");
+	$GLOBALS['$conn2'] = new mysqli("127.0.0.1", "dqnrmrwrfh", "vuVE9j9wRw", "dqnrmrwrfh");
+}else{
+	$GLOBALS['$conn'] = new mysqli("138.197.170.161", "dqnrmrwrfh", "vuVE9j9wRw", "dqnrmrwrfh");
+	$GLOBALS['$conn2'] = new mysqli("138.197.170.161", "dqnrmrwrfh", "vuVE9j9wRw", "dqnrmrwrfh");
+}
 
 $GLOBALS['$result'] = "";
   //if ($conn->connect_error) {
@@ -164,9 +167,58 @@ $GLOBALS['$result'] = "";
           //echo $size . " ";
           //echo $DFactor;
           //echo $IFactor;
-          $price = $price*$factor + $upcharge;
+		  $price = $price*$factor + $upcharge;
           
           return round($price*$qty,2);
       //}
   }
+  
+//Calculate next date available 
+function calculateDays($days){
+	//confirm there are enough days for the calculation
+	$sql = "select count(1) qty from calendar where calendarDay > curdate() and workDayInd = 1";
+	$result = opendb($sql);
+	while ( $row = $result->fetch_assoc())  {
+		if($row["qty"]<=$days)
+			//when no available days in advance new year needs to be added to the calendar table
+			fillYearCalendar(date('Y', strtotime('+1 year')));
+	}	
+	
+	$sql = "select * from calendar where calendarDay > curdate() and workDayInd = 1 order by calendarDay asc";
+	$result = opendb($sql);
+	$i = 0;
+	while ( $row = $result->fetch_assoc())  {
+		$i++;
+		if($i==$days){
+			return $row["calendarDay"];	
+			break;
+		}
+	}
+}
+
+//Insert a new year inside calendar table disabling holidays and weekends
+function fillYearCalendar($year){
+	$startDate=strtotime("01-01-".$year);
+	$endDate=strtotime("31-12-".$year);
+	/*Statutory holidays
+	------------------------
+	New year
+	Canada Day
+	Christmas
+	Boxing day
+	------------------------*/
+	$holidays = array("01-01-".$year,"01-07-".$year,"25-12-".$year,"26-12-".$year); 
+	//-----------------------------------------
+	for($i=$startDate; $i<=$endDate; $i+=86400){
+		//echo date("Y-m-d", $i)."<br>";
+		if(strcmp(date("l", $i),"Saturday")=="0" or strcmp(date("l", $i),"Sunday")=="0" or in_array(date("d-m-Y", $i),$holidays)){
+			//Setting Weekends and holidays not available
+			$sql = "insert into calendar values('".date("Y-m-d", $i)."',0,curdate(),11)";
+		}else{
+			//Setting available days
+			$sql = "insert into calendar values('".date("Y-m-d", $i)."',1,curdate(),11)";
+		}
+		opendb($sql);
+	}
+}
 ?>

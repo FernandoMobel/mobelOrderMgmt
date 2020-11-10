@@ -1,5 +1,5 @@
-<?php include 'includes/nav.php';?>
-<?php include 'includes/db.php';?>
+<?php //include 'includes/nav.php';?>
+<?php //include 'includes/db.php';?>
 <?php
 //opendb("SELECT name, description, truncate(price,2) as price,truncate(sizePrice,2) as sizePrice,truncate(minSize,2) as minSize,truncate(W,2) as W,truncate(H,2) as H,truncate(D,2) as D FROM `item`");
 ?>
@@ -47,7 +47,7 @@ var formData = $("#formItem").serialize();
 		console.log(formData);
 		myData = { mode: "insertNewItem",  data: formData};
 			$.ajax({
-			url: 'itemActions.php',
+			url: '../item/itemActions.php',
 			type: 'POST',
 			data: myData,
 			success: function(data, status, jqXHR) {
@@ -130,7 +130,7 @@ function updateItem(){
 	var id = document.getElementById("itemID").innerText;
 	myData = { mode: "updateItemById", id: id, data: formData};
 		$.ajax({
-	    url: 'itemActions.php',
+	    url: '../item/itemActions.php',
 	    type: 'POST',
 	    data: myData,
 	    success: function(data, status, jqXHR) {
@@ -160,7 +160,7 @@ function loadItemData(id) {
 	
 	myData = { mode: "getItemById", id: id };
 	$.ajax({
-	url: 'itemActions.php',
+	url: '../item/itemActions.php',
 	type: 'POST',
 	data: myData,
 	success: function(data, status, jqXHR) {					
@@ -205,7 +205,7 @@ function imageExists(itemId){
 	myData = { mode: "getImage", id: itemId};
 
 	$.ajax({
-	url: 'itemActions.php',
+	url: '../item/itemActions.php',
 	type: 'POST',
 	data: myData,
 	success: function(data, status, jqXHR) {
@@ -237,7 +237,7 @@ function showResult(str) {
 	
 	myData = { mode: "getItems", str: str };
 		$.ajax({
-	    url: 'itemActions.php',
+	    url: '../item/itemActions.php',
 	    type: 'POST',
 	    data: myData,
 	    success: function(data, status, jqXHR) {
@@ -292,7 +292,7 @@ function uploadImage(){
     var xhr = new XMLHttpRequest();
 
     // Open the connection
-    xhr.open('POST', 'upload.php', true);
+    xhr.open('POST', '../upload.php', true);
 	//Progress bar
 	xhr.upload.addEventListener("progress", function (event) {
         if (event.lengthComputable) {
@@ -838,7 +838,7 @@ function uploadImage(){
 		</div>
 	</div>
 </div>
-<?php include 'includes/foot.php';?>
+<?php include '../includes/foot.php';?>
 <script>
 $(document).ready(function(){
 	  $('#updateBtn').hide();

@@ -1,17 +1,7 @@
 <?php
+include '../includes/db.php';
 session_start();
-if(isset($_SESSION["username"])){
-    if(($_SESSION["username"]=="" || $_SESSION["username"]=="invalid") && str_replace("/HelloWorldPHP/","",$_SERVER['REQUEST_URI'])!="index.php"){
-        header("Location: index.php");
-        //exit();
-    }
-}else{
-    $_SESSION["username"]="invalid";
-    header("Location: index.php");
-}
 
-include 'includes/db.php';?>
-<?php
 function convertQueryStr(){
 	$itemData = $_POST['data'];
 	$keywords = preg_split("/[\s,=,&]+/", $itemData);
@@ -71,7 +61,26 @@ if($_POST['mode']=="updateItemById"){
 
 if($_POST['mode']=="getItems"){
 	$filter = $_POST['str'];
-	$sql = "select id,name,description from item where name like '%".$filter."%' or description like '%".$filter."%' order by description limit 80";
+	$sql = "select id,name,description from item where name like '%".$filter."%' or description like '%".$filter."%' order by description limit 150";
+    //echo $sql;
+    $query = opendb($sql);
+	$itemData = array(); 
+	if($query->num_rows > 0){ 
+		while($row = $query->fetch_assoc()){ 
+			$data['id'] = $row['id'];
+			$data['name'] = $row['name']; 
+			$data['description'] = $row['description'];
+			array_push($itemData, $data); 
+		} 
+	} 
+	 
+	// Return results as json encoded array 
+	echo json_encode($itemData); 
+}
+
+if($_POST['mode']=="getItemsRestricted"){
+	$filter = $_POST['str'];
+	$sql = "select id,name,description from item where (name like '%".$filter."%' or description like '%".$filter."%') and CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$_SESSION["defaultCLid"].") and visible is null order by description limit 150";
     //echo $sql;
     $query = opendb($sql);
 	$itemData = array(); 
@@ -137,13 +146,31 @@ if($_POST['mode']=="getItemById"){
 }
 
 if($_POST['mode']=="getImage"){
-	$path = "uploads/ItemImages/".substr($_POST['id'], -2)."/";
+	$path = "../uploads/ItemImages/".substr($_POST['id'], -2)."/";
 	$files = glob($path . $_POST['id'] . ".*", GLOB_ERR);
 	if(count($files)>0){
 		echo $files[0];
 	}else{
 		echo "false";
 	};
+}
+
+if($_POST['mode']=="reqItemUpdate"){
+	$oid = $_POST['id'];
+	$user = $_SESSION["userid"];
+	$status = 1;
+	//$date = "CURDATE()";
+	$table = "item";
+	$stmt = $GLOBALS['$conn']->prepare("INSERT INTO itemRequest (iid,reqStatus,reqUser,reqDate,itemCatalog) VALUES (:iid,:reqStatus,:reqUser,CURDATE(),:itemCatalog)");
+	echo $stmt -> error;
+	$stmt->bind_param(":iid",$oid,PDO::PARAM_INT);
+	$stmt->bind_param(":reqStatus",$status,PDO::PARAM_INT );
+	$stmt->bind_param(":reqUser",$user,PDO::PARAM_STR);
+	//$stmt->bindparam(":reqDate",$date);
+	$stmt->bindparam(":itemCatalog",$table,PDO::PARAM_STR);
+	$stmt->execute();
+	$stmt->close();
+	$GLOBALS['$conn']->close();
 }
 
 ?>

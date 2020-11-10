@@ -106,8 +106,10 @@ function sendmail($to,$subject,$body)
 }
 
 if($_POST['mode'] == "setCurrentLeadtime"){
-    $sql = "update settings set currentLeadtime = '" . $_POST['currentLeadtime'] . "'";
-    opendb($sql);
+    $newDate = calculateDays($_POST['automaticPeriod']);
+	$sql = "update settings set currentLeadtime = '".$newDate."', autoLeadDate=".$_POST['automaticPeriod'];
+	opendb($sql);
+	echo $newDate;
 }
 
 if($_POST['mode'] == "submitToMobel"){
