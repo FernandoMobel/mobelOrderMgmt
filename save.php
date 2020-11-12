@@ -264,7 +264,7 @@ if($_POST['mode'] == "submitToMobel"){
     }
     
     $msg .= "</p><p>Thanks,</p><p>Mobel</p></body></html>";
-    sendmail("fernando@mobel.ca; orders@mobel.ca", $mailOID."Order Submitted", $msg);
+    sendmail("fernando@mobel.ca; orders@mobel.ca", $mailOID." Order Submitted", $msg);
     //sendmail("markelgers@gmail.com", "Order Submitted", $msg);
 }
 
