@@ -5,8 +5,8 @@
 			<div class="d-flex justify-content-center">
 				<select id="CLines">
 					<option value="1">Mobel Designers</option>
-					<option value="2">Mobel Builders</option>
-					<option value="3">Mobel Medical</option>
+					<!--option value="2">Mobel Builders</option>
+					<option value="3">Mobel Medical</option-->
 				</select>
 			</div>
 		</div>
@@ -38,44 +38,42 @@
 				</div>
 				<div class="col-4">
 					<select class="headers" id="interiorFinish" multiple="multiple">
-						<!--optgroup label="Select All"-->
-							<?php
-							$sql = "select * from interiorFinish inf where inf.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$CLid.") order by inf.name";
-							$result = opendb($sql);
-							while ( $row = $result->fetch_assoc())  {
-								echo "<option ";
+						<?php
+						$sql = "select * from interiorFinish inf where inf.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$CLid.") order by inf.name";
+						$result = opendb($sql);
+						while ( $row = $result->fetch_assoc())  {
+							echo "<option ";
+						
+							if($row["visible"]==1)
+								echo "selected ";
 							
-								if($row["visible"]==1)
-									echo "selected ";
-								
-								echo "value=\"".$row["id"]."\">".$row["name"]."</option>"; //$species[]=$row;
-								}
-							?>
-						<!--/optgroup-->
+							echo "value=\"".$row["id"]."\">".$row["name"]."</option>"; //$species[]=$row;
+							}
+						?>
 					</select>
 				</div>
 			</div>
 			<div class="row">
 				<!-- -----------------------------------------------------------------------DOOR STYLE------------------------------------------------------------------------- -->
 				<div class="col-2 text-right">
-					<label for="doorStyle">DOOR STYLE</label>						
+					<label for="doorSpecies">DOOR STYLE</label>						
 				</div>
 				<div class="col-4">
-					<select class="headersCol" id="doorStyle" multiple="multiple">
+					<select class="headersCol" id="doorSpecies" multiple="multiple">
 						<?php
 						$sql = "select id, name from species s where s.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$CLid.") order by s.name";						
 						$result = opendb($sql);
 						while ( $specie = $result->fetch_assoc())  {
 							echo "<optgroup class=\"bg-light\" label=\"".$specie["name"]."\">";
-							$sql2 = "select d.id, d.name doorStyle, ds.visible from door d, doorSpecies ds where d.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$CLid.") and d.id = ds.did and ds.sid = ".$specie["id"];
+							$sql2 = "select ds.id, d.name doorStyle, ds.visible from door d, doorSpecies ds where d.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$CLid.") and d.id = ds.did and ds.sid = ".$specie["id"];
 							$result2 = opendb2($sql2);
-							while ( $doorStyle = $result2->fetch_assoc())  {
+							while ( $doorSpecies = $result2->fetch_assoc())  {
 								echo "<option ";
 							
-								if($doorStyle["visible"]==1)
+								if($doorSpecies["visible"]==1)
 									echo "selected ";
 								
-								echo "value=\"".$doorStyle["id"]."\">". $doorStyle["doorStyle"]."</option>";
+								echo "value=\"".$doorSpecies["id"]."\">". $doorSpecies["doorStyle"]."</option>";
 							}
 							echo "</optgroup>";
 						}
@@ -116,7 +114,6 @@
 				</div>
 				<div class="col-4">
 					<select class="headers" id="drawerBox" multiple="multiple">
-						<!--optgroup label="Select All"-->
 						<?php
 						$sql = "select * from drawerBox where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name";
 						$result = opendb($sql);
@@ -137,7 +134,6 @@
 				</div>
 				<div class="col-4">
 					<select class="headers" id="glaze" multiple="multiple">
-						<!--optgroup label="Select All"-->
 						<?php
 						$sql = "select * from glaze where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name";
 						$result = opendb($sql);
@@ -160,7 +156,6 @@
 				</div>
 				<div class="col-4">
 					<select class="headers" id="smallDrawerFront" multiple="multiple">
-						<!--optgroup label="Select All"-->
 						<?php
 						$sql = "select * from smallDrawerFront where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name";
 						$result = opendb($sql);
@@ -181,7 +176,6 @@
 				</div>
 				<div class="col-4">
 					<select class="headers" id="sheen" multiple="multiple">
-						<!--optgroup label="Select All"-->
 						<?php
 						$sql = "select * from sheen where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name";
 						$result = opendb($sql);
@@ -204,7 +198,6 @@
 				</div>
 				<div class="col-4">
 					<select class="headers" id="largeDrawerFront" multiple="multiple">
-						<!--optgroup label="Select All"-->
 						<?php
 						$sql = "select * from largeDrawerFront where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name";
 						$result = opendb($sql);
@@ -215,7 +208,7 @@
 							if($row["visible"]==1)
 								echo "selected ";
 							
-							echo "value=\"".$row["id"]."\">".$row["name"]."</option>"; //$species[]=$row;
+							echo "value=\"".$row["id"]."\">".$row["name"]."</option>"; 
 						}
 						?>
 					</select>
@@ -226,7 +219,6 @@
 				</div>
 				<div class="col-4">
 					<select class="headers" id="hinge" multiple="multiple">
-						<!--optgroup label="Select All"-->
 						<?php
 						$sql = "select * from hinge where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name";
 						$result = opendb($sql);
@@ -249,7 +241,6 @@
 				</div>
 				<div class="col-4">
 					<select class="headers" id="drawerGlides" multiple="multiple">
-						<!--optgroup label="Select All"-->
 						<?php
 						$sql = "select * from drawerGlides where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name";
 						$result = opendb($sql);
@@ -270,11 +261,9 @@
 				</div>
 				<div class="col-4">
 					<select class="headers" id="finishedEnd" multiple="multiple">
-						<!--optgroup label="Select All"-->
 						<?php
 						$sql = "select * from finishedEnd where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name";
 						$result = opendb($sql);
-						//$species = array();
 						while ( $row = $result->fetch_assoc())  {
 							echo "<option ";
 							
@@ -290,7 +279,7 @@
 		</div>             	
 	</div>             	
 </div>
-<?php include '../includes/foot.php';?>
+<?php //include '../includes/foot.php';?>
 <script type="text/javascript">
     $(document).ready(function() {
 		//Cabinet Lines
@@ -310,22 +299,24 @@
 						function(data, status, jqXHR) {
 							console.log(jqXHR["responseText"]);
 						});
-				/*console.log($(option).offsetParent()["0"].id);//table from select element id
-				console.log($(option).val());//option id 
-				console.log(checked);//Checked or not*/
-            }/*,
-			selectAllNumber: true,
-			onSelectAll: function() {
-				console.log($("this").val());
-			}*/
+            }
         });
+		
 		$('.headersCol').multiselect({
 			buttonWidth: 400,
 			maxHeight: 600,
 			dropRight: true,
-            enableClickableOptGroups: true,
+            //enableClickableOptGroups: true,
             enableCollapsibleOptGroups: true,
-			collapseOptGroupsByDefault: true
+			collapseOptGroupsByDefault: true,
+			onChange: function(option, checked, select) {
+				myData = { mode: "updateHeader", table: $(option).offsetParent()["0"].id, id: $(option).val(), checked: checked};
+				$.post("EmployeeMenuSettings.php",
+						myData, 
+						function(data, status, jqXHR) {
+							console.log(jqXHR["responseText"]);
+						});
+            }
         });
     });
 </script>

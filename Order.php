@@ -151,25 +151,38 @@ function addRoom(roomQty){
 
 function loadItems(rid){
 	$("#items").empty();
-	//if($("#invalidHeaderMessage").val() <> ""   ){
-	//	$("#items").append(  $("#invalidHeaderMessage").val()  );
-	//	$("#roomTotal").html("<b>Room Total: $" + "undefined" + "</b></br>pre HST & pre delivery");
-	//}else{
 	if(typeof rid !== 'undefined'){
-    	myData = { mode: "getItems", oid: "<?php echo $_GET["OID"] ?>", rid: rid};
-    	    	
-    	$.ajax({
-	    url: 'OrderItem.php',
-	    type: 'POST',
-	    data: myData,
-	    success: function(data, status, jqXHR) {
-    		           $('#items').append(data);
-    		           $(".borderless").css('border-top','0px');
-    		           $("#roomTotal").html("<b>Room Total: $" + $("#TotalPrice").val() + "</b></br>pre HST & pre delivery");
-    		        }
-	  	});
+		myData = { mode: "getItems", oid: "<?php echo $_GET["OID"] ?>", rid: rid };
+				
+		$.ajax({
+			url: 'OrderItem.php',
+			type: 'POST',
+			data: myData,
+			success: function(data, status, jqXHR) {
+				//getting all the current options
+				var arr = $('.container.tab-pane.float-left.col-12.active select').map(function(){
+					  return this.value
+				}).get();
+				var incomplete = false;
+				for (i = 0; i < arr.length; i++) {//looping headers array to confirm all the options are selected (only 12 headers)
+					if(arr[i]=="0"){
+						//This means there is one option in header not selected, price will not be displayed
+						incomplete = true;
+						break;
+					}
+				}	
+				if(!incomplete){//Header options are slected
+					$('#items').append(data);
+					$(".borderless").css('border-top','0px');
+					$("#roomTotal").html("<b>Room Total: $" + $("#TotalPrice").val() + "</b></br>pre HST & pre delivery");
+				}else{//One or more headers aren't selected, prices and item list will not be displayed
+					$('#items').append("<h5 class=\"mx-auto\">Please ensure all the above options (Species, Finish, etc) are selected</h5>");
+					$(".borderless").css('border-top','0px');
+					$("#roomTotal").html("<b>Room Total: undefined </b>");
+				}
+			}
+		});
 	}
-	
 }
 
 function showResult(str) {
@@ -877,7 +890,7 @@ function printPrice(){
             $isPriority = $row['isPriority'];
             $CLid = $row['CLid'];
             $fromOrder = $row['fromOrder'];
-            $state = $row['state'];
+            $state = $row['state'];			
             
             echo "<div class=\"col-sm-3 col-md-3 col-lg-3  align-self-center\">";
             
@@ -1104,18 +1117,28 @@ function printPrice(){
 						<div class="col-4">
 							<select onchange="saveStyle('species','<?php echo "species" . $row['rid'];?>');" id="<?php echo "species" . $row['rid'];?>" class="custom-select">
 							<?php
+						
 							$sql = "select * from species s where s.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$CLid.") order by s.name";
 							echo $sql;
 							opendb2($sql);
-							if($GLOBALS['$result2']->num_rows > 0){
+							if($GLOBALS['$result2']->num_rows > 0){								
 								if(is_null($row['species'])){
-									echo "<option ". "selected" ." value=\"\">" . "Choose a Species" . "</option>";
+									echo "<option selected value=\"0\">" . "Choose a Species" . "</option>";
 								}
 								foreach ($GLOBALS['$result2'] as $row2) {
-									if($row2['id']==$row['species']){
-										echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									if($row2['visible']==0){//not available
+										$disabled = "disabled";
 									}else{
-										echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+										$disabled = "";
+									}
+									if($row2['id']==$row['species']){
+										if($row2['visible']==0 && $state==1){
+											echo "<option ".$disabled." selected" ." value=\"0\">" . $row2['name'] . " is disabled, Please select another</option>";
+										}else{
+											echo "<option ".$disabled." selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+										}											
+									}else{
+										echo "<option ".$disabled." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
 									}
 								}
 							}else{
@@ -1140,13 +1163,22 @@ function printPrice(){
 							opendb2("select * from interiorFinish inf where inf.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$CLid.") order by inf.name");
 							if($GLOBALS['$result2']->num_rows > 0){
 								if(is_null($row['interiorFinish'])){
-									echo "<option ". "selected" ." value=\"\">" . "Choose an Interior Finish" . "</option>";
+									echo "<option ". "selected" ." value=\"0\">" . "Choose an Interior Finish" . "</option>";
 								}
 								foreach ($GLOBALS['$result2'] as $row2) {
-									if($row2['id']==$row['interiorFinish']){
-										echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									if($row2['visible']==0){//not available
+										$disabled = "disabled";
 									}else{
-										echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+										$disabled = "";
+									}
+									if($row2['id']==$row['interiorFinish']){
+										if($row2['visible']==0 && $state==1){
+											echo "<option ".$disabled." selected" ." value=\"0\">" . $row2['name'] . " is disabled, Please select another</option>";
+										}else{
+											echo "<option ".$disabled." selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+										}	
+									}else{
+										echo "<option ".$disabled." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
 									}
 								}
 							}else{
@@ -1197,24 +1229,33 @@ function printPrice(){
 						<div class="col-4">
 							<select onchange="$('#doorPDF').attr('href','header/'+$('option:selected', this).attr('doorPDFTag')); saveStyle('door','<?php echo "doorstyle" . $row['rid'];?>');" id="<?php echo "doorstyle" . $row['rid'];?>" class="custom-select">						
 							<?php
-							$sql = "select d.* from door d, doorSpecies ds where d.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$CLid.") and d.id = ds.did and ds.sid = '" . $row['species'] . "'";
+							$sql = "select d.*,ds.visible from door d, doorSpecies ds where d.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$CLid.") and d.id = ds.did and ds.sid = '" . $row['species'] . "'";
 							echo $sql;
 							opendb2($sql);
 							if($GLOBALS['$result2']->num_rows > 0){ 
 								$match = 0;
 								if(is_null($row['door'])){
-									echo "<option doorPDFTag= \"DOORSTYLES.pdf\"". "selected" ." value=\"\">" . "Choose a Door" . "</option>";
+									echo "<option doorPDFTag= \"DOORSTYLES.pdf\"". "selected" ." value=\"0\">" . "Choose a Door" . "</option>";
 								}                        
 								foreach ($GLOBALS['$result2'] as $row2) {
+									if($row2['visible']==0){//not available
+										$disabled = "disabled";
+									}else{
+										$disabled = "";
+									}
 									if($row2['id']==$row['door']){
-										echo "<option doorPDFTag= \"" . $row2['PDF'] . "\"". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+										if($row2['visible']==0 && $state==1){
+											echo "<option ".$disabled." selected" ." value=\"0\">" . $row2['name'] . " is disabled, Please select another</option>";
+										}else{
+											echo "<option ".$disabled." selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+										}	
 										$match = 1;
 									}else{
-										echo "<option doorPDFTag= \"" . $row2['PDF'] . "\"   value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+										echo "<option ".$disabled." doorPDFTag= \"" . $row2['PDF'] . "\"   value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
 									}
 								}
 								if($match == 0 && !is_null($row['door'])){
-									echo "<option selected value=\"" . "Please choose a new door style" . "\">" . "Please choose a new door style" . "</option>";
+									echo "<option selected value=\"0\">" . "Please choose a new door style" . "</option>";
 									$invalidHeaderMessage = $invalidHeaderMessage .  "<br>No door selected";
 								}
 							}
@@ -1237,19 +1278,28 @@ function printPrice(){
 							opendb2("select * from frontFinish where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") and finishType in (select ftid from finishTypeMaterial where mid in (select mid from species where id in (select species from orderRoom where rid = " . $row['rid'] . "))) order by name");
 							if($GLOBALS['$result2']->num_rows > 0){
 								if(is_null($row['frontFinish'])){
-									echo "<option ". "selected" ." value=\"\">" . "Choose a Finish" . "</option>";
+									echo "<option ". "selected" ." value=\"0\">" . "Choose a Finish" . "</option>";
 								}
 								$match = 0;
 								foreach ($GLOBALS['$result2'] as $row2) {
-									if($row2['id']==$row['frontFinish']){
-										echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									if($row2['visible']==0){//not available
+										$disabled = "disabled";
+									}else{
+										$disabled = "";
+									}
+									if($row2['id']==$row['frontFinish']){										
+										if($row2['visible']==0 && $state==1){
+											echo "<option ".$disabled." selected" ." value=\"0\">" . $row2['name'] . " is disabled, Please select another</option>";
+										}else{
+											echo "<option ".$disabled." selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+										}	
 										$match = 1;
 									}else{
-										echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+										echo "<option ".$disabled." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
 									}
 								}
 								if($match == 0 && !is_null($row['frontFinish'])){
-									echo "<option ". "selected" ." value=\"" . "Please choose a new finish" . "\">" . "Please choose a new finish" . "</option>";
+									echo "<option ". "selected" ." value=\"0\">" . "Please choose a new finish" . "</option>";
 									$invalidHeaderMessage = $invalidHeaderMessage . "<br>No finish selected";
 								}
 							}
@@ -1268,13 +1318,23 @@ function printPrice(){
 							opendb2("select * from drawerBox where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name");
 							if($GLOBALS['$result2']->num_rows > 0){
 								if(is_null($row['drawerBox'])){
-									echo "<option ". "selected" ." value=\"\">" . "Choose a Drawer Box" . "</option>";
+									echo "<option ". "selected" ." value=\"0\">" . "Choose a Drawer Box" . "</option>";
 								}
 								foreach ($GLOBALS['$result2'] as $row2) {
-									if($row2['id']==$row['drawerBox']){
-										echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									//disable or enable option
+									if($row2['visible']==0){
+											$disabled = "disabled";											
 									}else{
-										echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+										$disabled = "";
+									}
+									if($row2['id']==$row['drawerBox']){
+										if($row2['visible']==0 && $state==1){
+											echo "<option ".$disabled." selected" ." value=\"0\">" . $row2['name'] . " is disabled, Please select another</option>";
+										}else{
+											echo "<option ".$disabled." selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+										}
+									}else{
+										echo "<option ".$disabled." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
 									}
 								}
 							}
@@ -1292,14 +1352,23 @@ function printPrice(){
 							opendb2("select * from glaze where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name");
 							if($GLOBALS['$result2']->num_rows > 0){
 								if(is_null($row['glaze'])){
-									echo "<option ". "selected" ." value=\"\">" . "Choose a Glaze" . "</option>";
+									echo "<option ". "selected" ." value=\"0\">" . "Choose a Glaze" . "</option>";
 									$invalidHeaderMessage = $invalidHeaderMessage . "<br>No glaze selected";
 								}
 								foreach ($GLOBALS['$result2'] as $row2) {
-									if($row2['id']==$row['glaze']){
-										echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									if($row2['visible']==0){//not available
+										$disabled = "disabled";
 									}else{
-										echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+										$disabled = "";
+									}
+									if($row2['id']==$row['glaze']){
+										if($row2['visible']==0 && $state==1){
+											echo "<option ".$disabled." selected" ." value=\"0\">" . $row2['name'] . " is disabled, Please select another</option>";
+										}else{
+											echo "<option ".$disabled." selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+										}	
+									}else{
+										echo "<option ".$disabled." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
 									}
 								}
 							}
@@ -1321,13 +1390,22 @@ function printPrice(){
 							opendb2("select * from smallDrawerFront where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name");
 							if($GLOBALS['$result2']->num_rows > 0){
 								if(is_null($row['smallDrawerFront'])){
-									echo "<option ". "selected" ." value=\"\">" . "Choose a Small Drawer Front" . "</option>";
+									echo "<option selected value=\"0\">" . "Choose a Small Drawer Front" . "</option>";
 								}
 								foreach ($GLOBALS['$result2'] as $row2) {
-									if($row2['id']==$row['smallDrawerFront']){
-										echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									if($row2['visible']==0){//not available
+										$disabled = "disabled";
 									}else{
-										echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+										$disabled = "";
+									}
+									if($row2['id']==$row['smallDrawerFront']){
+										if($row2['visible']==0 && $state==1){
+											echo "<option ".$disabled." selected" ." value=\"0\">" . $row2['name'] . " is disabled, Please select another</option>";
+										}else{
+											echo "<option ".$disabled." selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+										}	
+									}else{
+										echo "<option ".$disabled." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
 									}
 								}
 							}
@@ -1349,25 +1427,43 @@ function printPrice(){
 							echo $sql;
 							opendb2($sql);
 							$match = 0; //if match is 0, no sheens work. If 1, a matching sheen was found. If 2, sheens were found, but not what was selected.
-							if($GLOBALS['$result2']->num_rows == 1){						
+							if($GLOBALS['$result2']->num_rows == 1){	
 								foreach ($GLOBALS['$result2'] as $row2) {
-										echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-										//If only one option then save Sheen
-										$sql = "update orderRoom set sheen = ".$row2['id']." WHERE rid = ". $row['rid']; 
-										opendb($sql);
+									if($row2['visible']==0){//not available
+										$disabled = "disabled";
+									}else{
+										$disabled = "";
+									}
+									if($row2['visible']==0 && $state==1){
+										echo "<option ".$disabled." selected" ." value=\"0\">" . $row2['name'] . " is disabled, Please select another</option>";
+									}else{
+										echo "<option ".$disabled." selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									}	
+									//If only one option then save Sheen
+									$sql = "update orderRoom set sheen = ".$row2['id']." WHERE rid = ". $row['rid']; 
+									opendb($sql);
 								}
 							}else if($GLOBALS['$result2']->num_rows > 1){
-								echo "<option disabled=\"disabled\" ". "selected" ." value=\"\">" . "Choose a Sheen" . "</option>";
+								echo "<option disabled=\"disabled\" ". "selected" ." value=\"0\">" . "Choose a Sheen" . "</option>";
 								foreach ($GLOBALS['$result2'] as $row2) {
+									if($row2['visible']==0){//not available
+										$disabled = "disabled";
+									}else{
+										$disabled = "";
+									}
 									if($row2['id']==$row['sheen']){
-										echo "<option selected value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+										if($row2['visible']==0 && $state==1){
+											echo "<option ".$disabled." selected" ." value=\"0\">" . $row2['name'] . " is disabled, Please select another</option>";
+										}else{
+											echo "<option ".$disabled." selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+										}	
 										$match = 1;
 									}else{
-										echo "<option value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";								
+										echo "<option ".$disabled." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";								
 									}							
 								}
 							}else{
-								echo "<option disabled=\"disabled\" ". "selected" ." value=\"\"> Please choose another Finish</option>";
+								echo "<option disabled=\"disabled\" ". "selected" ." value=\"0\"> Please choose another Finish</option>";
 							}
 							/*if($GLOBALS['$result2']->num_rows > 0){
 								$match = 2;
@@ -1408,13 +1504,22 @@ function printPrice(){
 							opendb2("select * from largeDrawerFront where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name");
 							if($GLOBALS['$result2']->num_rows > 0){
 								if(is_null($row['largeDrawerFront'])){
-									echo "<option ". "selected" ." value=\"\">" . "Choose a Large Drawer Front" . "</option>";
+									echo "<option ". "selected" ." value=\"0\">" . "Choose a Large Drawer Front" . "</option>";
 								}
 								foreach ($GLOBALS['$result2'] as $row2) {
-									if($row2['id']==$row['largeDrawerFront']){
-										echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									if($row2['visible']==0){//not available
+										$disabled = "disabled";
 									}else{
-										echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+										$disabled = "";
+									}
+									if($row2['id']==$row['largeDrawerFront']){
+										if($row2['visible']==0 && $state==1){
+											echo "<option ".$disabled." selected" ." value=\"0\">" . $row2['name'] . " is disabled, Please select another</option>";
+										}else{
+											echo "<option ".$disabled." selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+										}	
+									}else{
+										echo "<option ".$disabled." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
 									}
 								}
 							}
@@ -1432,13 +1537,22 @@ function printPrice(){
 							opendb2("select * from hinge where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name");
 							if($GLOBALS['$result2']->num_rows > 0){
 								if(is_null($row['hinge'])){
-									echo "<option ". "selected" ." value=\"\">" . "Choose a Hinge" . "</option>";
+									echo "<option ". "selected" ." value=\"0\">" . "Choose a Hinge" . "</option>";
 								}
 								foreach ($GLOBALS['$result2'] as $row2) {
-									if($row2['id']==$row['hinge']){
-										echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									if($row2['visible']==0){//not available
+										$disabled = "disabled";
 									}else{
-										echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+										$disabled = "";
+									}
+									if($row2['id']==$row['hinge']){
+										if($row2['visible']==0 && $state==1){
+											echo "<option ".$disabled." selected" ." value=\"0\">" . $row2['name'] . " is disabled, Please select another</option>";
+										}else{
+											echo "<option ".$disabled." selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+										}	
+									}else{
+										echo "<option ".$disabled." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
 									}
 								}
 							}
@@ -1456,13 +1570,22 @@ function printPrice(){
 							opendb2("select * from drawerGlides where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name");
 							if($GLOBALS['$result2']->num_rows > 0){
 								if(is_null($row['drawerGlides'])){
-									echo "<option ". "selected" ." value=\"\">" . "Choose a Drawer Glide" . "</option>";
+									echo "<option ". "selected" ." value=\"0\">" . "Choose a Drawer Glide" . "</option>";
 								}
 								foreach ($GLOBALS['$result2'] as $row2) {
-									if($row2['id']==$row['drawerGlides']){
-										echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									if($row2['visible']==0){//not available
+										$disabled = "disabled";
 									}else{
-										echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+										$disabled = "";
+									}
+									if($row2['id']==$row['drawerGlides']){
+										if($row2['visible']==0 && $state==1){
+											echo "<option ".$disabled." selected" ." value=\"0\">" . $row2['name'] . " is disabled, Please select another</option>";
+										}else{
+											echo "<option ".$disabled." selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+										}	
+									}else{
+										echo "<option ".$disabled." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
 									}
 								}
 							}
@@ -1479,13 +1602,22 @@ function printPrice(){
 							opendb2("select * from finishedEnd where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name");
 							if($GLOBALS['$result2']->num_rows > 0){
 								if(is_null($row['finishedEnd'])){
-									echo "<option ". "selected" ." value=\"\">" . "Choose a Finished End" . "</option>";
+									echo "<option ". "selected" ." value=\"0\">" . "Choose a Finished End" . "</option>";
 								}
 								foreach ($GLOBALS['$result2'] as $row2) {
-									if($row2['id']==$row['finishedEnd']){
-										echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									if($row2['visible']==0){//not available
+										$disabled = "disabled";
 									}else{
-										echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+										$disabled = "";
+									}
+									if($row2['id']==$row['finishedEnd']){
+										if($row2['visible']==0 && $state==1){
+											echo "<option ".$disabled." selected" ." value=\"0\">" . $row2['name'] . " is disabled, Please select another</option>";
+										}else{
+											echo "<option ".$disabled." selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+										}	
+									}else{
+										echo "<option ".$disabled." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
 									}
 								}
 							}
@@ -1513,10 +1645,15 @@ function printPrice(){
 								echo "<option ". "selected" ." value=\"\">" . "Choose an Exterior Finish" . "</option>";
 							}
 							foreach ($GLOBALS['$result2'] as $row2) {
+								if($row2['visible']==0){//not available
+										$disabled = "disabled";
+									}else{
+										$disabled = "";
+									}
 								if($row2['id']==$row['exteriorFinish']){
-									echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									echo "<option ".$disabled." selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
 								}else{
-									echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									echo "<option ".$disabled." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
 								}
 							}
 						}
@@ -1762,20 +1899,17 @@ function printPrice(){
             <div class="col-12 " >
 				<div class="row">
 					<div class="col-3">
-						This is a:
+						<b>This is a:</b>
 						<?php 
-						
-						echo "<select onchange=\"saveOrder('isPriority');fixDate();showOrderOptions('isPriority');\" class=\"form-control \"  id=\"isPriority\"><option ";
+						echo "<select onchange=\"saveOrder('isPriority');fixDate();showOrderOptions('isPriority');\" class=\"form-control \"  id=\"isPriority\">";						
 						if($isPriority==0){
-							echo "selected";
+							echo "<option selected value=\"0\">Standard Order</option>";
+							echo "<option value=\"1\">Service Order</option>";
+						}else{
+							echo "<option value=\"0\">Standard Order</option>";
+							echo "<option selected value=\"1\">Service Order</option>";
 						}
-						echo " value=\"0\">standard order.</option><option ";
-						
-						if($isPriority>0){
-							echo "selected";
-						}
-						echo " value=\"1\">service order.</option></select>";
-						
+						echo "</select>";							
 						?>					
 					</div>
 					<div class="col-2">
@@ -1890,7 +2024,7 @@ function printPrice(){
 	            <p>Your order will be electronically submitted to orders@mobel.ca and will be processed by our staff.<br/> You will get a copy of the report and will hear from us soon.</p>
             </div>
             <div class="col-sm-4 col-md-4 col-lg-4">
-          	<button id="submitButton" type="button" onClick=submitToMobel(); class="btn btn-default" data-dismiss="modal">Submit to Mobel</button>
+          	<button id="submitButton" type="button" onClick=submitToMobel(); class="btn btn-default" data-dismiss="modal" data-toggle="tooltip" data-placement="top" title="Please select an order type first">Submit to Mobel</button>
             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
             </div>
           </div>

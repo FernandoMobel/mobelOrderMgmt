@@ -123,6 +123,7 @@ if($_POST['mode'] == "submitToMobel"){
         $msg .= "<p>";
     }
         foreach ($GLOBALS['$result'] as $row) {
+			$mailOID = $row['oid'];
             $msg .= "Order ID: " . $row['oid'] . "<br/>";
             $msg .= "Submitted by: " . $row['firstName'] . " " . $row['lastName'] . " from " . $row['busDBA'] . "<br/>";
             $msg .= "Phone Number: " . $row['phone'] . "<br/>";
@@ -263,7 +264,7 @@ if($_POST['mode'] == "submitToMobel"){
     }
     
     $msg .= "</p><p>Thanks,</p><p>Mobel</p></body></html>";
-    sendmail("fernando@mobel.ca; orders@mobel.ca", "Order Submitted", $msg);
+    sendmail("fernando@mobel.ca; orders@mobel.ca", $mailOID."Order Submitted", $msg);
     //sendmail("markelgers@gmail.com", "Order Submitted", $msg);
 }
 

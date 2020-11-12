@@ -74,11 +74,11 @@ if($_POST['mode']=="updateHeader"){
 	//update visibility
 	$sql = "update ".$_POST['table']." set visible=".$_POST['checked']." where id=".$_POST['id'];
 	opendb($sql);
-	if($_POST['checked']=="false"){
+	/*if($_POST['checked']=="false"){
 		//Update Quotes when disable header value
 		$sql = "update orderRoom orr set ".$_POST['table']."=null where orr.".$_POST['table']."=".$_POST['id']." and exists(select 1 from mosOrder mo where mo.oid = orr.oid and mo.state=1)";
 		opendb($sql);
-	}
+	}*/
 }
 
 if($_POST['mode']=="getDateStatus"){
