@@ -1,5 +1,95 @@
+<script>
+function init() {
+    var tf = setFilterGrid("table1");
+  }
+  
+function saveUser(objectID){
+	$("#"+objectID).css("border-color", "#ba0000");
+	myData = { mode: "updateUser", id: objectID, value: $("#"+objectID).val()};
+	$.post("./OrderItem.php",
+			myData, 
+		       function(data, status, jqXHR) {
+            		if(status == "success"){
+            	    	$("#"+objectID).css("border-color", "#00b828");
+            	    }
+		        });
+}
 
- 
+function saveSettings(){
+	myData = { mode: "setCurrentLeadtime", automaticPeriod: $("#automaticPeriod").val() };
+	$.post("../save.php",
+		myData, 
+	       function(data, status, jqXHR) {
+        		if(status == "success"){
+        			$("#automaticPeriod").css("border-color", "#00b828");            		
+					$("#currentLeadtime").val(jqXHR['responseText']);
+					alert('Auto lead time is now set to: ' + jqXHR['responseText']);
+        	    }else{
+            	    alert('Sorry, something went wrong. Did you get the old password right? Please reload the page and try again.');
+        	    }
+	        });
+}
+
+function saveOrder(objectID,OID){
+	$("#"+objectID+OID).css("border-color", "#ba0000");
+	myData = { mode: "updateOrder", id: objectID, value: $("#"+objectID+OID).val(), oid: OID};
+	$.post("../OrderItem.php",
+			myData, 
+		       function(data, status, jqXHR) {
+            		if(data == "success"){
+            	    	$("#"+objectID+OID).css("border-color", "#00b828");
+            	    }
+					console.log($("#"+objectID+OID).val()+" "+jqXHR);
+					/*if(){
+						
+					}*/
+		        });
+}
+
+function getOrderID(OID){
+	$('#searchOrderBtn').empty();
+	OID = OID.replace(/\s+/g, '');
+	if (OID.trim()){			
+		myData = { mode: "getOrderID", id: OID.trim(), value: OID.trim()};
+		$.post("EmployeeMenuSettings.php",
+			myData, 
+		       function(data, status, jqXHR) {
+						$('#searchOrderBtn').append(data);           	    
+		        });
+		
+	}else{
+		$('#searchOrderBtn').empty();
+	}
+	
+}
+
+function saveEmployeeSettings(objectID){
+	var arr = $("#"+objectID).val();
+	if(arr.length==0){
+		 arr = ["1","2","3","4","5","6","7","8","9","10"]; 
+	}
+	myData = { mode: "setFilter", id: objectID, value: arr}; //$("#"+objectID).val()};
+	$.post("EmployeeMenuSettings.php",
+			myData, 
+			   function(data, status, jqXHR) {
+					//$('#orders').empty();
+					window.location.reload();
+				});
+	loadOrders(arr);					
+}
+
+function loadOrders(objectID){
+	myData = { mode: "getOrders", id: objectID, value: objectID }; //$("#"+objectID).val()};
+	$.ajax({
+	    url: 'EmployeeMenuSettings.php',
+	    type: 'POST',
+	    data: myData,
+	    success: function(data, status, jqXHR) {						
+    		        
+    		    }
+	});	
+}
+</script> 
 <div class="col-sm-12 col-md-11 col-lg-11 mx-auto">
 <div class="card card-signin my-3">
 <div class="card-body pt-0">
@@ -141,6 +231,13 @@ if($GLOBALS['$result']->num_rows > 0){
 $(document).ready(function () {
 	table = $('table').DataTable({
 		"order": [[ 7, "asc" ]]
+	});
+	
+	//Filter options
+	$('#stateFilter').multiselect({
+		buttonWidth: 400,
+		maxHeight: 600,
+		dropRight: true
 	});
 });
 </script>
