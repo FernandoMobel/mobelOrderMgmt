@@ -87,7 +87,7 @@ if ($_POST['mode']=="getScheduleMain"){
 	//$pivotRow = "";
 	$oid = 0;//order id
 	//--------------------------------------------------
-	$sql = "SELECT mo.oid, (select wrapping from schedule s where s.oid = orr.oid) wrapping, (select sum(cc) from orderroom orr2 where orr2.oid = orr.oid) as totalorder, (select name from species s where s.id = orr.species) material, (select name from door d where d.id = orr.door) doorStyle, (select name from frontfinish f where f.id = orr.frontFinish) finish, orr.name roomName, cc, fronts, (select count(1) from orderItem oi where oi.rid = orr.rid) as items, deliveryDate FROM mosOrder mo, orderRoom orr where mo.oid = orr.oid and deliveryDate is not null order by deliveryDate desc, oid";
+	$sql = "SELECT mo.oid, (select wrapping from schedule s where s.oid = orr.oid) wrapping, (select sum(cc) from orderRoom orr2 where orr2.oid = orr.oid) as totalorder, (select name from species s where s.id = orr.species) material, (select name from door d where d.id = orr.door) doorStyle, (select name from frontFinish f where f.id = orr.frontFinish) finish, orr.name roomName, cc, fronts, (select count(1) from orderItem oi where oi.rid = orr.rid) as items, deliveryDate FROM mosOrder mo, orderRoom orr where mo.oid = orr.oid and deliveryDate is not null order by deliveryDate desc, oid";
 	$query = opendb($sql);
 	$order = array();
 	$extendedProps = array();
