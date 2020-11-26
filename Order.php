@@ -1123,7 +1123,7 @@ function printPrice(){
 							opendb2($sql);
 							if($GLOBALS['$result2']->num_rows > 0){								
 								if(is_null($row['species'])){
-									echo "<option selected value=\"0\">" . "Choose a Species" . "</option>";
+									echo "<option selected value=\"0\">" . "Choose a species" . "</option>";
 								}
 								foreach ($GLOBALS['$result2'] as $row2) {
 									if($row2['visible']==0){//not available
@@ -1133,7 +1133,7 @@ function printPrice(){
 									}
 									if($row2['id']==$row['species']){
 										if($row2['visible']==0 && $state==1){
-											echo "<option ".$disabled." selected" ." value=\"0\">" . $row2['name'] . " is disabled, Please select another</option>";
+											echo "<option ".$disabled." selected" ." value=\"0\">" . $row2['name'] . " is disabled, Please select another one</option>";
 										}else{
 											echo "<option ".$disabled." selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
 										}											
@@ -1163,7 +1163,7 @@ function printPrice(){
 							opendb2("select * from interiorFinish inf where inf.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$CLid.") order by inf.name");
 							if($GLOBALS['$result2']->num_rows > 0){
 								if(is_null($row['interiorFinish'])){
-									echo "<option ". "selected" ." value=\"0\">" . "Choose an Interior Finish" . "</option>";
+									echo "<option ". "selected" ." value=\"0\">" . "Choose an interior finish" . "</option>";
 								}
 								foreach ($GLOBALS['$result2'] as $row2) {
 									if($row2['visible']==0){//not available
@@ -1235,7 +1235,7 @@ function printPrice(){
 							if($GLOBALS['$result2']->num_rows > 0){ 
 								$match = 0;
 								if(is_null($row['door'])){
-									echo "<option doorPDFTag= \"DOORSTYLES.pdf\"". "selected" ." value=\"0\">" . "Choose a Door" . "</option>";
+									echo "<option doorPDFTag= \"DOORSTYLES.pdf\"". "selected" ." value=\"0\">" . "Choose a door" . "</option>";
 								}                        
 								foreach ($GLOBALS['$result2'] as $row2) {
 									if($row2['visible']==0){//not available
@@ -1278,7 +1278,7 @@ function printPrice(){
 							opendb2("select * from frontFinish where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") and finishType in (select ftid from finishTypeMaterial where mid in (select mid from species where id in (select species from orderRoom where rid = " . $row['rid'] . "))) order by name");
 							if($GLOBALS['$result2']->num_rows > 0){
 								if(is_null($row['frontFinish'])){
-									echo "<option ". "selected" ." value=\"0\">" . "Choose a Finish" . "</option>";
+									echo "<option ". "selected" ." value=\"0\">" . "Choose a finish" . "</option>";
 								}
 								$match = 0;
 								foreach ($GLOBALS['$result2'] as $row2) {
@@ -1318,7 +1318,7 @@ function printPrice(){
 							opendb2("select * from drawerBox where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name");
 							if($GLOBALS['$result2']->num_rows > 0){
 								if(is_null($row['drawerBox'])){
-									echo "<option ". "selected" ." value=\"0\">" . "Choose a Drawer Box" . "</option>";
+									echo "<option ". "selected" ." value=\"0\">" . "Choose a drawer box" . "</option>";
 								}
 								foreach ($GLOBALS['$result2'] as $row2) {
 									//disable or enable option
@@ -1352,7 +1352,7 @@ function printPrice(){
 							opendb2("select * from glaze where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name");
 							if($GLOBALS['$result2']->num_rows > 0){
 								if(is_null($row['glaze'])){
-									echo "<option ". "selected" ." value=\"0\">" . "Choose a Glaze" . "</option>";
+									echo "<option ". "selected" ." value=\"0\">" . "Choose a glaze" . "</option>";
 									$invalidHeaderMessage = $invalidHeaderMessage . "<br>No glaze selected";
 								}
 								foreach ($GLOBALS['$result2'] as $row2) {
@@ -1390,7 +1390,7 @@ function printPrice(){
 							opendb2("select * from smallDrawerFront where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name");
 							if($GLOBALS['$result2']->num_rows > 0){
 								if(is_null($row['smallDrawerFront'])){
-									echo "<option selected value=\"0\">" . "Choose a Small Drawer Front" . "</option>";
+									echo "<option selected value=\"0\">" . "Choose a small drawer front" . "</option>";
 								}
 								foreach ($GLOBALS['$result2'] as $row2) {
 									if($row2['visible']==0){//not available
@@ -1444,7 +1444,7 @@ function printPrice(){
 									opendb($sql);
 								}
 							}else if($GLOBALS['$result2']->num_rows > 1){
-								echo "<option disabled=\"disabled\" ". "selected" ." value=\"0\">" . "Choose a Sheen" . "</option>";
+								echo "<option disabled=\"disabled\" ". "selected" ." value=\"0\">" . "Choose a sheen" . "</option>";
 								foreach ($GLOBALS['$result2'] as $row2) {
 									if($row2['visible']==0){//not available
 										$disabled = "disabled";
@@ -1463,7 +1463,7 @@ function printPrice(){
 									}							
 								}
 							}else{
-								echo "<option disabled=\"disabled\" ". "selected" ." value=\"0\"> Please choose another Finish</option>";
+								echo "<option disabled=\"disabled\" ". "selected" ." value=\"0\"> Please choose another finish</option>";
 							}
 							/*if($GLOBALS['$result2']->num_rows > 0){
 								$match = 2;
@@ -1504,7 +1504,7 @@ function printPrice(){
 							opendb2("select * from largeDrawerFront where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name");
 							if($GLOBALS['$result2']->num_rows > 0){
 								if(is_null($row['largeDrawerFront'])){
-									echo "<option ". "selected" ." value=\"0\">" . "Choose a Large Drawer Front" . "</option>";
+									echo "<option ". "selected" ." value=\"0\">" . "Choose a large drawer front" . "</option>";
 								}
 								foreach ($GLOBALS['$result2'] as $row2) {
 									if($row2['visible']==0){//not available
@@ -1537,7 +1537,7 @@ function printPrice(){
 							opendb2("select * from hinge where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name");
 							if($GLOBALS['$result2']->num_rows > 0){
 								if(is_null($row['hinge'])){
-									echo "<option ". "selected" ." value=\"0\">" . "Choose a Hinge" . "</option>";
+									echo "<option ". "selected" ." value=\"0\">" . "Choose a hinge" . "</option>";
 								}
 								foreach ($GLOBALS['$result2'] as $row2) {
 									if($row2['visible']==0){//not available
@@ -1570,7 +1570,7 @@ function printPrice(){
 							opendb2("select * from drawerGlides where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name");
 							if($GLOBALS['$result2']->num_rows > 0){
 								if(is_null($row['drawerGlides'])){
-									echo "<option ". "selected" ." value=\"0\">" . "Choose a Drawer Glide" . "</option>";
+									echo "<option ". "selected" ." value=\"0\">" . "Choose a drawer glide" . "</option>";
 								}
 								foreach ($GLOBALS['$result2'] as $row2) {
 									if($row2['visible']==0){//not available
@@ -1602,7 +1602,7 @@ function printPrice(){
 							opendb2("select * from finishedEnd where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name");
 							if($GLOBALS['$result2']->num_rows > 0){
 								if(is_null($row['finishedEnd'])){
-									echo "<option ". "selected" ." value=\"0\">" . "Choose a Finished End" . "</option>";
+									echo "<option ". "selected" ." value=\"0\">" . "Choose a finished end" . "</option>";
 								}
 								foreach ($GLOBALS['$result2'] as $row2) {
 									if($row2['visible']==0){//not available

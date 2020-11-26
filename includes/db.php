@@ -196,6 +196,19 @@ function calculateDays($days){
 	}
 }
 
+//Calculate past date for given date and days
+function scheduleFn($date, $days){
+	$sql2 = "select calendarDay from calendar where workDayInd =1 and calendarDay between curdate() and '".$date."' order by calendarDay desc";
+	$query2 = opendb2($sql2);
+	$i=0;
+	while($row2 = $query2->fetch_assoc()){
+		if($i == $days)
+			return $row2['calendarDay'];
+		$i++;
+	}
+	return date('Y-m-d');
+}
+
 //Insert a new year inside calendar table disabling holidays and weekends
 function fillYearCalendar($year){
 	$startDate=strtotime("01-01-".$year);
@@ -213,10 +226,10 @@ function fillYearCalendar($year){
 		//echo date("Y-m-d", $i)."<br>";
 		if(strcmp(date("l", $i),"Saturday")=="0" or strcmp(date("l", $i),"Sunday")=="0" or in_array(date("d-m-Y", $i),$holidays)){
 			//Setting Weekends and holidays not available
-			$sql = "insert into calendar values('".date("Y-m-d", $i)."',0,curdate(),11)";
+			$sql = "insert into calendar (calendarDay, workDayInd, updateDate, uid) values('".date("Y-m-d", $i)."',0,curdate(),11)";
 		}else{
 			//Setting available days
-			$sql = "insert into calendar values('".date("Y-m-d", $i)."',1,curdate(),11)";
+			$sql = "insert into calendar (calendarDay, workDayInd, updateDate, uid) values('".date("Y-m-d", $i)."',1,curdate(),11)";
 		}
 		opendb($sql);
 	}

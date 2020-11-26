@@ -1,0 +1,335 @@
+<script>
+var currentDate = getMondayCurWeek();
+<?php
+$sql = "select * from departments where id=".(int)$_SESSION['firstName'];
+$result = opendb($sql);
+$row = $result->fetch_assoc();
+if(strlen($_SESSION["firstName"])==1 && $_SESSION["account"]==2){
+	echo "const department =".(int)$_SESSION['firstName'].";";
+	echo "const dateType =".$row['dateType'].";";
+}else{
+	echo "const department =1;";
+	echo "const dateType =3;";
+}
+?>
+
+function loadSchWeek(date, dept){	
+	if(date.length==1){
+		date = 0;
+		currentDate = getMondayCurWeek();
+	}
+	//What schedule are using
+	/*switch (department){
+		case '3'://Shipping
+			department = 1;			
+		break;
+		case '2'://Wrapping
+			department = 2;
+		break;
+		case '1'://Sanding
+			department = 8;
+		break;
+	  default:
+		// code block
+	}*/
+
+	console.log('Date:'+date+' dateType:'+dateType+' Department:'+department+' Filter:'+localStorage.getItem('onlyReady')+' see complete: '+localStorage.getItem('displayComp'));
+	myData = { mode: "loadSchWeek", date: date, dateType: dateType, mydid:department, filter:localStorage.getItem('onlyReady'), displayComp:localStorage.getItem('displayComp')};
+	$.post("EmployeeMenuSettings.php",
+		myData, 
+		   function(data, status, jqXHR) {
+				//console.log(jqXHR['responseText']);
+				$('#scheduleWeek').empty();
+				$('#scheduleWeek').append(data);
+				if(date==0){
+					$('#fromDate').text('Jobs');
+				}else{
+					$('#fromDate').text('Jobs from '+currentDate);
+				}
+				loadFilters();
+			});
+	
+}
+
+function getNewWeek(nextWeek){
+	var newDate2 = new Date(currentDate);
+	if(nextWeek){
+		newDate2.setDate(newDate2.getDate() + 8);
+	}else{
+		newDate2.setDate(newDate2.getDate() - 6);
+	}
+	currentDate = formatDate(newDate2);
+	loadSchWeek(currentDate);
+}
+
+function formatDate(noformat){//output YYYY-MM-DD
+	var d = new Date(noformat);
+	var month = d.getMonth()+1;
+	var day = d.getDate();
+
+	var output = d.getFullYear() + '-' +
+		(month<10 ? '0' : '') + month + '-' +
+		(day<10 ? '0' : '') + day;
+	return output;
+}
+
+function getMondayCurWeek(){
+	d = new Date();
+	var day = d.getDay(), diff = d.getDate() - day + (day == 0 ? -6:1); // adjust when day is sunday
+
+	d = new Date(d.setDate(diff));
+	month = '' + (d.getMonth() + 1),
+        day = '' + d.getDate(),
+        year = d.getFullYear();
+
+    if (month.length < 2) 
+        month = '0' + month;
+    if (day.length < 2) 
+        day = '0' + day;
+	currentDate = [year, month, day].join('-');
+    return currentDate;
+}
+
+function completeRoom(rid){
+	$action = 'new';
+	if(!$('#chkDone'+rid).prop('checked')){
+		$action = 'old';
+	}	
+	if((!$('#chkDone'+rid).prop('checked') && getWithExpiry('completed'+rid)==true) || $('#chkDone'+rid).prop('checked')){
+		myData = { mode: "completeRoom", rid: rid, mydid:department, action:$action};
+		$.post("EmployeeMenuSettings.php",
+			myData, 
+			   function(data, status, jqXHR) {	
+					setWithExpiry("completed"+rid, $('#chkDone'+rid).prop('checked'), 50000);//50 seconds to change your mind
+					if(department==1)//this means Shipping department has finished therefore order status will be updated as Shipped
+						updateOrderStatus(rid, $action);
+				});	
+	}else{
+		$('#chkDone'+rid).prop('disabled',true);
+		$('#chkDone'+rid).prop('checked',true);
+	}
+}
+
+function updateOrderStatus(rid, action){
+	console.log('state will be updated');
+	myData = { mode:"updateOrderStatus", rid:rid, dept:department, action:action};
+		$.post("EmployeeMenuSettings.php",
+			myData, 
+			   function(data, status, jqXHR) {	
+					console.log(jqXHR['responseText']);
+				});	
+}
+
+function loadFilters(){
+	cols = new Array();
+	if(localStorage.getItem('rmnm')=='false'){
+		$('.rmnm').hide();
+	}else{
+		cols.push('rmnm');
+	}
+	if(localStorage.getItem('box')=='false'){
+		$('.box').hide();
+	}else{
+		cols.push('box');
+	}
+	if(localStorage.getItem('frt')=='false'){
+		$('.frt').hide();
+	}else{
+		cols.push('frt');
+	}
+	if(localStorage.getItem('itm')=='false'){
+		$('.itm').hide();
+	}else{
+		cols.push('itm');
+	}
+	if(localStorage.getItem('mat')=='false'){
+		$('.mat').hide();
+	}else{
+		cols.push('mat');
+	}
+	if(localStorage.getItem('drs')=='false'){
+		$('.drs').hide();
+	}else{
+		cols.push('drs');
+	}
+	if(localStorage.getItem('fns')=='false'){
+		$('.fns').hide();
+	}else{
+		cols.push('fns');
+	}
+	//set visible cols 
+	if(cols.length>0){
+		$("#columns").val(cols);
+	}
+	
+	//this is for checkbox for only display completed jobs
+	if(localStorage.getItem('onlyReady')=='true'){
+		$('#displayCmpt').prop('checked',true);
+	}else{
+		$('#displayCmpt').prop('checked',false);
+	}
+}
+
+function onlyCompleted(){
+	if($(displayCmpt).prop('checked')){
+		localStorage.setItem('onlyReady',true);		
+	}else{
+		localStorage.setItem('onlyReady',false);
+	}
+	loadSchWeek(0);
+}
+
+function hideMyCompleted(){
+	if($(hideMyCmpt).prop('checked')){
+		localStorage.setItem('displayComp',true);		
+	}else{
+		localStorage.setItem('displayComp',false);
+	}
+	loadSchWeek(0);
+}
+
+function setWithExpiry(key, value, ttl) {
+	const now = new Date()
+
+	// item is an object which contains the original value
+	// as well as the time when it's supposed to expire
+	const item = {
+		value: value,
+		expiry: now.getTime() + ttl,
+	}
+	localStorage.setItem(key, JSON.stringify(item))
+}
+
+function getWithExpiry(key) {
+	const itemStr = localStorage.getItem(key)
+	// if the item doesn't exist, return null
+	if (!itemStr) {
+		return null
+	}
+	const item = JSON.parse(itemStr)
+	const now = new Date()
+	// compare the expiry time of the item with the current time
+	if (now.getTime() > item.expiry) {
+		// If the item is expired, delete the item from storage
+		// and return null
+		localStorage.removeItem(key)
+		return null
+	}
+	return item.value
+}
+</script> 
+<div class="col-sm-12 col-md-11 col-lg-11 mx-auto">
+	<div class="card card-signin my-3">
+		<!--div class="card-header">
+			<div class="d-flex flex-row">
+				<div class="p-2">
+					<div class="custom-control custom-radio">
+						<input onchange="loadSchWeek(this.value,1)" type="radio" class="custom-control-input" id="chk3" value="3" name="defaultExampleRadios" checked>
+						<label class="custom-control-label" for="chk3">SHIPPING</label>
+					</div>
+				</div>
+				<div class="p-2">
+					<div class="custom-control custom-radio">
+						<input onchange="loadSchWeek(this.value,2)" type="radio" class="custom-control-input" id="chk2" value="2" name="defaultExampleRadios">
+						<label class="custom-control-label" for="chk2">WRAPPING</label>
+					</div>
+				</div>
+				<div class="p-2">
+					<div class="custom-control custom-radio">
+						<input onchange="loadSchWeek(this.value,8)" type="radio" class="custom-control-input" id="chk1" value="1" name="defaultExampleRadios">
+						<label class="custom-control-label" for="chk1">SANDING</label>
+					</div>
+				</div>
+				<div class="p-2">
+					<div class="custom-control custom-radio">
+						<input onchange="loadSchWeek(this.value,9)" type="radio" class="custom-control-input" id="chk0" value="1" name="defaultExampleRadios">
+						<label class="custom-control-label" for="chk0">CNC</label>
+					</div>
+				</div>
+			</div>
+		</div-->
+			
+		<div class="card-body">
+			<div class="d-flex justify-content-between">
+				<div class="p-2">
+					<select id="columns" multiple="multiple">
+						<option selected value="rmnm" id="chkRN">ROOM NAME</option>
+						<option selected value="box" id="chkB">BOXES</option>
+						<option selected value="frt" id="chkFT">FRONTS</option>
+						<option selected value="itm" id="chkIT">ITEMS</option>
+						<option selected value="mat" id="chkMT">MATERIAL</option>
+						<option selected value="drs" id="chkDS">DOOR STYLE</option>
+						<option selected value="fns" id="chkFS">FINISH</option>
+					</select>
+				</div>
+				<div class="custom-control custom-checkbox p-2">
+					<input onchange="onlyCompleted();" type="checkbox" class="custom-control-input" id="displayCmpt">
+					<label class="custom-control-label" for="displayCmpt">Hide jobs not ready on previous station</label>
+				</div>
+				<!--div class="custom-control custom-checkbox p-2">
+					<input onchange="hideMyCompleted();" type="checkbox" class="custom-control-input" id="hideMyCmpt">
+					<label class="custom-control-label" for="hideMyCmpt">See completed</label>
+				</div-->
+			<!--/div>
+			<div class="container-fluid">
+				<div class="d-flex justify-content-between"-->
+					<div class="p-2">
+						<a class="btn-sm" onclick="getNewWeek(false);">
+							<svg width="3em" height="3em" viewBox="0 0 16 16" class="bi bi-arrow-left-square-fill btn-primary" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+							  <path fill-rule="evenodd" d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm9.5 8.5a.5.5 0 0 0 0-1H5.707l2.147-2.146a.5.5 0 1 0-.708-.708l-3 3a.5.5 0 0 0 0 .708l3 3a.5.5 0 0 0 .708-.708L5.707 8.5H11.5z"/>
+							</svg><small>Previous week</small>
+						</a>
+					</div>
+					<div class="p-2">
+						<h5 id="fromDate"></h5>
+					</div>
+					<div class="p-2">
+						<a class="btn-sm" onclick="getNewWeek(true);"><small>Next week</small>
+							<svg width="3em" height="3em" viewBox="0 0 16 16" class="bi bi-arrow-right-square-fill btn-primary" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+							  <path fill-rule="evenodd" d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm2.5 8.5a.5.5 0 0 1 0-1h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5z"/>
+							</svg>
+						</a>
+					</div>
+				<!--/div-->
+			</div>
+			<table id="tbSchedule" class="table text-center align-middle table-bordered" style="width:100%" >
+				<thead class="thead-light">
+					<tr>
+						<th>DUE DATE</th>
+						<th>OID</th>
+						<th class="rmnm">ROOM NAME</th>
+						<th class="box">BOXES</th>			
+						<th class="frt">FRONTS</th>
+						<th class="itm">ITEMS</th>
+						<th class="mat">MATERIAL</th>
+						<th class="drs">DOOR STYLE</th>
+						<th class="fns">FINISH</th>
+						<th>COMPLETED</th>
+					</tr>
+				</thead>
+				<tbody id="scheduleWeek">
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+
+<?php if(strlen($_SESSION["firstName"])==1 && $_SESSION["account"]==2) include '../includes/foot.php';?>  
+<script>
+$(document).ready(function () {
+	//loadSchWeek(getMondayCurWeek());
+	loadSchWeek(0);	
+	
+	loadFilters();
+	
+	$('#columns').multiselect({
+		allSelectedText: 'All columns are visible',
+		buttonWidth: '250px',
+		dropRight: true,
+		onChange: function(option, checked) {
+			$("."+$(option).val()).toggle('display');
+			localStorage.setItem($(option).val(), checked);//store cookie for column filter
+		}
+	});
+});
+</script>

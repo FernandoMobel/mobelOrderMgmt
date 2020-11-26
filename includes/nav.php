@@ -33,8 +33,8 @@ echo "<link rel=\"stylesheet\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/
 
 ?>
 <!-- Calendar scripts-->
-<!--link href='js/Calendar/main.css' rel='stylesheet' />
-<script src='js/Calendar/main.js'></script-->
+<link href='js/Calendar/main.css' rel='stylesheet' />
+<script src='js/Calendar/main.js'></script>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.7.1/css/bootstrap-datepicker3.standalone.min.css" />
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
@@ -176,25 +176,31 @@ body {
 	  <div class="collapse navbar-collapse" id="collapsibleNavbar">
 		<ul class="navbar-nav">
 		<?php
-			echo "<li class=\"nav-item\">";
-			echo "<a class=\"nav-link\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/newOrder.php\">New</a>";
-			echo "</li>";
-			echo "<li class=\"nav-item\">";
-			echo "<a class=\"nav-link\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/viewOrder.php\">Orders</a>";
-			echo "</li>"; 
-			echo "<li class=\"nav-item\">";
-			echo "<a class=\"nav-link\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/myAccount.php\">Account</a>";
-			echo "</li>";
-			if(array_key_exists("userType",$_SESSION)){
-				if($_SESSION["userType"]==3){				  
-						echo "<li class=\"nav-item\">";
-						echo "<a class=\"nav-link\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/employee/EmployeeMenu.php\">Mobel Only</a>";
-						echo "</li>";
+			if(strlen($_SESSION["firstName"])==1 && $_SESSION["account"]==2){
+				echo "<li class=\"nav-item\">";
+				echo "<a class=\"nav-link\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/employee/EmployeeMenu.php\">Mobel Only</a>";
+				echo "</li>";
+			}else{
+				echo "<li class=\"nav-item\">";
+				echo "<a class=\"nav-link\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/newOrder.php\">New</a>";
+				echo "</li>";
+				echo "<li class=\"nav-item\">";
+				echo "<a class=\"nav-link\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/viewOrder.php\">Orders</a>";
+				echo "</li>"; 
+				echo "<li class=\"nav-item\">";
+				echo "<a class=\"nav-link\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/myAccount.php\">Account</a>";
+				echo "</li>";
+				if(array_key_exists("userType",$_SESSION)){
+					if($_SESSION["userType"]==3){				  
+							echo "<li class=\"nav-item\">";
+							echo "<a class=\"nav-link\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/employee/EmployeeMenu.php\">Mobel Only</a>";
+							echo "</li>";
+					}
 				}
 			}
 			echo "<li class=\"nav-item\">";
 			echo "<a class=\"nav-link\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/logOut.php\">Log Out</a>";
-			echo "</li>";	
+			echo "</li>";			
 		echo "</ul>";
 	echo "</div>";
 	}

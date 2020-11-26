@@ -70,8 +70,8 @@ function updateCalDay($status){
 						</div>
 						<div class="col-3 mx-auto">
 							<select id="calSelect" onchange="updateCalDay(this.value)" class="custom-select">
-								<option value="0">Disabled</option>
-								<option value="1">Enabled</option>
+								<option value="0">Holiday</option>
+								<option value="1">Workday</option>
 							</select>
 						</div>
 					</div>

@@ -1,6 +1,8 @@
 <?php session_start();?>
 
-<?php include_once 'includes/db.php';?>
+<?php include_once 'includes/db.php';
+include 'includes/nav.php';
+?>
 <?php 
 $_SESSION["auth"] = false;
 $captcha;
@@ -53,7 +55,11 @@ if($_SESSION["attp"]>2){
 							//$_SESSION['siteMode'] = $row['siteMode'];
 						}
 					}
-					header("Location: viewOrder.php");
+					if(strlen($_SESSION["firstName"])==1 && $_SESSION["account"]==2){
+						header("Location: ".$local."/employee/EmployeeMenu.php");
+					}else{
+						header("Location: viewOrder.php");
+					}
 				}else{	
 					opendb("INSERT INTO failedLogin(ipAddress, date) VALUES ('".$ip."',NOW())");
 					header("Location: index.php");
@@ -87,7 +93,11 @@ if($_SESSION["attp"]>2){
 					//$_SESSION['siteMode'] = $row['siteMode'];
 				}
 			}
-			header("Location: viewOrder.php");
+			if(strlen($_SESSION["firstName"])==1 && $_SESSION["account"]==2){
+				header("Location: ".$local."/employee/EmployeeMenu.php");
+			}else{
+				header("Location: viewOrder.php");
+			}
 		}else{	
 			opendb("INSERT INTO failedLogin(ipAddress, date) VALUES ('".$ip."',NOW())");
 			header("Location: index.php");
