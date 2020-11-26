@@ -12,6 +12,8 @@ echo "<script type=\"text/javascript\" src=\"http://".$_SERVER['SERVER_NAME'].$l
 echo "<script type=\"text/javascript\" src=\"http://".$_SERVER['SERVER_NAME'].$local."/js/bootstrap-select/dist/js/bootstrap-multiselect.min.js\"></script>";
 echo "<script type=\"text/javascript\" src=\"http://".$_SERVER['SERVER_NAME'].$local."/js/MDB/js/mdb.min.js\"></script>";
 echo "<script type=\"text/javascript\" src=\"http://".$_SERVER['SERVER_NAME'].$local."/js/jqueryui112/jquery-ui.min.js\"></script>";
+echo "<script type=\"text/javascript\" src=\"http://".$_SERVER['SERVER_NAME'].$local."/js/Calendar/main.js\"></script>";
+
 ?>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.7.1/js/bootstrap-datepicker.min.js"></script>

@@ -30,11 +30,9 @@ echo "<link rel=\"stylesheet\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/
 echo "<link rel=\"stylesheet\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/js/MDB/css/mdb.min.css\">";
 echo "<link rel=\"stylesheet\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/js/MDB/css/addons/datatables.min.css\">";
 echo "<link rel=\"stylesheet\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/js/jqueryui112/jquery-ui.min.css\">";
+echo "<link rel=\"stylesheet\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/js/Calendar/main.css\">";
 
 ?>
-<!-- Calendar scripts-->
-<link href='js/Calendar/main.css' rel='stylesheet' />
-<script src='js/Calendar/main.js'></script>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.7.1/css/bootstrap-datepicker3.standalone.min.css" />
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
