@@ -38,7 +38,7 @@ function loadSchWeek(date, dept){
 	$.post("EmployeeMenuSettings.php",
 		myData, 
 		   function(data, status, jqXHR) {
-				//console.log(jqXHR['responseText']);
+				console.log(jqXHR['responseText']);
 				$('#scheduleWeek').empty();
 				$('#scheduleWeek').append(data);
 				if(date==0){

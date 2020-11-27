@@ -300,7 +300,7 @@ if($_POST['mode']=="loadSchWeek"){
 	default:
         break;
 	}
-	//echo $sql;
+	echo $sql;
 	//Once sql statement is selected, query is executed in this moment.
 	opendb($sql);
 	/*----------------------------------------------------------------

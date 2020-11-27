@@ -46,7 +46,7 @@
 	var jsonJobs = $("#jsonJobs").text();
 	
     var calendar = new FullCalendar.Calendar(calendarEl, {	
-		schedulerLicenseKey: 'CC-Attribution-NonCommercial-NoDerivatives',	
+		//schedulerLicenseKey: 'CC-Attribution-NonCommercial-NoDerivatives',	
 		//weekends: false,
 		themeSystem: 'bootstrap',
 		views: {
