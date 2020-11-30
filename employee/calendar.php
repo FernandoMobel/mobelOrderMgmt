@@ -33,7 +33,7 @@ function updateCalDay($status){
 			if($GLOBALS['$result']->num_rows > 0){
 				foreach ($GLOBALS['$result'] as $row) {
 					?>
-					<div class="col-sm-6 col-md-6 col-lg-6 date" data-provide="datepicker" data-date-format="yyyy-mm-dd">
+					<div class="col-sm-6 col-md-3 date mx-auto" data-provide="datepicker" data-date-format="yyyy-mm-dd">
 					<label for="Mobel Lead Time">Mobel Lead Time: (yyyy-mm-dd)</label>
 					<?php
 					echo "<input disabled type=\"text\"  onchange=\"saveSettings();\" class=\"form-control noresize\"  value=\"". substr($row['currentLeadtime'],0,10) ."\" id=\"currentLeadtime\">";
@@ -43,7 +43,7 @@ function updateCalDay($status){
 								<span class="glyphicon glyphicon-th"></span>
 							</div>
 					</div>
-					<div class="col-sm-6 col-md-6 col-lg-2 offset-4">
+					<div class="col-sm-6 col-md-3 mx-auto">
 					<label for="automaticPeriod">Auto set Lead Time (business days)</label>
 					<?php
 					echo "<input type=\"number\"  min=\"1\" onchange=\"saveSettings(this.value);\" class=\"form-control noresize\"  value=\"" . $row['autoLeadDate']."\" id=\"automaticPeriod\">";
@@ -56,19 +56,19 @@ function updateCalDay($status){
 </div>
 <div class="container-fluid">
 	<div class="row">
-		<div class="col-6 mx-auto">
+		<div class="col-sm-12 col-md-6 mx-auto">
 			<div class="card card-signin my-3">
 				<div class="card-header">
 					<h5>MOBEL Calendar</h5>
 				</div>
 				<div class="card-body">
 					<div class="row">
-						<div class="col-3 mx-auto">
+						<div class="col-sm-6 col-md-3 mx-auto my-2">
 							<?php 
 							echo "<input id=\"calDate\" type=\"text\" maxlength=\"10\" data-provide=\"datepicker\" data-date-format=\"yyyy-mm-dd\" onchange=\"getDateStatus(this.value);\" class=\"form-control datepicker\"  value=\"". date("Y/m/d") ."\" id=\"dateRequired\">";
 							?>
 						</div>
-						<div class="col-3 mx-auto">
+						<div class="col-sm-6 col-md-3 mx-auto my-2">
 							<select id="calSelect" onchange="updateCalDay(this.value)" class="custom-select">
 								<option value="0">Holiday</option>
 								<option value="1">Workday</option>

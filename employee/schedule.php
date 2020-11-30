@@ -35,19 +35,42 @@ function loadSchWeek(date, dept){
 
 	console.log('Date:'+date+' dateType:'+dateType+' Department:'+department+' Filter:'+localStorage.getItem('onlyReady')+' see complete: '+localStorage.getItem('displayComp'));
 	myData = { mode: "loadSchWeek", date: date, dateType: dateType, mydid:department, filter:localStorage.getItem('onlyReady'), displayComp:localStorage.getItem('displayComp')};
+	
+	//$.ajax("EmployeeMenuSettings.php",myData)
+	$.ajax({
+			url: 'EmployeeMenuSettings.php',
+			type: 'POST',
+			data: myData})
+	  .done(function(data, status, jqXHR) {
+			//console.log(jqXHR['responseText']);
+			$('#scheduleWeek').empty();
+			$('#scheduleWeek').append(data);
+			if(date==0){
+				$('#fromDate').text('Jobs');
+			}else{
+				$('#fromDate').text(currentDate);
+			}
+			loadFilters();
+	  })
+	  .fail(function(xhr, status, error) {
+		  //Ajax request failed.
+		  var errorMessage = xhr.status + ': ' + xhr.statusText
+		  console.log('Error - ' + errorMessage);
+	})
+	/*
 	$.post("EmployeeMenuSettings.php",
 		myData, 
 		   function(data, status, jqXHR) {
-				console.log(jqXHR['responseText']);
+				//console.log(jqXHR['responseText']);
 				$('#scheduleWeek').empty();
 				$('#scheduleWeek').append(data);
 				if(date==0){
 					$('#fromDate').text('Jobs');
 				}else{
-					$('#fromDate').text('Jobs from '+currentDate);
+					$('#fromDate').text(currentDate);
 				}
 				loadFilters();
-			});
+			});*/
 	
 }
 
@@ -218,39 +241,47 @@ function getWithExpiry(key) {
 	return item.value
 }
 </script> 
-<div class="col-sm-12 col-md-11 col-lg-11 mx-auto">
-	<div class="card card-signin my-3">
-		<!--div class="card-header">
-			<div class="d-flex flex-row">
-				<div class="p-2">
-					<div class="custom-control custom-radio">
-						<input onchange="loadSchWeek(this.value,1)" type="radio" class="custom-control-input" id="chk3" value="3" name="defaultExampleRadios" checked>
-						<label class="custom-control-label" for="chk3">SHIPPING</label>
-					</div>
-				</div>
-				<div class="p-2">
-					<div class="custom-control custom-radio">
-						<input onchange="loadSchWeek(this.value,2)" type="radio" class="custom-control-input" id="chk2" value="2" name="defaultExampleRadios">
-						<label class="custom-control-label" for="chk2">WRAPPING</label>
-					</div>
-				</div>
-				<div class="p-2">
-					<div class="custom-control custom-radio">
-						<input onchange="loadSchWeek(this.value,8)" type="radio" class="custom-control-input" id="chk1" value="1" name="defaultExampleRadios">
-						<label class="custom-control-label" for="chk1">SANDING</label>
-					</div>
-				</div>
-				<div class="p-2">
-					<div class="custom-control custom-radio">
-						<input onchange="loadSchWeek(this.value,9)" type="radio" class="custom-control-input" id="chk0" value="1" name="defaultExampleRadios">
-						<label class="custom-control-label" for="chk0">CNC</label>
-					</div>
+<style>
+  @media (max-width: 767px) {
+	.hidden-mobile {
+	  display: none;
+	}
+  }
+</style>
+
+<div class="card card-signin my-3 mx-0">
+	<!--div class="card-header">
+		<div class="d-flex flex-row">
+			<div class="p-2">
+				<div class="custom-control custom-radio">
+					<input onchange="loadSchWeek(this.value,1)" type="radio" class="custom-control-input" id="chk3" value="3" name="defaultExampleRadios" checked>
+					<label class="custom-control-label" for="chk3">SHIPPING</label>
 				</div>
 			</div>
-		</div-->
+			<div class="p-2">
+				<div class="custom-control custom-radio">
+					<input onchange="loadSchWeek(this.value,2)" type="radio" class="custom-control-input" id="chk2" value="2" name="defaultExampleRadios">
+					<label class="custom-control-label" for="chk2">WRAPPING</label>
+				</div>
+			</div>
+			<div class="p-2">
+				<div class="custom-control custom-radio">
+					<input onchange="loadSchWeek(this.value,8)" type="radio" class="custom-control-input" id="chk1" value="1" name="defaultExampleRadios">
+					<label class="custom-control-label" for="chk1">SANDING</label>
+				</div>
+			</div>
+			<div class="p-2">
+				<div class="custom-control custom-radio">
+					<input onchange="loadSchWeek(this.value,9)" type="radio" class="custom-control-input" id="chk0" value="1" name="defaultExampleRadios">
+					<label class="custom-control-label" for="chk0">CNC</label>
+				</div>
+			</div>
+		</div>
+	</div-->
 			
-		<div class="card-body">
-			<div class="d-flex justify-content-between">
+	<div class="card-body px-3">			
+		<div class="row">
+			<div class="d-flex justify-content-start col-sm-6 col-lg-4 mx-auto">
 				<div class="p-2">
 					<select id="columns" multiple="multiple">
 						<option selected value="rmnm" id="chkRN">ROOM NAME</option>
@@ -262,10 +293,13 @@ function getWithExpiry(key) {
 						<option selected value="fns" id="chkFS">FINISH</option>
 					</select>
 				</div>
-				<div class="custom-control custom-checkbox p-2">
+			</div>
+			<div class="d-flex justify-content-end col-sm-6 col-lg-2">
+				<div class="col custom-control custom-checkbox p-2 mx-auto">
 					<input onchange="onlyCompleted();" type="checkbox" class="custom-control-input" id="displayCmpt">
-					<label class="custom-control-label" for="displayCmpt">Hide jobs not ready on previous station</label>
+					<label class="custom-control-label mx-auto" for="displayCmpt">Hide jobs not ready on previous station</label>
 				</div>
+			</div>
 				<!--div class="custom-control custom-checkbox p-2">
 					<input onchange="hideMyCompleted();" type="checkbox" class="custom-control-input" id="hideMyCmpt">
 					<label class="custom-control-label" for="hideMyCmpt">See completed</label>
@@ -273,25 +307,27 @@ function getWithExpiry(key) {
 			<!--/div>
 			<div class="container-fluid">
 				<div class="d-flex justify-content-between"-->
-					<div class="p-2">
+			<div class="d-flex col-sm-12 col-lg-6 mx-auto">
+					<div class="d-flex justify-content-start align-middle col-sm-2 mr-auto p-2">
 						<a class="btn-sm" onclick="getNewWeek(false);">
 							<svg width="3em" height="3em" viewBox="0 0 16 16" class="bi bi-arrow-left-square-fill btn-primary" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
 							  <path fill-rule="evenodd" d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm9.5 8.5a.5.5 0 0 0 0-1H5.707l2.147-2.146a.5.5 0 1 0-.708-.708l-3 3a.5.5 0 0 0 0 .708l3 3a.5.5 0 0 0 .708-.708L5.707 8.5H11.5z"/>
-							</svg><small>Previous week</small>
+							</svg><small class="hidden-mobile">Previous week</small>
 						</a>
 					</div>
-					<div class="p-2">
+					<div class="d-flex justify-content-center align-middle col-sm-8 p-2">
 						<h5 id="fromDate"></h5>
 					</div>
-					<div class="p-2">
-						<a class="btn-sm" onclick="getNewWeek(true);"><small>Next week</small>
+					<div class="d-flex justify-content-end align-middle col-sm-2 p-2">
+						<a class="btn-sm" onclick="getNewWeek(true);"><small class="hidden-mobile">Next week</small>
 							<svg width="3em" height="3em" viewBox="0 0 16 16" class="bi bi-arrow-right-square-fill btn-primary" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
 							  <path fill-rule="evenodd" d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm2.5 8.5a.5.5 0 0 1 0-1h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5z"/>
 							</svg>
 						</a>
 					</div>
-				<!--/div-->
 			</div>
+		</div>
+		<div class="table-responsive">
 			<table id="tbSchedule" class="table text-center align-middle table-bordered" style="width:100%" >
 				<thead class="thead-light">
 					<tr>
@@ -304,7 +340,7 @@ function getWithExpiry(key) {
 						<th class="mat">MATERIAL</th>
 						<th class="drs">DOOR STYLE</th>
 						<th class="fns">FINISH</th>
-						<th>COMPLETED</th>
+						<th>DONE</th>
 					</tr>
 				</thead>
 				<tbody id="scheduleWeek">
@@ -313,6 +349,7 @@ function getWithExpiry(key) {
 		</div>
 	</div>
 </div>
+
 
 <?php if(strlen($_SESSION["firstName"])==1 && $_SESSION["account"]==2) include '../includes/foot.php';?>  
 <script>

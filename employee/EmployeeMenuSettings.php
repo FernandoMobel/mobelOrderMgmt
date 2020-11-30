@@ -67,7 +67,7 @@ if($_POST['mode']=="getOrderID"){
 		echo "<a href=\"http://".$_SERVER['SERVER_NAME'].$local."/Order.php?OID=".$_POST['value']."\" id=\"searchOrderBtn\" class=\"btn btn-outline-primary btn-sm float-right\" type=\"button\" >Open Order</a>";
 	}else{
 		echo "<div class=\"alert alert-warning\" role=\"alert\">";
-		echo "<p>Order <b>".$_POST['value']."</b> doesn't exists</p></div>";
+		echo "<p>Order <b>".$_POST['value']."</b> doesn't exist</p></div>";
 	}
 }
 
@@ -272,29 +272,21 @@ if($_POST['mode']=="loadSchWeek"){
 		}
         break;
     case 2:
-		if(strcmp($_POST['filter'],"true")==0){
-			if($_POST['date']!=0){
+		if($_POST['date']!=0)
 				$dateFilter = "and wrapping between '".$_POST['date']."' and '".date('Y-m-d', strtotime($_POST['date']. ' + 6 days'))."'";
-			}
+		if(strcmp($_POST['filter'],"true")==0){
 			$sql = "select mo.oid, orr.rid, (select sum(cc) from orderRoom orr2, schedule s2, mosOrder mo3 where mo3.oid = orr2.oid and mo3.state = 5 and orr2.rid = s2.rid and s2.wrapping = s.wrapping and exists (select 1 from deptCompleted dc2 where dc2.did =(select deptId from deptReqd dr2 where dr2.myDeptId = ".$_POST['mydid'].") and orr2.rid = dc2.rid)) boxCurQty, (select count(1) from schedule s2 where s2.wrapping = s.wrapping and s2.rid in (select dc2.rid from deptCompleted dc2, orderRoom orr2, mosOrder mo2 where dc2.rid = orr2.rid and orr2.oid = mo2.oid and mo2.state = 5 and dc2.did =(select dr2.deptId from deptReqd dr2 where dr2.myDeptId = ".$_POST['mydid']."))) jobsDay, (select count(1) from orderRoom orr2 where orr2.oid = orr.oid and orr2.rid and exists (select 1 from deptCompleted dc2 where dc2.did =(select deptId from deptReqd dr2 where dr2.myDeptId =".$_POST['mydid'].") and orr2.rid = dc2.rid)) as rooms, (select name from species s where s.id = orr.species) material, (select name from door d where d.id = orr.door) doorStyle, (select name from frontFinish f where f.id = orr.frontFinish) finish, orr.name roomName, cc,fronts, (select count(1) from orderItem oi where oi.rid = orr.rid) as items, (SELECT if(count(1)>0,'true','false') exist FROM deptCompleted dc2 where dc2.rid = orr.rid and dc2.did = dr.myDeptId) as completed, wrapping myDate, s.updateDate FROM mosOrder mo, orderRoom orr,deptCompleted dc,schedule s,deptReqd dr where mo.oid = orr.oid and orr.rid = s.rid and orr.rid = dc.rid and state = 5 and dr.myDeptId = ".$_POST['mydid']." and dc.did = dr.deptId ".$dateFilter." order by myDate asc, mo.oid asc";
 		}else{
-			if($_POST['date']!=0){
-				$dateFilter = "and wrapping between '".$_POST['date']."' and '".date('Y-m-d', strtotime($_POST['date']. ' + 6 days'))."'";
-			}
-			$sql = "select mo.oid, orr.rid, (select sum(cc) from orderRoom orr2 where orr2.rid in (select ss.rid from schedule ss where ss.wrapping = s.wrapping)) boxCurQty, (SELECT count(1) roomsDay FROM orderRoom orr, schedule SS where orr.rid = ss.rid and ss.wrapping = s.wrapping) jobsDay, (select count(1) from orderRoom orr2 where orr2.oid = orr.oid) as rooms, (select sum(cc) from orderRoom orr2 where orr2.oid = orr.oid) as totalorder, (select name from species s where s.id = orr.species) material, (select name from door d where d.id = orr.door) doorStyle, (select name from frontFinish f where f.id = orr.frontFinish) finish, orr.name roomName, cc, fronts, (select count(1) from orderItem oi where oi.rid = orr.rid) as items, (SELECT if(count(1)>0,'true','false') exist FROM deptCompleted dc where dc.rid = orr.rid and did = ".$_POST['mydid'].") completed, deliveryDate, wrapping myDate, s.updateDate FROM mosOrder mo, orderRoom orr, schedule s where mo.oid = orr.oid and orr.rid = s.rid ".$dateFilter." order by myDate asc, mo.oid asc";
+			$sql = "select mo.oid, orr.rid, (select sum(cc) from orderRoom orr2 where orr2.rid in (select ss.rid from schedule ss where ss.wrapping = s.wrapping)) boxCurQty, (SELECT count(1) roomsDay FROM orderRoom orr, schedule SS where orr.rid = ss.rid and ss.wrapping = s.wrapping) jobsDay, (select count(1) from orderRoom orr2 where orr2.oid = orr.oid) as rooms, (select name from species s where s.id = orr.species) material, (select name from door d where d.id = orr.door) doorStyle, (select name from frontFinish f where f.id = orr.frontFinish) finish, orr.name roomName, cc, fronts, (select count(1) from orderItem oi where oi.rid = orr.rid) as items, (SELECT if(count(1)>0,'true','false') exist FROM deptCompleted dc where dc.rid = orr.rid and did = ".$_POST['mydid'].") completed, deliveryDate, wrapping myDate, s.updateDate FROM mosOrder mo, orderRoom orr, schedule s where mo.oid = orr.oid and orr.rid = s.rid ".$dateFilter." order by myDate asc, mo.oid asc";
 		}
         break;
     case 1:
+		if($_POST['date']!=0)
+			$dateFilter = "and finishing between '".$_POST['date']."' and '".date('Y-m-d', strtotime($_POST['date']. ' + 6 days'))."'";
 		if(strcmp($_POST['filter'],"true")==0){
-			if($_POST['date']!=0){
-				$dateFilter = "and finishing between '".$_POST['date']."' and '".date('Y-m-d', strtotime($_POST['date']. ' + 6 days'))."'";
-			}
 			$sql = "select mo.oid, orr.rid, (select sum(cc) from orderRoom orr2, schedule s2, mosOrder mo3 where mo3.oid = orr2.oid and mo3.state = 5 and orr2.rid = s2.rid and s2.finishing = s.finishing and exists (select 1 from deptCompleted dc2 where dc2.did =(select deptId from deptReqd dr2 where dr2.myDeptId = ".$_POST['mydid'].") and orr2.rid = dc2.rid)) boxCurQty, (select count(1) from schedule s2 where s2.finishing = s.finishing and s2.rid in (select dc2.rid from deptCompleted dc2, orderRoom orr2, mosOrder mo2 where dc2.rid = orr2.rid and orr2.oid = mo2.oid and mo2.state = 5 and dc2.did =(select dr2.deptId from deptReqd dr2 where dr2.myDeptId = ".$_POST['mydid']."))) jobsDay, (select count(1) from orderRoom orr2 where orr2.oid = orr.oid and orr2.rid and exists (select 1 from deptCompleted dc2 where dc2.did =(select deptId from deptReqd dr2 where dr2.myDeptId =".$_POST['mydid'].") and orr2.rid = dc2.rid)) as rooms, (select name from species s where s.id = orr.species) material, (select name from door d where d.id = orr.door) doorStyle, (select name from frontFinish f where f.id = orr.frontFinish) finish, orr.name roomName, cc,fronts, (select count(1) from orderItem oi where oi.rid = orr.rid) as items, (SELECT if(count(1)>0,'true','false') exist FROM deptCompleted dc2 where dc2.rid = orr.rid and dc2.did = dr.myDeptId) as completed, finishing myDate, s.updateDate FROM mosOrder mo, orderRoom orr, deptCompleted dc, schedule s, deptReqd dr where mo.oid = orr.oid and orr.rid = s.rid and orr.rid = dc.rid and state = 5 and dr.myDeptId = ".$_POST['mydid']." and dc.did = dr.deptId ".$dateFilter." order by myDate asc, mo.oid asc";
 		}else{
-			if($_POST['date']!=0){
-				$dateFilter = "and finishing between '".$_POST['date']."' and '".date('Y-m-d', strtotime($_POST['date']. ' + 6 days'))."'";
-			}
-			$sql = "select mo.oid, orr.rid, (select sum(cc) from orderRoom orr2 where orr2.rid in (select ss.rid from schedule ss where ss.finishing = s.finishing)) boxCurQty, (SELECT count(1) roomsDay FROM orderRoom orr, schedule SS where orr.rid = ss.rid and ss.finishing = s.finishing) jobsDay, (select count(1) from orderRoom orr2 where orr2.oid = orr.oid and orr2.rid in (select ss.rid from schedule ss where ss.finishing = s.finishing)) as rooms, (select sum(cc) from orderRoom orr2 where orr2.oid = orr.oid) as totalorder, (select name from species s where s.id = orr.species) material, (select name from door d where d.id = orr.door) doorStyle, (select name from frontFinish f where f.id = orr.frontFinish) finish, orr.name roomName, cc, fronts, (select count(1) from orderItem oi where oi.rid = orr.rid) as items, (SELECT if(count(1)>0,'true','false') exist FROM deptCompleted dc where dc.rid = orr.rid and did = ".$_POST['mydid'].") completed, deliveryDate, finishing myDate, s.updateDate FROM mosOrder mo, orderRoom orr, schedule s where mo.oid = orr.oid and orr.rid = s.rid ".$dateFilter." order by myDate asc, mo.oid asc";
+			$sql = "select mo.oid, orr.rid, (select sum(cc) from orderRoom orr2 where orr2.rid in (select ss.rid from schedule ss where ss.finishing = s.finishing)) boxCurQty, (SELECT count(1) roomsDay FROM orderRoom orr, schedule SS where orr.rid = ss.rid and ss.finishing = s.finishing) jobsDay, (select count(1) from orderRoom orr2 where orr2.oid = orr.oid and orr2.rid in (select ss.rid from schedule ss where ss.finishing = s.finishing)) as rooms, (select name from species s where s.id = orr.species) material, (select name from door d where d.id = orr.door) doorStyle, (select name from frontFinish f where f.id = orr.frontFinish) finish, orr.name roomName, cc, fronts, (select count(1) from orderItem oi where oi.rid = orr.rid) as items, (SELECT if(count(1)>0,'true','false') exist FROM deptCompleted dc where dc.rid = orr.rid and did = ".$_POST['mydid'].") completed, deliveryDate, finishing myDate, s.updateDate FROM mosOrder mo, orderRoom orr, schedule s where mo.oid = orr.oid and orr.rid = s.rid ".$dateFilter." order by myDate asc, mo.oid asc";
 		}
         break;
 	default:
@@ -318,13 +310,13 @@ if($_POST['mode']=="loadSchWeek"){
 			/*if($row['updateDate']==date("Y-m-d",time() - 3600*24))
 				$updated = "table-info";*/
 			if(strcmp($oid, $row['oid'])==0 && strcmp($day,$row['myDate'])==0){//displaying new room same order
-				echo "<tr><td class=\"rmnm $updated\" scope=\"row\">".$row['roomName']."</td>";//header row room 
-				echo "<td class=\"box $updated\">".$row['cc']."</td>";
-				echo "<td class=\"frt $updated\">".$row['fronts']."</td>";
-				echo "<td class=\"itm $updated\">".$row['items']."</td>";					
-				echo "<td class=\"mat $updated\">".$row['material']."</td>";					
-				echo "<td class=\"drs $updated\">".$row['doorStyle']."</td>";					
-				echo "<td class=\"fns $updated\">".$row['finish']."</td>";	
+				echo "<tr><td class=\"rmnm align-middle $updated\" scope=\"row\">".$row['roomName']."</td>";//header row room 
+				echo "<td class=\"box align-middle $updated\">".$row['cc']."</td>";
+				echo "<td class=\"frt align-middle $updated\">".$row['fronts']."</td>";
+				echo "<td class=\"itm align-middle $updated\">".$row['items']."</td>";					
+				echo "<td class=\"mat align-middle $updated\">".$row['material']."</td>";					
+				echo "<td class=\"drs align-middle $updated\">".$row['doorStyle']."</td>";					
+				echo "<td class=\"fns align-middle $updated\">".$row['finish']."</td>";	
 				echo "<td><div id=\"uptRoom".$row['rid']."\" class=\"custom-control custom-checkbox\"><input ".$completed." onchange=\"completeRoom(".$row['rid'].")\" type=\"checkbox\" class=\"custom-control-input\" id=\"chkDone".$row['rid']."\"><label class=\"custom-control-label\" for=\"chkDone".$row['rid']."\"></label></div></td></tr>";				
 			}else if(strcmp($day,$row['myDate'])==0 && strcmp($oid, $row['oid'])!=0){
 				$oid = $row['oid'];
@@ -342,14 +334,14 @@ if($_POST['mode']=="loadSchWeek"){
 				$oid = $row['oid'];//new order
 				echo "<tr>";
 				echo "<td class=\"align-middle\" rowspan=\"".$row['jobsDay']."\" scope=\"rowgroup\">".date("l M j",strtotime($day))."</br><small>Current total boxes: ".$row['boxCurQty']."</small></td>";
-				echo "<td id=\"".$row['oid']."\" class=\"$updated\" rowspan=\"".$row['rooms']."\" scope=\"rowgroup\"><b>".$row['oid']."</b></td>";//Order id header
-				echo "<td class=\"rmnm $updated\" scope=\"row\">".$row['roomName']."</td>";//header row room
-				echo "<td class=\"box $updated\">".$row['cc']."</td>";
-				echo "<td class=\"frt $updated\">".$row['fronts']."</td>";
-				echo "<td class=\"itm $updated\">".$row['items']."</td>";		
-				echo "<td class=\"mat $updated\">".$row['material']."</td>";					
-				echo "<td class=\"drs $updated\">".$row['doorStyle']."</td>";
-				echo "<td class=\"fns $updated\">".$row['finish']."</td>";
+				echo "<td id=\"".$row['oid']."\" class=\"align-middle $updated\" rowspan=\"".$row['rooms']."\" scope=\"rowgroup\"><b>".$row['oid']."</b></td>";//Order id header
+				echo "<td class=\"rmnm align-middle $updated\" scope=\"row\">".$row['roomName']."</td>";//header row room
+				echo "<td class=\"box align-middle $updated\">".$row['cc']."</td>";
+				echo "<td class=\"frt align-middle $updated\">".$row['fronts']."</td>";
+				echo "<td class=\"itm align-middle $updated\">".$row['items']."</td>";		
+				echo "<td class=\"mat align-middle $updated\">".$row['material']."</td>";					
+				echo "<td class=\"drs align-middle $updated\">".$row['doorStyle']."</td>";
+				echo "<td class=\"fns align-middle $updated\">".$row['finish']."</td>";
 				echo "<td><div id=\"uptRoom".$row['rid']."\" class=\"custom-control custom-checkbox\"><input ".$completed." onchange=\"completeRoom(".$row['rid'].")\" type=\"checkbox\" class=\"custom-control-input\" id=\"chkDone".$row['rid']."\"><label class=\"custom-control-label\" for=\"chkDone".$row['rid']."\"></label></div></td></tr>";
 			}	
 		}

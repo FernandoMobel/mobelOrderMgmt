@@ -20,10 +20,11 @@ if(isset($_SESSION["auth"])){
 <head>
 <title>Mobel Ordering System (MOS)</title>
 
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css">
 <?php 
 /* Scripts static address*/
+echo "<link rel=\"icon\" type=\"image/png\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/header/favicon1.png\">" ;
 echo "<link rel=\"stylesheet\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/js/bootstrap431/css/bootstrap.min.css\">" ;
 echo "<link rel=\"stylesheet\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/js/bootstrapselect1139/dist/css/bootstrap-select.css\">" ;
 echo "<link rel=\"stylesheet\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/js/bootstrap-select/dist/css/bootstrap-multiselect.css\">" ;
