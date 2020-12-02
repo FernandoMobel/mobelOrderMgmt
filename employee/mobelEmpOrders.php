@@ -205,7 +205,7 @@ function setPrevState(){
 			?>
 			<div class="container-fluid" id="orderView">
 				<div class="row">
-					<div class="col-sm-6 col-lg-3 my-1">
+					<div class="col-sm-6 col-lg-5 my-1">
 						<div class="input-group">
 							<div class="input-group-prepend">
 								<label class="input-group-text bg-primary text-white" for="stateFilter">
@@ -236,10 +236,10 @@ function setPrevState(){
 							</select>
 						</div>
 					</div>
-					<div class="col-sm-6 col-lg-3">
+					<div class="col-sm-6 col-lg-2">
 						<table><tr class="table-warning"><td>Service</td></tr><tr class="table-danger"><td>Service w/warranty</td></tr></table>
 					</div>
-					<div class="col-sm-6 col-lg-5 d-flex justify-content-start">
+					<div class="col-sm-6 col-lg-4 d-flex justify-content-start">
 						<div id="searchOrderBtn" class="col">
 						</div>
 						<div >					
@@ -263,7 +263,7 @@ function setPrevState(){
 			<hr style="height:1px;border-width:0;color:gray;background-color:gray">
 			<!--/div-->
 			<div class="table-responsive">
-				<table id="example" class="table">
+				<table id="example" class="table table-hover">
 					<thead class="thead-light">
 						<tr>
 							
@@ -344,47 +344,48 @@ function setPrevState(){
 </div>
 <!-- Modal for Boxes, Fronts and Delivery date-->
 <div class="modal fade" id="detailsModal" tabindex="-1" role="dialog" aria-labelledby="detailsModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-	<form onsubmit="productionReady()">
-		<div class="modal-header">
-			<input id="orderID" hidden></input>
-			<h5 class="modal-title" id="detailsModalLabel"></h5>
-			<button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="setPrevState();">
-			  <span aria-hidden="true">&times;</span>
-			</button>
-		</div>
-		<div class="modal-body pt-0">
-			<small class="form-text text-center alert-info mb-3">This date is for the order and all it's rooms</small>
-			<div class="row">
-				<div class="col-md-6">
-					<div class="form-group">
-						<div class="input-group mb-3">					
-							<div class="input-group-prepend">
-								<span class="input-group-text">Order Delivery Date</span>
-							</div>
-							<input required id="deliveryDate" type="text" maxlength="10" data-provide="datepicker" data-date-format="yyyy-mm-dd" class="form-control datepicker text-center" value="<?php echo date('Y-m-d'); ?>" onchange="updateDetail(1, this.id, this.value)">
-						</div>		
-					</div>								
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<form onsubmit="productionReady()">
+				<div class="modal-header">
+					<input id="orderID" hidden></input>
+					<h5 class="modal-title" id="detailsModalLabel"></h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="setPrevState();">
+					  <span aria-hidden="true">&times;</span>
+					</button>
 				</div>
-				<div class="col-md-6">
-					<select id="selDept" multiple="multiple">						
-						<!--option selected value="1" id="shipping">SHIPPING</option-->
-						<option selected value="2" id="wrapping">WRAPPING</option>
-						<option selected value="8" id="sanding">SANDING</option>
-					</select>
-				</div>
-			</div>
-			<div id="modalContent" class="container">
+				<div class="modal-body pt-0">
+					<small class="form-text text-center alert-info mb-3">This date is for the order and all it's rooms</small>
+					<div class="row">
+						<div class="col-md-6">
+							<div class="form-group">
+								<div class="input-group mb-3">					
+									<div class="input-group-prepend">
+										<span class="input-group-text">Order Delivery Date</span>
+									</div>
+									<input required id="deliveryDate" type="text" maxlength="10" data-provide="datepicker" data-date-format="yyyy-mm-dd" class="form-control datepicker text-center" value="<?php echo date('Y-m-d'); ?>" onchange="updateDetail(1, this.id, this.value)">
+								</div>		
+							</div>								
+						</div>
+						<div class="col-md-6">
+							<select id="selDept" multiple="multiple">						
+								<!--option selected value="1" id="shipping">SHIPPING</option-->
+								<option selected value="2" id="wrapping">WRAPPING</option>
+								<option selected value="8" id="sanding">SANDING</option>
+							</select>
+						</div>
+					</div>
+					<div id="modalContent" class="container">
 
-			</div>
-			<div class="modal-footer">
-				<!--button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button-->
-				<button type="submit" class="btn btn-primary">Save changes</button>
-		  </div>
+					</div>
+					<div class="modal-footer">
+						<!--button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button-->
+						<button type="submit" class="btn btn-primary">Save changes</button>
+				  </div>
+				</div>
+			</form>
 		</div>
-	</form>
-  </div>
+	</div> 
 </div> 
 <?php include '../includes/foot.php';?>  
 <script>
@@ -396,7 +397,7 @@ $(document).ready(function () {
 	
 	//Filter options
 	$('#stateFilter').multiselect({
-		buttonWidth: '100%',
+		buttonWidth: '350px',
 		maxHeight: 600,
 		dropRight: true
 	});
