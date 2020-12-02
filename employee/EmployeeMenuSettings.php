@@ -172,11 +172,11 @@ if($_POST['mode']=="updateRoomDetails"){
 		opendb($sql);
 		//Calculate and Insert or update wrapping and finishing dates into schedule
 		$sql2 = "select (select count(1) from schedule ss where ss.rid = orr.rid) exist, (select id from material m where m.id = (select mid from species sp where sp.id = orr.species) ) material, (select finishType from frontFinish ff where ff.id = orr.frontFinish ) finishType, glaze, sheen, orr.rid, orr.name, orr.cc, orr.fronts, DATE(COALESCE(deliveryDate,dateRequired)) dateRequired, COALESCE(orr.pieces,(select count(1) from orderItem oi, item i where oi.iid = i.id and i.isCabinet = 0 and oi.rid = orr.rid))pieces from orderRoom orr, mosOrder mo where mo.oid = orr.oid and orr.oid = ".$_POST['oid']." order by orr.name asc";
-		echo $sql2;
-		echo "oid: ".$_POST['oid'].", col: ".$_POST['col'].", val: ".$_POST['val'];
+		//echo $sql2;
+		//echo "oid: ".$_POST['oid'].", col: ".$_POST['col'].", val: ".$_POST['val'];
 		$result = opendb($sql2);
 		$wrapping = scheduleFn($_POST['val'],5);
-		echo $wrapping;
+		//echo $wrapping;
 		$finishing = "null";
 		$daysF = 0;
 		$daysF2 = 3;
@@ -199,11 +199,13 @@ if($_POST['mode']=="updateRoomDetails"){
 				$daysF2 = $daysF;
 			}
 			$finishing = scheduleFn($wrapping,$daysF2);
+			//echo $finishing . "/n";
 			if($exists==0){			
 				$sql2 = "insert into schedule(rid,wrapping,finishing,updateDate) values(".$row['rid'].",'".$wrapping."','".$finishing."',curdate())";
 			}else{
 				$sql2 = "update schedule set wrapping = '".$wrapping."', finishing ='".$finishing."' where rid in(select rid from orderRoom where oid = ".$_POST['oid'].")" ;
 			}
+			echo $sql2;
 			opendb($sql2);
 		}
 	}else{
