@@ -7,6 +7,7 @@ if(strcmp($_SERVER['SERVER_NAME'],"localhost")==0 || strcmp($_SERVER['SERVER_NAM
 	$GLOBALS['$conn2'] = new mysqli("138.197.170.161", "dqnrmrwrfh", "vuVE9j9wRw", "dqnrmrwrfh");
 }
 
+
 $GLOBALS['$result'] = "";
   //if ($conn->connect_error) {
 //    die("ERROR: Unable to connect: " . $conn->connect_error);
@@ -102,6 +103,8 @@ $GLOBALS['$result'] = "";
       return 1.0;
   }
   
+  
+  
   /* getPrice returns the price for a given item or subitem given all the required information.
    * It also required method ID which is an identifier in the database to specify how the cost
    * for a given item should be calculated.
@@ -115,7 +118,8 @@ $GLOBALS['$result'] = "";
    * Later should add sheen factor and seperate out species from door factor.
    * Additional factors are currently multiplicative, not additive IE 2 and 1.3 = 2.6, not 2.3.
    */
-  function getPrice($qty, $base, $sizePrice, $parentPrice, $parentPercent,$DFactor,$IFactor,$FFactor,$GFactor,$SFactor,$EFactor,$drawerCharge,$smallDrawerCharge,$largeDrawerCharge, $DApplies, $IApplies,$FApplies, $GApplies, $SApplies, $drawers,$smallDrawerFronts,$largeDrawerFronts,$finishedEnds, $H, $W, $D, $minSize,  $methodID, $finishUpcharge){
+  function getPrice($qty, $base, $sizePrice, $parentPrice, $parentPercent,$DFactor,$IFactor,$FFactor,$GFactor,$SFactor,$EFactor,$drawerCharge,$smallDrawerCharge,$largeDrawerCharge, $DApplies, $IApplies,$FApplies, $GApplies, $SApplies, $drawers,$smallDrawerFronts,$largeDrawerFronts,$finishedEnds, $H, $W, $D, $minSize,  $methodID, $finishUpcharge, $needReason = 0){
+      $reason = "";
       $size = $W*$H*$D;
       if($methodID == 1){
           $size = $W*$D;
@@ -132,32 +136,53 @@ $GLOBALS['$result'] = "";
       if($size < $minSize){
           $size = $minSize;
       }
+      
+      
       if($DFactor>0.0){
           $DFactor = $DFactor -1;
       }
       $price = $base+$size*$sizePrice+$parentPrice*$parentPercent;
+      $reason = "Base Price: " . $base . "\n Size: " . $size . "\n Sizing Price: " . $sizePrice . "\n Price from parent: " . $parentPrice*$parentPercent . "\n\n";
       
       $factor = 1.0;
-      
+      $Dtfactor = $factor;
       if($DApplies>0){
           $factor += ($DFactor);
       }
+      $Dtfactor = $factor-$Dtfactor;
+      $Itfactor = $factor;
+      
       if($IApplies>0){
           $factor += ($IFactor);
       }
+      $Itfactor = $factor-$Itfactor;
+      $Ftfactor = $factor;
       if($FApplies>0){
           $factor *= (1+$FFactor);
       }
+      $Ftfactor = $factor - $Ftfactor;
+      $Gtfactor = $factor;
       if($GApplies>0){
           $factor *= (1+$GFactor);
       }
+      $Gtfactor = $factor-$Gtfactor;
+      $Stfactor = $factor;
       if($SApplies>0){
           $factor *= (1+$SFactor);
       }
+      $Stfactor = $factor-$Stfactor;
+      $reason = $reason . "Door Factor: ". $Dtfactor . " and added value: " . $Dtfactor * $price . "\n";
+      $reason = $reason . "Interior Finish Factor: ". $Itfactor . " and added value: " . $Itfactor * $price . "\n";
+      $reason = $reason . "Finish Factor: ". $Ftfactor . " and added value: " . $Ftfactor * $price . "\n";
+      $reason = $reason . "Gloss Factor: ". $Gtfactor . " and added value: " . $Gtfactor * $price . "\n";
+      $reason = $reason . "Species Factor: ". $Stfactor . " and added value: " . $Stfactor * $price . "\n\n";
       
       $upcharge = $drawerCharge * $drawers + $smallDrawerCharge*$smallDrawerFronts + $largeDrawerCharge*$largeDrawerFronts + $EFactor*$finishedEnds*$H*$D;
       
-      
+      $reason = $reason . "Drawer Glides: " . $drawerCharge * $drawers . "\n";
+      $reason = $reason . "Small Drawer Fronts: " . $smallDrawerCharge*$smallDrawerFronts . "\n";
+      $reason = $reason . "Large Drawer Fronts: " . $largeDrawerCharge*$largeDrawerFronts . "\n";
+      $reason = $reason . "Finished Ends: " . $EFactor*$finishedEnds*$H*$D . "";
       //if($methodID == 0){
           
           
@@ -167,10 +192,17 @@ $GLOBALS['$result'] = "";
           //echo $size . " ";
           //echo $DFactor;
           //echo $IFactor;
-		  $price = $price*$factor + $upcharge;
-          
-          return round($price*$qty,2);
+	  $price = $price*$factor + $upcharge;
+	  if($needReason <> 0){
+	      return $reason;
+	  }else{
+	      return round($price*$qty,2);
+	  }
       //}
+  }
+  
+  function getPriceReason($qty, $base, $sizePrice, $parentPrice, $parentPercent,$DFactor,$IFactor,$FFactor,$GFactor,$SFactor,$EFactor,$drawerCharge,$smallDrawerCharge,$largeDrawerCharge, $DApplies, $IApplies,$FApplies, $GApplies, $SApplies, $drawers,$smallDrawerFronts,$largeDrawerFronts,$finishedEnds, $H, $W, $D, $minSize,  $methodID, $finishUpcharge){
+      return getPrice($qty, $base, $sizePrice, $parentPrice, $parentPercent,$DFactor,$IFactor,$FFactor,$GFactor,$SFactor,$EFactor,$drawerCharge,$smallDrawerCharge,$largeDrawerCharge, $DApplies, $IApplies,$FApplies, $GApplies, $SApplies, $drawers,$smallDrawerFronts,$largeDrawerFronts,$finishedEnds, $H, $W, $D, $minSize,  $methodID, $finishUpcharge, 1);
   }
   
 //Calculate next date available 
