@@ -42,7 +42,7 @@ function loadSchWeek(date, dept){
 			type: 'POST',
 			data: myData})
 	  .done(function(data, status, jqXHR) {
-			//console.log(jqXHR['responseText']);
+			console.log(jqXHR['responseText']);
 			$('#scheduleWeek').empty();
 			$('#scheduleWeek').append(data);
 			if(date==0){
@@ -56,6 +56,8 @@ function loadSchWeek(date, dept){
 		  //Ajax request failed.
 		  var errorMessage = xhr.status + ': ' + xhr.statusText
 		  console.log('Error - ' + errorMessage);
+		  console.log(xhr);
+		  console.log(error);
 	})
 	/*
 	$.post("EmployeeMenuSettings.php",
@@ -242,11 +244,13 @@ function getWithExpiry(key) {
 }
 </script> 
 <style>
-  @media (max-width: 767px) {
+  @media (max-width: 1025px) {
 	.hidden-mobile {
 	  display: none;
 	}
   }
+  
+  td{padding:5px !important}
 </style>
 
 <div class="card card-signin my-3 mx-0">
@@ -361,7 +365,7 @@ $(document).ready(function () {
 	
 	$('#columns').multiselect({
 		allSelectedText: 'All columns are visible',
-		buttonWidth: '250px',
+		buttonWidth: '100%',
 		dropRight: true,
 		onChange: function(option, checked) {
 			$("."+$(option).val()).toggle('display');
