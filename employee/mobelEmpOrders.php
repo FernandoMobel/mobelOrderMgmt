@@ -124,10 +124,11 @@ function updateDetail(rid,col,val){
 		$('#deliveryDate').val(val);
 		
 	myData = { mode: 'updateRoomDetails',  oid:$('#orderID').attr('value'), rid: rid, col:col, val:val};
+	console.log(myData);
 	$.post("EmployeeMenuSettings.php",
 	myData, 
 	function(data, status, jqXHR) { 
-			//console.log(jqXHR['responseText']);
+			console.log(jqXHR['responseText']);
 			$("#"+col).css("border-color", "#00b828");
 		});
 }
