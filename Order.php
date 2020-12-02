@@ -173,8 +173,13 @@ function loadItems(rid){
 				}	
 				if(!incomplete){//Header options are slected
 					$('#items').append(data);
+					var priceBreakdown = "";
+					<?php 
+					if($_SESSION["userType"]==3)
+						echo "priceBreakdown = \"data-toggle='tooltip' title='Subtotal: $\"+$('#TotalPrice').val()+\"+ Upcharge: \"+$('#cabinetFactor').val()+ \"% ($\"+$('#upCharge').val()+\")'\";";
+					?>
 					$(".borderless").css('border-top','0px');
-					$("#roomTotal").html("<b>Room Total: $" + $("#TotalPrice").val() + "</b></br>pre HST & pre delivery");
+					$("#roomTotal").html("<b "+priceBreakdown+">Room Total: $" + $("#totalInclCF").val() + "</br>pre HST & pre delivery ");
 				}else{//One or more headers aren't selected, prices and item list will not be displayed
 					$('#items').append("<h5 class=\"mx-auto\">Please ensure all the above options (Species, Finish, etc) are selected</h5>");
 					$(".borderless").css('border-top','0px');
@@ -900,7 +905,7 @@ function printPrice(){
             echo "<input type=\"hidden\" value=\"".$row['oid']."\" id=\"OID\"><br/>";
             
             //echo "<div class=\"btn-group \">";
-            echo "<button data-toggle=\"modal\" onClick=\"setMinDate();hideSubmit();\" data-target=\"#orderOptions\" class=\"btn btn-primary text-nowrap px-2 py-2 mx-0  mt-0 d-print-none\" data-toggle=\"modal\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles( ".$_GET["OID"].");\">Options<span class=\"ui-icon ui-icon-gear\"></span></button>&nbsp;";
+			echo "<button data-toggle=\"modal\" onClick=\"setMinDate();hideSubmit();\" data-target=\"#orderOptions\" class=\"btn btn-primary text-nowrap px-2 py-2 mx-0  mt-0 d-print-none\" data-toggle=\"modal\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles( ".$_GET["OID"].");\">Options<span class=\"ui-icon ui-icon-gear\"></span></button>&nbsp;";
             echo "<button class=\"btn btn-primary text-nowrap px-2 py-2 mx-0 mt-0 d-print-none\" data-toggle=\"modal\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles( ".$_GET["OID"].");\">Files<span class=\"ui-icon ui-icon-disk\"></span></button>&nbsp;";
             
             if($row['status'] == "Quoting"){
@@ -2070,6 +2075,7 @@ $(document).ready(function(){
 	  $('.datepicker').datepicker({ 
 			startDate: new Date()
 		});
+		$('[data-toggle="tooltip"]').tooltip();
 	});
 
 $(document).ready(function(){

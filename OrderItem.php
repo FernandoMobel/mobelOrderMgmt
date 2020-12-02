@@ -290,36 +290,12 @@ if($_POST['mode']=="getItems"){
     }else{
         $RID = -1;
     }
-    
-	$sql = "select CLid from mosOrder where oid = ".$_POST['oid'];
+    //getting order cabinet line and factor for pricing
+	$sql = "select CLid, factor from mosOrder mo, cabinetLine cl where mo.CLid = cl.id and mo.oid = ".$_POST['oid'];
 	$result = opendb2($sql);
-
 	$CLid = $result->fetch_assoc();
-	//echo $CLid['CLid'];
 
-    /*
-    $doorfactor = 1.0;
-    opendb("select factor from doorSpecies ds, orderRoom o where o.door = ds.did and o.species = ds.sid and rid = ". $RID);
-    if($GLOBALS['$result'] <> ""){
-        foreach ($GLOBALS['$result'] as $row) {
-            $doorfactor = $row['factor'];
-        }
-    }
-    
-    $interiorfactor = 1.0;
-    opendb("select factor from interiorFinish i, orderRoom o where rid = ". $RID ." and o.interiorFinish = i.id");
-    if($GLOBALS['$result'] <> ""){
-        foreach ($GLOBALS['$result'] as $row) {
-            $interiorfactor = $row['factor'];
-        }
-    }
-   
-   
-    opendb("select oi.*, case when round(price*(1.0+ (". $doorfactor . "-0.0 )*doorFactor  + ". $interiorfactor . "*interiorFactor),2) = 0 then 'NA' else qty*round( price*(1.0 + (". $doorfactor . " - 0.0)*doorFactor + ". $interiorfactor . "*interiorFactor),2) end as formattedPrice from orderItem oi where rid = '" .$RID. "' order by position,id asc");
-   
-    */
-    
-    //opendb("select oi.*, case when round(price*(1.0+ (". $doorfactor . "-0.0 )*doorFactor  + ". $interiorfactor . "*interiorFactor),2) = 0 then 'NA' else qty*round( price*(1.0 + (". $doorfactor . " - 0.0)*doorFactor + ". $interiorfactor . "*interiorFactor),2) end as formattedPrice from orderItem oi where rid = '" .$RID. "' order by position,id asc");
+	    
     $SQL = "select * from (SELECT oi.description, oi.note, oi.id as item, 0 as sid, oi.qty, oi.name, oi.price, oi.sizePrice, 0 as 'parentPercent', ds.factor as 'DFactor', irf.factor as 'IFactor', ff.factor as 'FFactor', ff.upcharge as 'FUpcharge', sh.factor as 'SFactor', gl.factor as 'GFactor', sp.finishedEndSizePrice as 'EFactor', (db.upcharge + dg.upcharge) as 'drawerCharge', sdf.upcharge as 'smallDrawerCharge', ldf.upcharge as 'largeDrawerCharge', oi.doorFactor as 'DApplies', oi.speciesFactor as 'SpeciesApplies', oi.interiorFactor as 'IApplies', oi.finishFactor as 'FApplies', oi.sheenFactor as 'SApplies', oi.glazeFactor as 'GApplies',oi.drawers, oi.smallDrawerFronts, oi.largeDrawerFronts, oi.H, oi.W, oi.D, oi.W2, oi.D2, oi.minSize, it.pricingMethod as methodID, oi.hingeLeft,oi.hingeRight,oi.finishLeft,oi.finishRight
     FROM  orderItem oi, orderRoom orr, doorSpecies ds, interiorFinish irf, item it, sheen sh, glaze gl, frontFinish ff,drawerBox db, drawerGlides dg, smallDrawerFront sdf, largeDrawerFront ldf, species sp
     WHERE it.id = oi.iid and oi.rid = orr.rid and orr.species = ds.sid and orr.species = sp.id and orr.door = ds.did and orr.interiorFinish = irf.id and orr.sheen = sh.id and orr.glaze = gl.id and orr.frontFinish = ff.id and orr.drawerBox = db.id and orr.drawerGlides = dg.id and orr.smallDrawerFront = sdf.id and orr.largeDrawerFront = ldf.id and orr.rid = '" .$RID. "' and it.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$CLid['CLid'].")
@@ -448,7 +424,7 @@ if($_POST['mode']=="getItems"){
             }
             $aPrice = getPrice($row['qty'],$row['price'],$row['sizePrice'],$parentPrice,$row['parentPercent'],$row['DFactor'],$row['IFactor'],$row['FFactor'],$row['GFactor'],$row['SFactor'],$row['EFactor'],$row['drawerCharge'],$row['smallDrawerCharge'],$row['largeDrawerCharge'],  $mixDoorSpeciesFactor,$row['IApplies'],$row['FApplies'],$row['GApplies'],$row['SApplies'],$row['drawers'],$row['smallDrawerFronts'],$row['largeDrawerFronts'],$row['finishLeft']+$row['finishRight'], $row['H'],$row['W'],$row['D'],$row['minSize'],$row['methodID'],$row['FUpcharge']);
             $roomFinishUpcharge=$row['FUpcharge'];
-//                      getPrice($qty, $base, $sizePrice, $parentPrice, $parentPercent,                           $DFactor,$IFactor,            $FFactor,$GFactor,$SFactor,                   $drawerCharge,$smallDrawerCharge,$largeDrawerCharge,                           $DApplies, $IApplies,            $FApplies, $GApplies, $SApplies, $drawers,                         $smallDrawerFronts,$largeDrawerFronts, $H, $W, $D, $minSize,  $methodID){
+
             if($isParent === 1){
                 $parentPrice = $aPrice;
             }
@@ -475,8 +451,7 @@ if($_POST['mode']=="getItems"){
                 
             }
             
-            //function getPrice($qty, $base, $sizePrice, $parentPrice, $parentPercent,$DFactor,$IFactor, $DApplies, $IApplies, $H, $W, $D, $minDim,  $methodID){
-            echo "</tr>";
+           echo "</tr>";
             $i = $i + 1;
         }
         ?>
@@ -504,6 +479,13 @@ if($_POST['mode']=="getItems"){
         //echo "<input type=/"hidden/">Total room price: $" . number_format($TotalPrice,2,'.','') .  "</b>";
         echo "<input type=\"hidden\" id=\"TotalPrice\" value=\"" . number_format($TotalPrice,2,'.','') ."\">";
     }
+	//Total price plus Cabinet Line factor
+	$totalPriceCF = $TotalPrice+($TotalPrice*(double)$CLid['factor']);
+	//Cabinet factor element
+	echo "<input type=\"hidden\" id=\"cabinetFactor\" value=\"" .  number_format($CLid['factor'],2,'.','')*100 ."\">";
+	echo "<input type=\"hidden\" id=\"upCharge\" value=\"" .   number_format(number_format($CLid['factor'],2,'.','')*number_format($TotalPrice,2,'.',''),2,'.','') ."\">";
+	//Total price plus cabinet factor element
+	echo "<input type=\"hidden\" id=\"totalInclCF\" value=\"" . number_format($totalPriceCF,2,'.','') ."\">";
 }
 
 if($_POST['mode'] == "addItem"){
