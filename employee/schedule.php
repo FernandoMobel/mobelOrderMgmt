@@ -36,13 +36,12 @@ function loadSchWeek(date, dept){
 	console.log('Date:'+date+' dateType:'+dateType+' Department:'+department+' Filter:'+localStorage.getItem('onlyReady')+' see complete: '+localStorage.getItem('displayComp'));
 	myData = { mode: "loadSchWeek", date: date, dateType: dateType, mydid:department, filter:localStorage.getItem('onlyReady'), displayComp:localStorage.getItem('displayComp')};
 	
-	//$.ajax("EmployeeMenuSettings.php",myData)
 	$.ajax({
 			url: 'EmployeeMenuSettings.php',
 			type: 'POST',
 			data: myData})
 	  .done(function(data, status, jqXHR) {
-			console.log(jqXHR['responseText']);
+			//console.log(jqXHR['responseText']);
 			$('#scheduleWeek').empty();
 			$('#scheduleWeek').append(data);
 			if(date==0){
@@ -59,21 +58,6 @@ function loadSchWeek(date, dept){
 		  console.log(xhr);
 		  console.log(error);
 	})
-	/*
-	$.post("EmployeeMenuSettings.php",
-		myData, 
-		   function(data, status, jqXHR) {
-				//console.log(jqXHR['responseText']);
-				$('#scheduleWeek').empty();
-				$('#scheduleWeek').append(data);
-				if(date==0){
-					$('#fromDate').text('Jobs');
-				}else{
-					$('#fromDate').text(currentDate);
-				}
-				loadFilters();
-			});*/
-	
 }
 
 function getNewWeek(nextWeek){
