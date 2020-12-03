@@ -23,7 +23,7 @@ if($_POST['mode']=="getAllJobs"){
 }
 
 if($_POST['mode']=="wrappingSch"){
-	$sql = "select distinct orr.oid id, concat('Order:',orr.oid,' - Boxes: ',(select sum(cc) from orderRoom orr2 where orr2.oid = orr.oid)) title, wrapping start, 'true' allDay, if(updateDate=curdate(),'red', 'blue') color from schedule s, orderRoom orr where orr.rid = s.rid";
+	$sql = "select distinct orr.oid id, concat('Order:',orr.oid,' - Boxes: ',(select sum(cc) from orderRoom orr2 where orr2.oid = orr.oid)) title, wrapping start, 'true' allDay, if(updateDate=curdate(),'red', 'blue') color from schedule s, orderRoom orr, mosOrder mo where mo.oid = orr.oid and orr.rid = s.rid and state=5";
 	$result = opendb($sql);
 	$dbdata = array();
 	while ( $row = $result->fetch_assoc())  {
