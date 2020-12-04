@@ -14,49 +14,88 @@ function convertQueryStr(){
 
 if($_POST['mode']=="insertNewItem"){
 	$obj = convertQueryStr();
-	
-	$sql = "INSERT INTO item(name, description, price, sizePrice, minSize, W, H, D, W2, H2, D2, minW, minH, minD, maxW, maxH, maxD, doorFactor, ";
-	$sql .=	"speciesFactor, finishFactor, interiorFactor, sheenFactor, glazeFactor, drawers, smallDrawerFronts, largeDrawerFronts, dateCreated, pricingMethod,";
-	if(count($obj)==29){
-		$sql .= "isCabinet,";
-	}	
-	$sql .= " CLGroup) VALUES (";
-	$sql .= "'".strtoupper($obj["name"])."','".strtoupper($obj["description"])."',".$obj["price"].",".$obj["sizePrice"].",".$obj["minSize"].",".$obj["W"].",".$obj["H"].",".$obj["D"].",".$obj["W2"].",".$obj["H2"].",";
-	$sql .= $obj["D2"].",".$obj["minW"].",".$obj["minH"].",".$obj["minD"].",".$obj["maxW"].",".$obj["maxH"].",".$obj["maxD"].",".$obj["doorFactor"].",".$obj["speciesFactor"].",".$obj["finishFactor"].",";
-	$sql .= $obj["interiorFactor"].",".$obj["sheenFactor"].",".$obj["glazeFactor"].",".$obj["drawers"].",".$obj["smallDrawerFronts"].",".$obj["largeDrawerFronts"].",CURDATE(),".$obj["pricingMethod"].",";
-	if(count($obj)==29){
-		$sql .= "1,";
+	$firstRow = true;
+	$sql = "insert into item(";
+	$sql2 = " values(";
+	foreach($obj as $key => $value){
+		if($firstRow){
+			$sql .= $key;
+			$sql2 .= "'".$value."'";
+			$firstRow = false;
+		}else{
+			$sql .= ", ".$key;		
+			if (is_numeric($value)) {
+				$sql2 .= ", ".$value;
+			} else {
+				$sql2 .= ", '".$value."'";
+			}			
+		}
 	}
-	$sql .= $obj["CLGroup"].")";
+	$sql .= ")";
+	$sql2 .= ")";
+	$sql .=$sql2;
 	
+	//echo $sql;
 	opendb($sql);
-	echo $GLOBALS['$result'] ;
 }
 
 if($_POST['mode']=="updateItemById"){
 	$id = $_POST['id'];
 	//convert to Json
 	$obj = convertQueryStr();
-	//Update Item
-	$sql = "update item set name = '".strtoupper($obj["name"])."', description = '".strtoupper($obj["description"])."', price=".$obj["price"].", sizePrice =".$obj["sizePrice"];
-	$sql .= ", minSize=".$obj["minSize"].", W =".$obj["W"].", H=".$obj["H"].", D = ".$obj["D"].", lastModified=CURDATE()";
-	$sql .= ", minW=".$obj["minW"].", minH=".$obj["minH"].", minD=".$obj["minD"];
-	if(count($obj)==29){
-		$sql .= " , isCabinet = 1";
-	}else{
-		$sql .= " , isCabinet = 0";
+	//Update Item table
+	$firstRow = true;
+	$sql = "update item set ";
+	foreach($obj as $key => $value){
+		if($firstRow){
+			$sql .= $key."='".$value."'";
+			$firstRow = false;
+		}else{
+			if (is_numeric($value)) {
+				$sql .= ", ".$key."=".$value;
+			} else {
+				$sql .= ", ".$key."='".$value."'";
+			}			
+		}
 	}
 	$sql .= " where id = ".$id;
+	//echo $sql;
 	opendb($sql);
-	if($GLOBALS['$result'] > 0){
-		//Update Order Items
-		$sql = "UPDATE orderItem oit SET name = '".strtoupper($obj["name"])."', description = '".strtoupper($obj["description"])."', price=".$obj["price"].", sizePrice =".$obj["sizePrice"];
-		$sql .= ", minSize=".$obj["minSize"]; //.", W =".$obj["W"].", H=".$obj["H"].", D = ".$obj["D"];
-		$sql .= ", minW=".$obj["minW"].", minH=".$obj["minH"].", minD=".$obj["minD"];
-		$sql .= " where oit.id in (SELECT oi.id FROM orderRoom orr, orderItem oi, mosOrder mo where orr.rid = oi.rid and mo.oid = orr.oid and mo.state = 1 and oi.iid = ".$id.")";
-		opendb2($sql);
-	}
-	echo $GLOBALS['$result2'];
+	
+	//Update Open Quotes
+	/*---------------------------------
+	The following fileds will be updated for open quotes
+	-Name			-Price		
+	-Min&Max sizes	-Drawers		
+	-Description	-Size price	
+	-Factors		-Drawers(sm,lg,etc)
+	-Is cabinet
+	----------------------------------*/
+	$sql = "update orderItem oit set ";
+	$sql .= "name = '".$obj["name"]."', ";
+	$sql .= "description = '".$obj["description"]."', ";
+	$sql .= "price = ".$obj["price"].", ";
+	$sql .= "sizePrice = ".$obj["sizePrice"].", ";
+	$sql .= "minSize = ".$obj["minSize"].", ";
+	$sql .= "minW = ".$obj["minW"].", ";
+	$sql .= "minH = ".$obj["minH"].", ";
+	$sql .= "minD = ".$obj["minD"].", ";
+	$sql .= "maxW = ".$obj["maxW"].", ";
+	$sql .= "maxH = ".$obj["maxH"].", ";
+	$sql .= "maxD = ".$obj["maxD"].", ";
+	$sql .= "doorFactor = ".$obj["doorFactor"].", ";
+	$sql .= "speciesFactor = ".$obj["speciesFactor"].", ";
+	$sql .= "finishFactor = ".$obj["finishFactor"].", ";
+	$sql .= "interiorFactor = ".$obj["interiorFactor"].", ";
+	$sql .= "sheenFactor = ".$obj["sheenFactor"].", ";
+	$sql .= "glazeFactor = ".$obj["glazeFactor"].", ";
+	$sql .= "drawers = ".$obj["drawers"].", ";
+	$sql .= "smallDrawerFronts = ".$obj["smallDrawerFronts"].", ";
+	$sql .= "largeDrawerFronts = ".$obj["largeDrawerFronts"];
+
+	$sql .= " where oit.id in (SELECT oi.id FROM orderRoom orr, orderItem oi, mosOrder mo where orr.rid = oi.rid and mo.oid = orr.oid and mo.state = 1 and oi.iid = ".$id.")";
+	echo $sql;
+	opendb2($sql);
 }
 
 if($_POST['mode']=="getItems"){
@@ -116,8 +155,11 @@ if($_POST['mode']=="getItemById"){
 			$data['minSize'] = $row['minSize']; 
 			/********************************************/
 			$data['W'] = $row['W']; 
+			$data['W2'] = $row['W2']; 
 			$data['H'] = $row['H']; 
+			$data['H2'] = $row['H2']; 
 			$data['D'] = $row['D']; 
+			$data['D2'] = $row['D2']; 
 			$data['minW'] = $row['minW']; 
 			$data['minH'] = $row['minH']; 
 			$data['minD'] = $row['minD'];
@@ -134,9 +176,11 @@ if($_POST['mode']=="getItemById"){
 			$data['drawers'] = $row['drawers'];
 			$data['smallDrawerFronts'] = $row['smallDrawerFronts'];
 			$data['largeDrawerFronts'] = $row['largeDrawerFronts'];
+			$data['visible'] = $row['visible'];
+			$data['CLGroup'] = $row['CLGroup'];
+			$data['pricingMethod'] = $row['pricingMethod'];
 			/********************************************/
 			$data['isCabinet'] = $row['isCabinet'];
-			$data['CLGroup'] = $row['CLGroup'];
 			array_push($itemData, $data); 
 		} 
 	} 

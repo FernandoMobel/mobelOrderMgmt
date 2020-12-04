@@ -1,8 +1,3 @@
-<?php //include 'includes/nav.php';?>
-<?php //include 'includes/db.php';?>
-<?php
-//opendb("SELECT name, description, truncate(price,2) as price,truncate(sizePrice,2) as sizePrice,truncate(minSize,2) as minSize,truncate(W,2) as W,truncate(H,2) as H,truncate(D,2) as D FROM `item`");
-?>
 <style>
 div.sticky {
   position: -webkit-sticky;
@@ -25,6 +20,13 @@ card ,h1,h2,h3,h4 {
 .catalog:hover {
   opacity: 0.3;
 }
+toggleEl{
+	display: none;
+}
+
+.find:hover {
+        background-color: #ccc;
+      }
 </style>
 <script>
 function validateForm() {
@@ -66,17 +68,13 @@ function enableUpdView(){
 	$('#enableNewBtn').show();	
 	$('#divFindItem').show();
 	$('#createBtn').hide();	
-	$('#divNewItems1').hide();	
-	$('#divNewItems2').hide();
 	$('#enableUpdBtn').hide();
 	$('#updateBtn').hide();
-	const mainDiv = document.getElementById("itemsMainDiv");
-	mainDiv.className = 'col-lg-7 col-sm-5 mx-auto';
-	document.getElementById("name").placeholder = "";
-	document.getElementById("description").placeholder = "";
-	document.getElementById("price").placeholder = "";
-	document.getElementById("sizePrice").placeholder = "";
-	document.getElementById("minSize").placeholder = "";
+	$('.toggleEl').show();
+	$('#divFindItem').removeClass( "col-lg-12 find");	
+	$('#divFindItem').addClass( "col-lg-8");	
+	$('#itemsMainDiv').removeClass( "col-lg-12");	
+	$('#itemsMainDiv').addClass( "col-lg-4" );
 }
 	
 function addItem(){
@@ -110,37 +108,42 @@ function addItem(){
 	document.getElementById("maxW").value = "0.00000";
 	document.getElementById("maxH").value = "0.00000";
 	document.getElementById("maxD").value = "0.00000";
-	document.getElementById("doorFactor").value = "0";
-	document.getElementById("finishFactor").value = "0";
-	document.getElementById("sheenFactor").value = "0";
-	document.getElementById("speciesFactor").value = "0";
-	document.getElementById("interiorFactor").value = "0";
-	document.getElementById("glazeFactor").value = "0";
+	$("#doorFactor").val(1);
+	$("#finishFactor").val(1);
+	$("#sheenFactor").val(1);
+	$("#speciesFactor").val(1);
+	$("#interiorFactor").val(1);
+	$("#glazeFactor").val(1);
 	document.getElementById("drawers").value = "0";
 	document.getElementById("smallDrawerFronts").value = "0";
 	document.getElementById("largeDrawerFronts").value = "0";
 	document.getElementById("pricingMethod").value = "0";
-	document.getElementById("isCabinet").checked = true;
+	$("#isCabinet").val(0);
+	$("#itemVisible").val(0);
+}
+
+function confirm(){
+	$('#confirmUpdate').modal('toggle');
 }
 
 function updateItem(){
-	var formData = $("#formItem").serialize();
+	var formData = $("#formItem :input").serialize();
 	formData = formData.replace(/[^\x20-\x7E]+/g, "");
-	console.log(formData);
 	var id = document.getElementById("itemID").innerText;
 	myData = { mode: "updateItemById", id: id, data: formData};
-		$.ajax({
-	    url: '../item/itemActions.php',
-	    type: 'POST',
-	    data: myData,
-	    success: function(data, status, jqXHR) {
-						$('#livesearch').empty();
-						console.log(jqXHR);
-						document.getElementById("dbMessage").innerText = "Your item has been updated!";
-						$('.toast').toast('show');
-						$('#updateBtn').hide();
-					}
-	  	});
+	$.ajax({
+	url: '../item/itemActions.php',
+	type: 'POST',
+	data: myData,
+	success: function(data, status, jqXHR) {
+					$('#livesearch').empty();
+					console.log(jqXHR);
+					document.getElementById("dbMessage").innerText = "Your item has been updated!";
+					$('.toast').toast('show');
+					$('#updateBtn').hide();
+					$('#confirmUpdate').modal('toggle');
+				}
+	});
 }
 
 function clearInputs(){
@@ -153,6 +156,11 @@ function clearInputs(){
 }
 
 function loadItemData(id) {
+	$('.toggleEl').hide();
+	$('#divFindItem').removeClass("col-lg-8");	
+	$('#divFindItem').addClass("col-lg-12 find");	
+	$('#itemsMainDiv').removeClass("col-lg-4");	
+	$('#itemsMainDiv').addClass("col-lg-12");	
 	document.getElementById("lbTitle").innerText = "Update Item";
 	$('#livesearch').empty();
 	$('#fileName').text('');
@@ -163,7 +171,8 @@ function loadItemData(id) {
 	url: '../item/itemActions.php',
 	type: 'POST',
 	data: myData,
-	success: function(data, status, jqXHR) {					
+	success: function(data, status, jqXHR) {	
+					//console.log(jqXHR["responseText"]);
 					var item = JSON.parse(jqXHR["responseText"]);
 					$("#itemImg").removeAttr("src");
 					imageExists(item[0].id);//Checking if image exists
@@ -175,23 +184,36 @@ function loadItemData(id) {
 					document.getElementById("itemDescription").innerHTML =item[0].description;
 					document.getElementById("price").value =item[0].price;
 					document.getElementById("sizePrice").value =item[0].sizePrice;
+					$('#pricingMethod').val(item[0].pricingMethod);
 					document.getElementById("minSize").value =item[0].minSize;
 					document.getElementById("W").value =item[0].W;
+					document.getElementById("W2").value =item[0].W2;
 					document.getElementById("H").value =item[0].H;
+					document.getElementById("H2").value =item[0].H2;
 					document.getElementById("D").value =item[0].D;
+					document.getElementById("D2").value =item[0].D2;
 					document.getElementById("minW").value =item[0].minW;
 					document.getElementById("minH").value =item[0].minH;
 					document.getElementById("minD").value =item[0].minD;
 					document.getElementById("maxW").value =item[0].maxW;
 					document.getElementById("maxH").value =item[0].maxH;
 					document.getElementById("maxD").value =item[0].maxD;
+					$('#doorFactor').val(item[0].doorFactor);
+					$('#speciesFactor').val(item[0].speciesFactor);
+					$('#finishFactor').val(item[0].finishFactor);
+					$('#interiorFactor').val(item[0].interiorFactor);
+					$('#sheenFactor').val(item[0].sheenFactor);
+					$('#glazeFactor').val(item[0].glazeFactor);
 					document.getElementById("drawers").value =item[0].drawers;
 					document.getElementById("smallDrawerFronts").value =item[0].smallDrawerFronts;
 					document.getElementById("largeDrawerFronts").value =item[0].largeDrawerFronts;
-					if (item[0].isCabinet==="1"){
-						document.getElementById("isCabinet").checked = true;
+					$('#CLGroup').val(item[0].CLGroup);
+					$('#isCabinet').val(item[0].isCabinet);					
+					$('#itemVisible').val(item[0].visible);
+					if(!item[0].visible){//some items are null, this should be updated 
+						$('#itemVisible').val(1);
 					}else{
-						document.getElementById("isCabinet").checked = false;
+						$('#itemVisible').val(item[0].visible);
 					}
 					$('#clearBtn').show();
 					$('#updateBtn').show();
@@ -322,14 +344,33 @@ function uploadImage(){
     xhr.send(formData);
 }
 
+function showFindItem(){
+	clearInputs();
+	$('.toggleEl').show();
+	$('#divFindItem').removeClass( "col-lg-12 find");	
+	$('#divFindItem').addClass( "col-lg-8");	
+	$('#itemsMainDiv').removeClass( "col-lg-12");	
+	$('#itemsMainDiv').addClass( "col-lg-4" );	
+}
+
 </script>
 <div class="container-fluid">
 	<div class="row">
-		<div id="divFindItem" class="col-lg-5 col-sm-7 mx-auto">
+		<div id="divFindItem" class="col-lg-8 col-sm-6 mx-auto">
 			<!--------------************************************** Find Item Box Start **************************************-------------->
-			<div class="card my-3">
-				<h5 class="card-header">Find Item</h5>
-				<div class="card-body">					
+			<div class="card my-1">
+				<div onclick="showFindItem()" class="d-flex flex-row card-header py-0">
+					<div class="p-2">
+						<svg width="1.5em" height="1.5em" viewBox="0 0 16 16" class="bi bi-search text-primary" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+							<path fill-rule="evenodd" d="M10.442 10.442a1 1 0 0 1 1.415 0l3.85 3.85a1 1 0 0 1-1.414 1.415l-3.85-3.85a1 1 0 0 1 0-1.415z"/>
+							<path fill-rule="evenodd" d="M6.5 12a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11zM13 6.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z"/>
+						</svg>
+					</div>
+					<div class="p-2 toggleEl">
+						<h5>Find Item</h5>
+					</div>
+				</div>
+				<div class="card-body toggleEl">					
 					<div class="input-group mb-3">
 						<div class="input-group-prepend">
 							<span class="input-group-text">Search:</span>
@@ -424,7 +465,7 @@ function uploadImage(){
 			</div>
 			<!--------------************************************** Find Item Box End **************************************-------------->
 			<!--------------************************************** Item Image Start **************************************-------------->
-			<div id="itemImage" class="card my-3">
+			<div hidden id="itemImage" class="card my-1">
 				<div class="card-header">
 					<h5 id="itemName"></h5>
 					<small id="itemDescription"></small>
@@ -455,389 +496,415 @@ function uploadImage(){
 			<!--------------************************************** Item Image End **************************************-------------->
 		</div>
 		<!--------------************************************** Find Item End **************************************-------------->
-		<div id="itemsMainDiv" class="col-lg-7 col-sm-5 mx-auto">
+		<div id="itemsMainDiv" class="col-lg-4 col-sm-6 mx-auto">
 			<div class="card sticky my-3">
 				<h5 class="card-header">
 					<label id="lbTitle" >Item Actions</label>
 					<div class="float-right">
-						<button type="button" class="btn btn-outline-primary" onclick="enableUpdView()" id="enableUpdBtn">Update Item</button>
-						<button type="button" class="btn btn-outline-primary" onclick="addItem()" id="enableNewBtn">Add New Item</button>
+						<button type="button" class="btn btn-outline-primary" onclick="enableUpdView()" id="enableUpdBtn">Return to update item</button>
+						<button type="button" class="btn btn-outline-primary" onclick="addItem()" id="enableNewBtn">Add new item</button>
 					</div>
 				</h5>
 				<label id="itemID" hidden></label>
 				<div id="divForm" class="card-body">					
-					<form id="formItem">					
-					  <div class="form-group">
-						<div class="input-group mb-3">
-						  <div class="input-group-prepend">
-							<span class="input-group-text">Item Name</span>
-						  </div>
-						  <input type="text" class="form-control" name="name" id="name" maxlength="99" aria-describedby="name" style="text-transform:uppercase">
-						</div>
-						<small id="ordReq" class="form-text text-muted alert-danger" hidden>Order name is mandatory</small>
-					  </div>
-					  <div class="form-group">
-						<div class="input-group mb-3">
-						  <div class="input-group-prepend">
-							<span class="input-group-text">Description</span>
-						  </div>
-						  <input type="text" class="form-control" name="description" id="description" maxlength="249" aria-describedby="description" style="text-transform:uppercase">
-						</div>
-					  </div>
-					  <div class="form-group">
-						<div class="input-group mb-3">
-							<div class="input-group-prepend">
-								<span class="input-group-text">Price</span>
-							</div>
-							<input type="number" step="0.0001" min="0.00000" class="form-control" name="price" id="price" value="0" aria-describedby="price">
-						</div>
-					  </div>
-					  <div class="form-group">
-						<div class="input-group mb-3">
-							<div class="input-group-prepend">
-								<span class="input-group-text">Size Price</span>
-							</div>
-							<input type="number" step="0.0001" min="0" class="form-control" name="sizePrice" id="sizePrice" value="0" aria-describedby="sizePrice">
-						</div>
-					  </div>
-					  <div class="form-group">
-						<div class="input-group mb-3">
-							<div class="input-group-prepend">
-								<span class="input-group-text">Min Size</span>
-							</div>
-							<input type="number" step="0.0001" min="0" class="form-control" name="minSize" id="minSize" value="0" aria-describedby="minSize">
-						</div>
-					  </div>
-					  <div class="row">
-							<div class="col">
-								<div class="col form-group">
-									<div class="input-group mb-3">
-										<div class="input-group-prepend">
-											<span class="input-group-text">Width</span>
-										</div>
-										<input type="number" step="0.0001" min="0" class="form-control" name="W" id="W" value="0" aria-describedby="W">
-									</div>
-								</div>
-							</div>
-							<div class="col">
-								<div class="col form-group">
-									<div class="input-group mb-3">
-										<div class="input-group-prepend">
-											<span class="input-group-text">Height</span>
-										</div>
-										<input type="number" step="0.0001" min="0" class="form-control" name="H" id="H" value="0" aria-describedby="H">
-									</div>
-							    </div>
-							</div>
-							<div class="col">
-								<div class="col form-group">
-									<div class="input-group mb-3">
-										<div class="input-group-prepend">
-											<span class="input-group-text">Depth</span>
-										</div>
-										<input type="number" step="0.0001" min="0" class="form-control" name="D" id="D" value="0" aria-describedby="D">
-									</div>
-								</div>
-							</div>
-					  </div>
-					  <div class="row">
-						<div class="col">
+					<form id="formItem">	
+						<div class="col-12">
 							<div class="form-group">
 								<div class="input-group mb-3">
-									<div class="input-group-prepend">
-										<span class="input-group-text">Min Width</span>
-									</div>
-									<input type="number" step="0.0001" min="0" class="form-control" name="minW" id="minW" value="0" aria-describedby="minW">
+								  <div class="input-group-prepend">
+									<span class="input-group-text">Item Name</span>
+								  </div>
+								  <input type="text" class="form-control" name="name" id="name" maxlength="99" aria-describedby="name">
 								</div>
+								<small id="ordReq" class="form-text text-muted alert-danger" hidden>Order name is mandatory</small>
 							</div>
 						</div>
-						<div class="col">
+						<div class="col-12">
 							<div class="form-group">
 								<div class="input-group mb-3">
-									<div class="input-group-prepend">
-										<span class="input-group-text">Min Height</span>
-									</div>
-									<input type="number" step="0.0001" min="0" class="form-control" name="minH" id="minH" value="0" aria-describedby="minH">
+								  <div class="input-group-prepend">
+									<span class="input-group-text">Description</span>
+								  </div>
+								  <input type="text" class="form-control" name="description" id="description" maxlength="249" aria-describedby="description">
 								</div>
 							</div>
 						</div>
-						<div class="col">
-							<div class="form-group">
-								<div class="input-group mb-3">
-									<div class="input-group-prepend">
-										<span class="input-group-text">Min Depth</span>
-									</div>
-									<input type="number" step="0.0001" min="0" class="form-control" name="minD" id="minD" value="0" aria-describedby="minD">
-								</div>
+						<div class="container-fluid">
+							<div class="row">
+								<div class="col-lg-1 mb-0"><label class="text-muted">Pricing</label></div>
+								<div class="col-lg-11 dropdown-divider mb-0"></div>
 							</div>
-						</div>
-					  </div>
-					  <div class="row">
-						<div class="col">
-							<div class="form-group">
-								<div class="input-group mb-3">
-									<div class="input-group-prepend">
-										<span class="input-group-text">Max Width</span>
-									</div>
-									<input type="number" step="0.0001" min="0" class="form-control" name="maxW" id="maxW" value="0" aria-describedby="maxW">
-								</div>
-							</div>
-						</div>
-						<div class="col">
-							<div class="form-group">
-								<div class="input-group mb-3">
-									<div class="input-group-prepend">
-										<span class="input-group-text">Max Height</span>
-									</div>
-									<input type="number" step="0.0001" min="0" class="form-control" name="maxH" id="maxH" value="0" aria-describedby="maxH">
-								</div>
-							</div>
-						</div>
-						<div class="col">
-							<div class="form-group">
-								<div class="input-group mb-3">
-									<div class="input-group-prepend">
-										<span class="input-group-text">Max Depth</span>
-									</div>
-									<input type="number" step="0.0001" min="0" class="form-control" name="maxD" id="maxD" value="0" aria-describedby="maxD">
-								</div>
-							</div>
-						</div>
-					  </div>
-					  <!--------------*******************-------------- Only for new items Start--------------*******************-------------->
-					  <div id="divNewItems1">
-						<div class="dropdown-divider mb-4"></div>
-						<div class="row">
-							<div class="col">
-								<div class="form-group">
-									<div class="input-group mb-3">
-										<div class="input-group-prepend">
-											<span class="input-group-text">Width 2</span>
+							<div class="row d-flex justify-content-between">
+								<div class="col-md-3">
+									<div class="form-group">
+										<div class="input-group mb-3">
+											<div class="input-group-prepend">
+												<span class="input-group-text">Price</span>
+											</div>
+											<input type="number" step="0.0001" min="0.00000" class="form-control" name="price" id="price" value="0" aria-describedby="price">
 										</div>
-										<input type="number" step="0.0001" min="0" class="form-control" name="W2" id="W2" value="0" aria-describedby="W2">
 									</div>
 								</div>
-								<div class="form-group">
-									<div class="input-group mb-3">
-										<div class="input-group-prepend">
-											<span class="input-group-text">Height 2</span>
+								<div class="col-md-3">
+									<div class="form-group">
+										<div class="input-group mb-3">
+											<div class="input-group-prepend">
+												<span class="input-group-text">Size Price</span>
+											</div>
+											<input type="number" step="0.0001" min="0" class="form-control" name="sizePrice" id="sizePrice" value="0" aria-describedby="sizePrice">
 										</div>
-										<input type="number" step="0.0001" min="0" class="form-control" name="H2" id="H2" value="0" aria-describedby="H2">
 									</div>
 								</div>
-								<div class="form-group">
-									<div class="input-group mb-3">
-										<div class="input-group-prepend">
-											<span class="input-group-text">Depth 2</span>
+								<div class="col-md-3">
+									<div class="form-group">
+										<div class="input-group mb-3">
+											<div class="input-group-prepend">
+												<span class="input-group-text">Min Size</span>
+											</div>
+											<input type="number" step="0.0001" min="0" class="form-control" name="minSize" id="minSize" value="0" aria-describedby="minSize">
 										</div>
-										<input type="number" step="0.0001" min="0" class="form-control" name="D2" id="D2" value="0" aria-describedby="D2">
 									</div>
 								</div>
-							</div>	
-						</div>
-						<div class="dropdown-divider mb-4"></div>
-						<div class="row">
-							<div class="col">
-								<div class="form-group">
-									<div class="input-group mb-3">
-										<div class="input-group-prepend">
-											<span class="input-group-text">Door Factor</span>
+								<div class="col-md-3">
+									<div class="form-group">
+										<div class="input-group mb-3">
+											<div class="input-group-prepend">
+												<span class="input-group-text">Pricing Method</span>
+											</div>
+											<input type="number" class="form-control" name="pricingMethod" id="pricingMethod" min="0" value="0" aria-describedby="pricingMethod">
 										</div>
-										<input type="number" min="0" class="form-control" name="doorFactor" id="doorFactor" value="0" max="1" aria-describedby="doorFactor">
 									</div>
 								</div>
-								<div class="form-group">
-									<div class="input-group mb-3">
-										<div class="input-group-prepend">
-											<span class="input-group-text">Species Factor</span>
+							</div>
+							<div class="row">
+								<div class="col-lg-1 mb-0"><label class="text-muted">Sizes</label></div>
+								<div class="col-lg-11 dropdown-divider mb-0"></div>
+							</div>
+							<div class="row d-flex justify-content-between">
+								<div class="col-md-4">
+									<div class="form-group">
+										<div class="input-group mb-3">
+											<div class="input-group-prepend">
+												<span class="input-group-text">Width</span>
+											</div>
+											<input type="number" step="0.0001" min="0" class="form-control" name="W" id="W" value="0" aria-describedby="W">
 										</div>
-										<input type="number" min="0" class="form-control" name="speciesFactor" id="speciesFactor" value="0" aria-describedby="speciesFactor">
 									</div>
 								</div>
-							</div>
-							<div class="col">
-								<div class="form-group">
-									<div class="input-group mb-3">
-										<div class="input-group-prepend">
-											<span class="input-group-text">Finish Factor</span>
+								<div class="col-md-4">
+									<div class="form-group">
+										<div class="input-group mb-3">
+											<div class="input-group-prepend">
+												<span class="input-group-text">Height</span>
+											</div>
+											<input type="number" step="0.0001" min="0" class="form-control" name="H" id="H" value="0" aria-describedby="H">
 										</div>
-										<input type="number" min="0" class="form-control" name="finishFactor" id="finishFactor" value="0" aria-describedby="finishFactor">
 									</div>
 								</div>
-								<div class="form-group">
-									<div class="input-group mb-3">
-										<div class="input-group-prepend">
-											<span class="input-group-text">Interior Factor</span>
+								<div class="col-md-4">
+									<div class="form-group">
+										<div class="input-group mb-3">
+											<div class="input-group-prepend">
+												<span class="input-group-text">Depth</span>
+											</div>
+											<input type="number" step="0.0001" min="0" class="form-control" name="D" id="D" value="0" aria-describedby="D">
 										</div>
-										<input type="number" min="0" class="form-control" name="interiorFactor" id="interiorFactor" value="0" aria-describedby="interiorFactor">
 									</div>
 								</div>
 							</div>
-							<div class="col">
-								<div class="form-group">
-									<div class="input-group mb-3">
-										<div class="input-group-prepend">
-											<span class="input-group-text">Sheen Factor</span>
+							<div class="row d-flex justify-content-between">
+								<div class="col-md-4">
+									<div class="form-group">
+										<div class="input-group mb-3">
+											<div class="input-group-prepend">
+												<span class="input-group-text">Width 2</span>
+											</div>
+											<input type="number" step="0.0001" min="0" class="form-control" name="W2" id="W2" value="0" aria-describedby="W2">
 										</div>
-										<input type="number" min="0" class="form-control" name="sheenFactor" id="sheenFactor" value="0" aria-describedby="sheenFactor">
 									</div>
 								</div>
-								<div class="form-group">
-									<div class="input-group mb-3">
-										<div class="input-group-prepend">
-											<span class="input-group-text">Glaze Factor</span>
+								<div class="col-md-4">
+									<div class="form-group">
+										<div class="input-group mb-3">
+											<div class="input-group-prepend">
+												<span class="input-group-text">Height 2</span>
+											</div>
+											<input type="number" step="0.0001" min="0" class="form-control" name="H2" id="H2" value="0" aria-describedby="H2">
 										</div>
-										<input type="number" min="0" class="form-control" name="glazeFactor" id="glazeFactor" value="0" aria-describedby="glazeFactor">
+									</div>
+								</div>
+								<div class="col-md-4">
+									<div class="form-group">
+										<div class="input-group mb-3">
+											<div class="input-group-prepend">
+												<span class="input-group-text">Depth 2</span>
+											</div>
+											<input type="number" step="0.0001" min="0" class="form-control" name="D2" id="D2" value="0" aria-describedby="D2">
+										</div>
+									</div>
+								</div>	
+							</div>
+					  
+							<div class="row d-flex justify-content-between">
+								<div class="col-md-4">
+									<div class="form-group">
+										<div class="input-group mb-3">
+											<div class="input-group-prepend">
+												<span class="input-group-text">Min Width</span>
+											</div>
+											<input type="number" step="0.0001" min="0" class="form-control" name="minW" id="minW" value="0" aria-describedby="minW">
+										</div>
+									</div>
+								</div>
+								<div class="col-md-4">
+									<div class="form-group">
+										<div class="input-group mb-3">
+											<div class="input-group-prepend">
+												<span class="input-group-text">Min Height</span>
+											</div>
+											<input type="number" step="0.0001" min="0" class="form-control" name="minH" id="minH" value="0" aria-describedby="minH">
+										</div>
+									</div>
+								</div>
+								<div class="col-md-4">
+									<div class="form-group">
+										<div class="input-group mb-3">
+											<div class="input-group-prepend">
+												<span class="input-group-text">Min Depth</span>
+											</div>
+											<input type="number" step="0.0001" min="0" class="form-control" name="minD" id="minD" value="0" aria-describedby="minD">
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="row d-flex justify-content-between">
+								<div class="col-md-4">
+									<div class="form-group">
+										<div class="input-group mb-3">
+											<div class="input-group-prepend">
+												<span class="input-group-text">Max Width</span>
+											</div>
+											<input type="number" step="0.0001" min="0" class="form-control" name="maxW" id="maxW" value="0" aria-describedby="maxW">
+										</div>
+									</div>
+								</div>
+								<div class="col-md-4">
+									<div class="form-group">
+										<div class="input-group mb-3">
+											<div class="input-group-prepend">
+												<span class="input-group-text">Max Height</span>
+											</div>
+											<input type="number" step="0.0001" min="0" class="form-control" name="maxH" id="maxH" value="0" aria-describedby="maxH">
+										</div>
+									</div>
+								</div>
+								<div class="col-md-4">
+									<div class="form-group">
+										<div class="input-group mb-3">
+											<div class="input-group-prepend">
+												<span class="input-group-text">Max Depth</span>
+											</div>
+											<input type="number" step="0.0001" min="0" class="form-control" name="maxD" id="maxD" value="0" aria-describedby="maxD">
+										</div>
+									</div>
+								</div>
+							</div>																		
+							<div class="row d-flex justify-content-between">
+								<div class="col-lg-1 mb-0"><label class="text-muted">Factors</labels></div>
+								<div class="col-lg-11 dropdown-divider mb-0"></div>
+							</div>
+							<div class="row d-flex justify-content-between">
+								<div class="col-md-2">
+									<div class="form-group">
+										<div class="input-group mb-3">
+											<div class="input-group-append">
+												<span class="input-group-text">Door Factor</span>
+											</div>											
+											<select id="doorFactor" class="form-control" name="doorFactor"><option value="0">No</option><option value="1">Yes</option></select>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-2">
+									<div class="form-group">
+										<div class="input-group mb-3">
+											<div class="input-group-append">
+												<span class="input-group-text">Species Factor</span>
+											</div>
+											<select id="speciesFactor" class="form-control" name="speciesFactor"><option value="0">No</option><option value="1">Yes</option></select>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-2">
+									<div class="form-group">
+										<div class="input-group mb-3">
+											<div class="input-group-append">
+												<span class="input-group-text">Finish Factor</span>
+											</div>
+											<select id="finishFactor" class="form-control" name="finishFactor"><option value="0">No</option><option value="1">Yes</option></select>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-2">
+									<div class="form-group">
+										<div class="input-group mb-3">
+											<div class="input-group-append">
+												<span class="input-group-text">Interior Factor</span>
+											</div>
+											<select id="interiorFactor" class="form-control" name="interiorFactor"><option value="0">No</option><option value="1">Yes</option></select>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-2">
+									<div class="form-group">
+										<div class="input-group mb-3">
+											<div class="input-group-append">
+												<span class="input-group-text">Sheen Factor</span>
+											</div>
+											<select id="sheenFactor" class="form-control" name="sheenFactor"><option value="0">No</option><option value="1">Yes</option></select>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-2">
+									<div class="form-group">
+										<div class="input-group mb-3">
+											<div class="input-group-append">
+												<span class="input-group-text">Glaze Factor</span>
+											</div>
+											<select id="glazeFactor" class="form-control" name="glazeFactor"><option value="0">No</option><option value="1">Yes</option></select>
+										</div>
 									</div>
 								</div>
 							</div>
 						</div>
-						<div class="dropdown-divider mb-4"></div>
-					  </div>
-					  <!--------------*******************-------------- Only for new items End--------------*******************-------------->
-					  <div class="form-group">
-						<div class="input-group mb-3">
-							<div class="input-group-prepend">
-								<span class="input-group-text">Drawers</span>
+						<!--------------*******************-------------- Only for new items End--------------*******************-------------->
+						<div class="container-fluid">
+							<div class="row">
+								<div class="col-lg-1 mb-0"><label class="text-muted">Drawers</label></div>
+								<div class="col-lg-11 dropdown-divider mb-0"></div>
 							</div>
-							<input type="number" class="form-control" name="drawers" id="drawers" min="0" aria-describedby="drawers">
-						</div>
-					  </div>
-					  <div class="form-group">
-						<div class="input-group mb-3">
-							<div class="input-group-prepend">
-								<span class="input-group-text">Small Drawer Fronts</span>
-							</div>
-							<input type="number" class="form-control" name="smallDrawerFronts" id="smallDrawerFronts" min="0" aria-describedby="smallDrawerFronts">
-						</div>
-					  </div>
-					  <div class="form-group">
-						<div class="input-group mb-3">
-							<div class="input-group-prepend">
-								<span class="input-group-text">Large Drawer Fronts</span>
-							</div>
-							<input type="number" class="form-control" name="largeDrawerFronts" id="largeDrawerFronts" min="0" aria-describedby="largeDrawerFronts">
-						</div>
-					  </div>
-					  <!--------------************************************** Only for new items Start **************************************-------------->
-					  <div id="divNewItems2">
-						<div class="form-group">
-							<div class="input-group mb-3">
-								<div class="input-group-prepend">
-									<span class="input-group-text">Pricing Method</span>
+							<div class="row d-flex justify-content-between">
+								<div class="col-md-4">
+									<div class="form-group">
+										<div class="input-group mb-3">
+											<div class="input-group-prepend">
+												<span class="input-group-text">Drawers</span>
+											</div>
+											<input type="number" class="form-control" name="drawers" id="drawers" min="0" step="1" aria-describedby="drawers">
+										</div>
+									</div>
 								</div>
-								<input type="number" class="form-control" name="pricingMethod" id="pricingMethod" min="0" value="0" aria-describedby="pricingMethod">
-							</div>
-						</div>
-						<div class="form-group">
-							<div class="input-group mb-3">
-								<div class="input-group-append">
-									<span class="input-group-text">Cabinet Line Group</span>
+								<div class="col-md-4">
+									<div class="form-group">
+										<div class="input-group mb-3">
+											<div class="input-group-prepend">
+												<span class="input-group-text">Small Drawer Fronts</span>
+											</div>
+											<input type="number" class="form-control" name="smallDrawerFronts" id="smallDrawerFronts" min="0" step="1" aria-describedby="smallDrawerFronts">
+										</div>
+									</div>
 								</div>
-								<?php
-								opendb2("SELECT * FROM cabinetLineGroup");
-								echo "<select id=\"CLGroup\" placeholder=\"Cabinet Line Group\" class=\"form-control\" name=\"CLGroup\">";
-								if($GLOBALS['$result2']->num_rows > 0){			
-									foreach ($GLOBALS['$result2'] as $row2) {
-										if($row2['id']=="4"){
-											echo "<option value=\"".$row2['id']."\" selected>".$row2['Name']."</option>" ;
-										}else{
-											echo "<option value=\"".$row2['id']."\">".$row2['Name']."</option>" ;
-										}
-									}
-								}
-								echo "</select>";
-								?>
+								<div class="col-md-4">
+									<div class="form-group">
+										<div class="input-group mb-3">
+											<div class="input-group-prepend">
+												<span class="input-group-text">Large Drawer Fronts</span>
+											</div>
+											<input type="number" class="form-control" name="largeDrawerFronts" id="largeDrawerFronts" min="0" step="1" aria-describedby="largeDrawerFronts">
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="row d-flex justify-content-between">
+								<div class="col-md-4">
+									<div class="form-group">
+										<div class="input-group mb-3">
+											<div class="input-group-append">
+												<span class="input-group-text">Cabinet Line Group</span>
+											</div>
+											<?php
+											opendb2("SELECT * FROM cabinetLineGroup");
+											echo "<select id=\"CLGroup\" placeholder=\"Cabinet Line Group\" class=\"form-control\" name=\"CLGroup\">";
+											if($GLOBALS['$result2']->num_rows > 0){			
+												foreach ($GLOBALS['$result2'] as $row2) {
+													echo "<option value=\"".$row2['id']."\">".$row2['Name']."</option>" ;													
+												}
+											}
+											echo "</select>";
+											?>
+										</div>
+									</div>
+								</div>
+								<!--------------************************************** Check boxes **************************************-------------->
+								<div class="col-md-4">
+									<div class="form-group">
+										<div class="input-group mb-3">
+											<div class="input-group-append">
+												<span class="input-group-text">Visible</span>
+											</div>		
+											<select id="itemVisible" class="form-control" name="visible"><option value="0">No</option><option value="1">Yes</option></select>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-4">
+									<div class="form-group">
+										<div class="input-group mb-3">
+											<div class="input-group-append">
+												<span class="input-group-text" for="isCabinet">Is cabinet</span>
+											</div>	
+											<select id="isCabinet" class="form-control" name="isCabinet"><option value="0">No</option><option value="1">Yes</option></select>											
+										</div>
+									</div>
+								</div>
 							</div>
 						</div>
-					  </div>
-					  <!--------------************************************** Only for new items End **************************************-------------->
-					  <div class="form-check">
-						<div class="input-group mb-3">
-							<div class="input-group-append">
-								<span class="input-group-text">Cabinet</span>
-							</div>
-						<input type="checkbox" class="form-check-input" name="isCabinet" id="isCabinet">
-						</div>
-					  </div>
-					  <!--------------************************************** Main Buttons Start **************************************-------------->
-					  <div class="float-right">
-						<button type="button" class="btn btn-success" id="createBtn" onclick="createItem()">Create New</button>
-						<button type="button" class="btn btn-success" id="updateBtn" onclick="updateItem()">Update</button>
-						<button type="button" class="btn btn-outline-primary" onclick="clearInputs()" id="clearBtn">Clear</button>
-					  </div>
-					  <!--------------************************************** Main Buttons End **************************************-------------->
+						<!--------------************************************** Main Buttons Start **************************************-------------->
+						<div class="float-right">
+							<button type="button" class="btn btn-success" id="createBtn" onclick="createItem()">Create New</button>
+							<button type="button" class="btn btn-success" id="updateBtn" onclick="confirm()">Update</button>
+							<button type="button" class="btn btn-outline-primary" onclick="clearInputs()" id="clearBtn">Clear</button>
+						 </div>
+						<!--------------************************************** Main Buttons End **************************************-------------->
 					</form>
 				</div>
 			</div>
 		</div>
-		<!--div class="col-12 mx-auto">
-			<div class="card mx-auto my-3">
-				<div class="card-body">
-					<table class="table" style="width:100%" >
-						<thead class="thead-light">
-							<tr>
-								<th>Item Name</th>
-								<th>Description</th>
-								<th>Price</th>
-								<th>Size Price</th>			
-								<th>Min Size</th>
-								<th>Width</th>
-								<th>Height</th>
-								<th>Depth</th>
-							</tr>
-						</thead>
-						<tfoot class="thead-light">
-							<tr>
-								<th>Item Name</th>
-								<th>Description</th>
-								<th>Price</th>
-								<th>Size Price</th>			
-								<th>Min Size</th>
-								<th>Width</th>
-								<th>Height</th>
-								<th>Depth</th>
-							</tr>
-						</tfoot>
-						<tbody>
-						<?php
-						/*if($GLOBALS['$result']->num_rows > 0){
-							foreach ($GLOBALS['$result'] as $row) {
-								echo "<tr>";
-								echo "<td>" . $row['name'] . "</td>";
-								echo "<td>" . $row['description'] . "</td>";
-								echo "<td>" . round($row['price'],3) . "</td>";
-								echo "<td>" . $row['sizePrice'] . "</td>";
-								echo "<td>" . $row['minSize'] . "</td>";
-								echo "<td>" . $row['W'] . "</td>";
-								echo "<td>" . $row['H'] . "</td>";
-								echo "<td>" . $row['D'] . "</td>";
-								echo "</tr>";
-							}
-						}else{
-						//echo "<tr>No data for that search criteria.</tr><tr>Please change your filter to see some records.</tr>";
-						}*/
-						?>
-						</tbody>
-					</table>
-				</div>
+	</div>
+	<div style="position: absolute; top: 0; right: 0;">
+		<div id="myToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+			<div class="toast-header">
+				<!--img src="..." class="rounded mr-2" alt="..."-->
+				<strong class="mr-auto">MOS - Mobel</strong>
+				<small>Just now</small>
+				<button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+				  <span aria-hidden="true">&times;</span>
+				</button>
 			</div>
-			</div-->
-		</div>
-		<div id="myToast" class="toast" role="alert" style="position: relative; top: 0; right: 0; z-index: 99999;" aria-live="assertive" aria-atomic="true">
-		  <div class="toast-header">
-			<!--img src="..." class="rounded mr-2" alt="..."-->
-			<strong class="mr-auto">MOS - Mobel</strong>
-			<small>Just now</small>
-			<button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
-			  <span aria-hidden="true">&times;</span>
-			</button>
-		  </div>
-		  <div id="dbMessage" class="toast-body">
-		  </div>
+			<div id="dbMessage" class="toast-body">
+			</div>
 		</div>
 	</div>
 </div>
+
+<div id="confirmUpdate" class="modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Please confirm.</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Some of these changes can affect current live quotes.<br/>Do you want to continue?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="updateItem()">Yes</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <?php include '../includes/foot.php';?>
 <script>
 $(document).ready(function(){
@@ -845,8 +912,6 @@ $(document).ready(function(){
 	  $('#itemImage').hide();
 	  $('#clearBtn').hide();
 	  $('#createBtn').hide();
-	  $('#divNewItems1').hide();
-	  $('#divNewItems2').hide();
 	  $('#enableUpdBtn').hide();
 	  $('#divForm').hide();
 	    $("#myToast").toast({
