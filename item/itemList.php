@@ -571,7 +571,13 @@ function showFindItem(){
 											<div class="input-group-prepend">
 												<span class="input-group-text">Pricing Method</span>
 											</div>
-											<input type="number" class="form-control" name="pricingMethod" id="pricingMethod" min="0" value="0" aria-describedby="pricingMethod">
+											<select class="form-control" name="pricingMethod" id="pricingMethod">
+												<option selected value="0">Method 1 - (Size = W*H*D)</option>
+												<option value="1">Method 2 - (Size = W*D)</option>
+												<option value="2">Method 3 - (Size = H*D)</option>
+												<option value="3">Method 4 - (Size = W*H)</option>
+											</select>
+											<!--input type="number" class="form-control" name="pricingMethod" id="pricingMethod" min="0" value="0" aria-describedby="pricingMethod"-->
 										</div>
 									</div>
 								</div>

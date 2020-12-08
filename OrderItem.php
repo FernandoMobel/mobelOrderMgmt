@@ -216,7 +216,7 @@ if($_POST['mode']=="getNewItem"){
     
     $aFilter = $aFilter . ")";
 	if($_POST['cabinetLine']=="undefined"){
-		$CL = 1;//$CL = $_POST['cabinetLine'];
+		$CL = $_SESSION["defaultCLid"];//$CL = $_POST['cabinetLine'];
 	}else{
 		$CL = $_POST['cabinetLine'];
 	} 
@@ -294,6 +294,7 @@ if($_POST['mode']=="getItems"){
 	$sql = "select CLid, factor from mosOrder mo, cabinetLine cl where mo.CLid = cl.id and mo.oid = ".$_POST['oid'];
 	$result = opendb2($sql);
 	$CLid = $result->fetch_assoc();
+	$CLfactor = $CLid['factor'];
 
 	    
     $SQL = "select * from (SELECT oi.description, oi.note, oi.id as item, 0 as sid, oi.qty, oi.name, oi.price, oi.sizePrice, 0 as 'parentPercent', ds.factor as 'DFactor', irf.factor as 'IFactor', ff.factor as 'FFactor', ff.upcharge as 'FUpcharge', sh.factor as 'SFactor', gl.factor as 'GFactor', sp.finishedEndSizePrice as 'EFactor', (db.upcharge + dg.upcharge) as 'drawerCharge', sdf.upcharge as 'smallDrawerCharge', ldf.upcharge as 'largeDrawerCharge', oi.doorFactor as 'DApplies', oi.speciesFactor as 'SpeciesApplies', oi.interiorFactor as 'IApplies', oi.finishFactor as 'FApplies', oi.sheenFactor as 'SApplies', oi.glazeFactor as 'GApplies',oi.drawers, oi.smallDrawerFronts, oi.largeDrawerFronts, oi.H, oi.W, oi.D, oi.W2, oi.D2, oi.minSize, it.pricingMethod as methodID, oi.hingeLeft,oi.hingeRight,oi.finishLeft,oi.finishRight
@@ -368,8 +369,17 @@ if($_POST['mode']=="getItems"){
             }else{
                 echo "<tr class=\"table-sm\">";
             }
-            echo $tdStyle . $i . "." . $si . "</td>";
-            echo $tdStyle . "<span title=\"". str_replace("\"","inch",$row['description'])."\">" . $row['name'] . "</span>" . "</td>";
+			if($isParent===1){
+				echo $tdStyle ."<a data-toggle=\"tooltip\" title=\"Copy item to the end\" class=\"text-primary\" onclick=\"copyItemRow(".$row['item'].")\">
+									<svg width=\"1em\" height=\"1em\" viewBox=\"0 0 16 16\" class=\"bi bi-clipboard-plus\" fill=\"currentColor\" xmlns=\"http://www.w3.org/2000/svg\">
+									  <path fill-rule=\"evenodd\" d=\"M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z\"/>
+									  <path fill-rule=\"evenodd\" d=\"M9.5 1h-3a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3zM8 7a.5.5 0 0 1 .5.5V9H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V10H6a.5.5 0 0 1 0-1h1.5V7.5A.5.5 0 0 1 8 7z\"/>
+									</svg>
+								</a>". $i . "." . $si . "</td>";
+            }else{
+				echo $tdStyle . $i . "." . $si . "</td>";
+			}
+			echo $tdStyle . "<span title=\"". str_replace("\"","inch",$row['description'])."\">" . $row['name'] . "</span>" . "</td>";
 			echo $tdStyle . (float)$row['W'] ;
 			if ((float)$row['W2']>0)
 				echo ", ".(float)$row['W2'];
@@ -422,7 +432,7 @@ if($_POST['mode']=="getItems"){
             }else{
                 $mixDoorSpeciesFactor = 0;
             }
-            $aPrice = getPrice($row['qty'],$row['price'],$row['sizePrice'],$parentPrice,$row['parentPercent'],$row['DFactor'],$row['IFactor'],$row['FFactor'],$row['GFactor'],$row['SFactor'],$row['EFactor'],$row['drawerCharge'],$row['smallDrawerCharge'],$row['largeDrawerCharge'],  $mixDoorSpeciesFactor,$row['IApplies'],$row['FApplies'],$row['GApplies'],$row['SApplies'],$row['drawers'],$row['smallDrawerFronts'],$row['largeDrawerFronts'],$row['finishLeft']+$row['finishRight'], $row['H'],$row['W'],$row['D'],$row['minSize'],$row['methodID'],$row['FUpcharge']);
+            $aPrice = getPrice($row['qty'],$row['price'],$row['sizePrice'],$parentPrice,$row['parentPercent'],$row['DFactor'],$row['IFactor'],$row['FFactor'],$row['GFactor'],$row['SFactor'],$row['EFactor'],$row['drawerCharge'],$row['smallDrawerCharge'],$row['largeDrawerCharge'],  $mixDoorSpeciesFactor,$row['IApplies'],$row['FApplies'],$row['GApplies'],$row['SApplies'],$row['drawers'],$row['smallDrawerFronts'],$row['largeDrawerFronts'],$row['finishLeft']+$row['finishRight'], $row['H'],$row['W'],$row['D'],$row['minSize'],$row['methodID'],$row['FUpcharge'],$CLfactor);
             $roomFinishUpcharge=$row['FUpcharge'];
 
             if($isParent === 1){
@@ -432,7 +442,7 @@ if($_POST['mode']=="getItems"){
                 $TotalPrice = $TotalPrice + $aPrice;
                 echo $tdStyleNotPrint;
                 if($_SESSION["userType"]>=3){
-                    echo "<span title = \"" . getPrice($row['qty'],$row['price'],$row['sizePrice'],$parentPrice,$row['parentPercent'],$row['DFactor'],$row['IFactor'],$row['FFactor'],$row['GFactor'],$row['SFactor'],$row['EFactor'],$row['drawerCharge'],$row['smallDrawerCharge'],$row['largeDrawerCharge'],  $mixDoorSpeciesFactor,$row['IApplies'],$row['FApplies'],$row['GApplies'],$row['SApplies'],$row['drawers'],$row['smallDrawerFronts'],$row['largeDrawerFronts'],$row['finishLeft']+$row['finishRight'], $row['H'],$row['W'],$row['D'],$row['minSize'],$row['methodID'],$row['FUpcharge'],1) . "\">" ;
+                    echo "<span title = \"" . getPrice($row['qty'],$row['price'],$row['sizePrice'],$parentPrice,$row['parentPercent'],$row['DFactor'],$row['IFactor'],$row['FFactor'],$row['GFactor'],$row['SFactor'],$row['EFactor'],$row['drawerCharge'],$row['smallDrawerCharge'],$row['largeDrawerCharge'],  $mixDoorSpeciesFactor,$row['IApplies'],$row['FApplies'],$row['GApplies'],$row['SApplies'],$row['drawers'],$row['smallDrawerFronts'],$row['largeDrawerFronts'],$row['finishLeft']+$row['finishRight'], $row['H'],$row['W'],$row['D'],$row['minSize'],$row['methodID'],$row['FUpcharge'],$CLfactor,1) . "\">" ;
                 }
                 echo number_format($aPrice,2,'.','');
                 if($_SESSION["userType"]>=3){
@@ -487,13 +497,6 @@ if($_POST['mode']=="getItems"){
         //echo "<input type=/"hidden/">Total room price: $" . number_format($TotalPrice,2,'.','') .  "</b>";
         echo "<input type=\"hidden\" id=\"TotalPrice\" value=\"" . number_format($TotalPrice,2,'.','') ."\">";
     }
-	//Total price plus Cabinet Line factor
-	$totalPriceCF = $TotalPrice+($TotalPrice*(double)$CLid['factor']);
-	//Cabinet factor element
-	echo "<input type=\"hidden\" id=\"cabinetFactor\" value=\"" .  number_format($CLid['factor'],2,'.','')*100 ."\">";
-	echo "<input type=\"hidden\" id=\"upCharge\" value=\"" .   number_format(number_format($CLid['factor'],2,'.','')*number_format($TotalPrice,2,'.',''),2,'.','') ."\">";
-	//Total price plus cabinet factor element
-	echo "<input type=\"hidden\" id=\"totalInclCF\" value=\"" . number_format($totalPriceCF,2,'.','') ."\">";
 }
 
 if($_POST['mode'] == "addItem"){
@@ -681,6 +684,84 @@ if ($_POST['mode'] == "switchUser"){
 	opendb($sql);
 }
 
+if($_POST['mode'] == "existOID"){
+	if(strlen($_POST['oid'])>0){
+		$admin = "";
+		if($_SESSION["userType"]==2){
+			$admin = "or m.account = " . $_SESSION["account"];
+		}
+		$sql = "select count(1) exist from mosOrder m, mosUser u where m.oid = ".$_POST['oid']." and m.mosUser = u.id and (u.email = '" . $_SESSION["username"] . "' ". $admin ."  )";
+		$result = opendb($sql);
+		$exist = $result->fetch_assoc();
+		echo $exist['exist'];
+	}else{
+		echo "0";
+	}
+}
+
+if($_POST['mode'] == "getOrderItemsforCopy"){
+	$sql = "select * from (SELECT orr.rid, it.id as itemID, oi.id as orderItemID,0 as sid, oi.name, oi.description, oi.note, oi.W, oi.H, oi.D, oi.W2, oi.D2, if(oi.hingeLeft=0,'','L') HL,if(oi.hingeRight=0,'','R') HR,if(oi.finishLeft=0,'','L') FL,if(oi.finishRight=0,'','R') FR
+    FROM  orderItem oi, orderRoom orr, item it
+    WHERE it.id = oi.iid and oi.rid = orr.rid and orr.oid = '" .$_POST['oid']. "' and (it.visible = 1 or it.visible is null) and it.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$_POST['CLid'].")
+    /*union all
+	SELECT orr.rid, it.id, oi.pid,oi.id as sid, oi.name, oi.description, oi.note, oi.W, oi.H, oi.D, oi.W2, oi.D2, if(oi.hingeLeft=0,'','L') HL,if(oi.hingeRight=0,'','R') HR,if(oi.finishLeft=0,'','L') FL,if(oi.finishRight=0,'','R') FR
+    FROM  orderItemMods oi, orderRoom orr, itemMods it
+    WHERE it.id = oi.mid and oi.rid = orr.rid and orr.oid = '" .$_POST['oid']. "' and (it.visible = 1 or it.visible is null) and it.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$_POST['CLid'].")*/) as T1 order by rid,orderItemID,sid";
+	//echo $sql;
+	$result = opendb($sql);
+	$items = array(); 
+	while ( $row = $result->fetch_assoc())  {
+		$data['rid'] = $row['rid'];
+		$data['itemID'] = $row['itemID'];
+		$data['orderItemID'] = $row['orderItemID'];
+		$data['sid'] = $row['sid'];
+		$data['name'] = $row['name'];
+		$data['description'] = $row['description'];
+		$data['note'] = $row['note'];
+		$data['W'] = $row['W'];
+		$data['H'] = $row['H'];
+		$data['D'] = $row['D'];
+		$data['W2'] = $row['W2'];
+		$data['D2'] = $row['D2'];
+		$data['HL'] = $row['HL'];
+		$data['HR'] = $row['HR'];
+		$data['FL'] = $row['FL'];
+		$data['FR'] = $row['FR'];
+		array_push($items, $data); 
+	}
+	echo json_encode($items); 
+}
+
+if($_POST['mode'] == "copyRowItem"){
+	$sql = "insert into orderItem( iid,position,rid,name,description,qty,price,sizePrice,minSize,W,H,D,W2,H2,D2,minW,minH,minD,maxW,maxH,maxD,doorFactor,speciesFactor,finishFactor,interiorFactor,sheenFactor,glazeFactor,drawers,smallDrawerFronts,largeDrawerFronts,hingeLeft,hingeRight,finishLeft,finishRight,note,fromItem) select iid,position,rid,name,description,qty,price,sizePrice,minSize,W,H,D,W2,H2,D2,minW,minH,minD,maxW,maxH,maxD,doorFactor,speciesFactor,finishFactor,interiorFactor,sheenFactor,glazeFactor,drawers,smallDrawerFronts,largeDrawerFronts,hingeLeft,hingeRight,finishLeft,finishRight,note,id from orderItem where id =".$_POST['item'];
+	$result = opendb($sql);
+	//echo mysql_affected_rows();
+}
+
+if($_POST['mode'] == "copySomeItems"){
+	$arrLen = count ($_POST['items']);
+	$i=0;
+	//query for items
+	$sql = "insert into orderItem( iid,position,rid,name,description,qty,price,sizePrice,minSize,W,H,D,W2,H2,D2,minW,minH,minD,maxW,maxH,maxD,doorFactor,speciesFactor,finishFactor,interiorFactor,
+						sheenFactor,glazeFactor,drawers,smallDrawerFronts,largeDrawerFronts,hingeLeft,hingeRight,finishLeft,finishRight,note,fromItem)
+				select oi.iid,oi.position,".$_POST['rid'].",i.name,i.description,oi.qty,i.price,i.sizePrice,i.minSize,oi.W,oi.H,oi.D,oi.W2,oi.H2,oi.D2,i.minW,i.minH,i.minD,i.maxW,i.maxH,i.maxD,i.doorFactor,i.speciesFactor,i.finishFactor,i.interiorFactor,i.sheenFactor,i.glazeFactor,i.drawers,
+						i.smallDrawerFronts,i.largeDrawerFronts,oi.hingeLeft,oi.hingeRight,oi.finishLeft,oi.finishRight,oi.note,oi.id
+				from orderItem oi, item i where oi.iid = i.id and oi.id in(";
+	//query for mods
+	//$sql2 = "select * from orderItemMods oim, itemMods im where oim.mid = im.id and id = ";
+	foreach ($_POST['items'] as &$value) {
+		$i++;
+		//$item = explode("-",$value);
+		$sql .= $value;
+		if($arrLen>1 && $i<$arrLen)
+			$sql .= ",";
+	}
+	$sql .= ")";
+	echo $sql;
+	//echo $_POST['rid']; //target room
+}
+
+
 function copyItem($Sroom, $Sitem, $Droom){
     //copies item Sitem in room Sroom to Droom.
     $myList = fieldList("orderItem");
@@ -723,5 +804,4 @@ function fieldList($tableName){
     }
     return substr($Fields,0,$strlen($Fields)-1);
 }
-
 ?>

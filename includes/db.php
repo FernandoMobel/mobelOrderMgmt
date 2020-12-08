@@ -118,7 +118,7 @@ $GLOBALS['$result'] = "";
    * Later should add sheen factor and seperate out species from door factor.
    * Additional factors are currently multiplicative, not additive IE 2 and 1.3 = 2.6, not 2.3.
    */
-  function getPrice($qty, $base, $sizePrice, $parentPrice, $parentPercent,$DFactor,$IFactor,$FFactor,$GFactor,$SFactor,$EFactor,$drawerCharge,$smallDrawerCharge,$largeDrawerCharge, $DApplies, $IApplies,$FApplies, $GApplies, $SApplies, $drawers,$smallDrawerFronts,$largeDrawerFronts,$finishedEnds, $H, $W, $D, $minSize,  $methodID, $finishUpcharge, $needReason = 0){
+  function getPrice($qty, $base, $sizePrice, $parentPrice, $parentPercent,$DFactor,$IFactor,$FFactor,$GFactor,$SFactor,$EFactor,$drawerCharge,$smallDrawerCharge,$largeDrawerCharge, $DApplies, $IApplies,$FApplies, $GApplies, $SApplies, $drawers,$smallDrawerFronts,$largeDrawerFronts,$finishedEnds, $H, $W, $D, $minSize,  $methodID, $finishUpcharge,$CLfactor, $needReason = 0){
       $reason = "";
       $size = $W*$H*$D;
       if($methodID == 1){
@@ -171,11 +171,13 @@ $GLOBALS['$result'] = "";
           $factor *= (1+$SFactor);
       }
       $Stfactor = $factor-$Stfactor;
+	  
       $reason = $reason . "Door Factor: ". $Dtfactor . " and added value: " . $Dtfactor * $price . "\n";
       $reason = $reason . "Interior Finish Factor: ". $Itfactor . " and added value: " . $Itfactor * $price . "\n";
       $reason = $reason . "Finish Factor: ". $Ftfactor . " and added value: " . $Ftfactor * $price . "\n";
       $reason = $reason . "Gloss Factor: ". $Gtfactor . " and added value: " . $Gtfactor * $price . "\n";
-      $reason = $reason . "Species Factor: ". $Stfactor . " and added value: " . $Stfactor * $price . "\n\n";
+      $reason = $reason . "Species Factor: ". $Stfactor . " and added value: " . $Stfactor * $price . "\n";
+      $reason = $reason . "Cabinet Line Factor: ". round($CLfactor,2) . " and added value: " . $CLfactor * $price . "\n\n";
       
       $upcharge = $drawerCharge * $drawers + $smallDrawerCharge*$smallDrawerFronts + $largeDrawerCharge*$largeDrawerFronts + $EFactor*$finishedEnds*$H*$D;
       
@@ -192,7 +194,7 @@ $GLOBALS['$result'] = "";
           //echo $size . " ";
           //echo $DFactor;
           //echo $IFactor;
-	  $price = $price*$factor + $upcharge;
+	  $price = $price*$factor + $upcharge+ $CLfactor * $price;
 	  if($needReason <> 0){
 	      return $reason;
 	  }else{

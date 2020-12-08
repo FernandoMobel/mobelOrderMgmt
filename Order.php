@@ -173,13 +173,8 @@ function loadItems(rid){
 				}	
 				if(!incomplete){//Header options are slected
 					$('#items').append(data);
-					var priceBreakdown = "";
-					<?php 
-					if($_SESSION["userType"]==3)
-						echo "priceBreakdown = \"data-toggle='tooltip' title='Subtotal: $\"+$('#TotalPrice').val()+\"+ Upcharge: \"+$('#cabinetFactor').val()+ \"% ($\"+$('#upCharge').val()+\")'\";";
-					?>
 					$(".borderless").css('border-top','0px');
-					$("#roomTotal").html("<b "+priceBreakdown+">Room Total: $" + $("#totalInclCF").val() + "</br>pre HST & pre delivery ");
+					$("#roomTotal").html("<b>Room Total: $" + $('#TotalPrice').val() + "</br>pre HST & pre delivery ");
 				}else{//One or more headers aren't selected, prices and item list will not be displayed
 					$('#items').append("<h5 class=\"mx-auto\">Please ensure all the above options (Species, Finish, etc) are selected</h5>");
 					$(".borderless").css('border-top','0px');
@@ -303,11 +298,17 @@ function cleanEdit(rqst){
 	$('#editOrderItemPID').val(0);
 	$('#livesearch').empty();
 	$('#note').val("");
+	$('#note').css("border-color", "#ced4da");
 	$('#W').val("");
+	$('#W').css("border-color", "#ced4da");
 	$('#H').val("");
+	$('#H').css("border-color", "#ced4da");
 	$('#D').val("");
+	$('#D').css("border-color", "#ced4da");
 	$('#W2').val("");
+	$('#WW').css("border-color", "#ced4da");
 	$('#D2').val("");
+	$('#D2').css("border-color", "#ced4da");
 	$('#Qty').val(1);
 	$('#HL').prop('checked',false);
 	$('#HR').prop('checked',false);
@@ -747,43 +748,9 @@ function loadFiles(oid, rid = 0, iid = 0, mid = 0){
     	       			$( document ).ready(function() {
     	       				refreshFiles();
     	       			});
-    	       			
-
     		})();
-    					/*
-    					refresh = 0;
-    					//$("allItemsEdit").append("myItem");
-    					//$('.selectpicker').selectpicker('refresh');
-    					myObj= JSON.parse(data);
-    					document.getElementById("livesearch").innerHTML=myObj.name;
-    					$('#note').val("");
-    					$('#note').val(myObj.note);
-    	       			$('#W').val(parseFloat(myObj.w));
-    	       			$('#H').val(parseFloat(myObj.h));
-    	       			$('#D').val(parseFloat(myObj.d));
-    	       			$('#Qty').val(parseFloat(myObj.qty));
-    	       			$('#HL').prop('checked',myObj.hingeLeft==1);
-    	       			$('#HR').prop('checked',myObj.hingeRight==1);
-    	       			$('#FL').prop('checked',myObj.finishLeft==1);
-    	       			$('#FR').prop('checked',myObj.finishRight==1);
-    		           //$('#allItemsEdit').val(myObj.iid);  //selects current item. Not consistent.
-    		           //$('#allItemsEdit').selectpicker('val',[myObj.iid]);
-    		           //$('#allItemsEdit').selectpicker('refresh');
-    		           $('#editItemID').val(myObj.iid);
-    		           $('#editOrderItemID').val(myObj.id);
-    		           $('#editItemTitle').text("Edit/Delete Item");
-    		           
-    		           if(mod>0){
-    		        	   $('#editItemTitle').text("Edit/Delete Mod");
-    		        	   $('#editItemID').val(mod);
-    		           }
-        		        */
-        		        
-    
-    	       			
     					
     	});
-    	//alert("testing");
 }
 
 function showSubmit(){
@@ -845,28 +812,132 @@ function printPrice(){
 	}
 }
 
+function existOID(oid){
+	myData = { mode: "existOID", oid:oid};
+	$.post("OrderItem.php",
+		myData, 
+		function(data, status, jqXHR) {
+			if(jqXHR['responseText']=='1'){
+				$('#btnGetItems').prop('disabled',false);					
+				$('#btnGetItems').addClass("btn-primary");	
+			}else{
+				$('#btnGetItems').prop('disabled',true);
+				$('#btnGetItems').removeClass("btn-primary");
+			}
+		}
+	);
+}
+
+function getItemsCopy(){
+	$('#copyItemList').empty();
+	myData = { mode: "getOrderItemsforCopy", oid:$('#copyOID').val(), CLid:$('#CLid').val() };
+	$.post("OrderItem.php",
+		myData, 
+		function(data, status, jqXHR) {
+			$('#itemTable').show();
+			var table = "";
+			//$('#btnCopyItems').show();
+			//console.log(jqXHR['responseText']);
+			var item = JSON.parse(jqXHR["responseText"]);
+			item.forEach(function(obj) { 
+				table = "<tr>";
+				table += "<td><input onchange='displayCopyBtn()";
+				if(obj.sid=='0'){
+					table += ";' type='checkbox' id='"+obj.orderItemID+"'></td>";
+				}else{
+					table += ", checkParent(this.id,"+obj.orderItemID+");' type='checkbox' id='"+obj.orderItemID+"-"+obj.sid+"'></td>";
+				}
+				table += "<td>";
+				if(obj.sid=='0'){
+					table += "<b>"+obj.name+"</b>";
+				}else{
+					table += obj.name+"</td>";
+				}
+				table += "<td>"+ parseFloat(obj.W).toFixed(2)+"</td>";
+				table += "<td>"+ parseFloat(obj.H).toFixed(2)+"</td>";
+				table += "<td>"+ parseFloat(obj.D).toFixed(2)+"</td>";
+				if(obj.HL.length>0 && obj.HR.length>0){
+					table += "<td>B</td>";
+				}else{
+					table += "<td>"+obj.HL+obj.HR+"</td>";
+				}
+				if(obj.FL.length>0 && obj.FR.length>0){
+					table += "<td>B</td>";
+				}else{
+					table += "<td>"+obj.FL+obj.FR+"</td>";
+				}
+				if(obj.note!=null){
+					table += "<td>"+obj.note+"</td>";
+				}else{
+					table += "<td></td>";
+				}
+				table += "</tr>";
+				//console.log(obj.rid); 	
+				$('#copyItemList').append(table);
+				});
+			
+		}
+	);
+}
+
+function displayCopyBtn(){
+	if($('#copyItemList input:checkbox:checked').length>0){
+		$('#btnCopyItems').show();
+	}else{
+		$('#btnCopyItems').hide();
+	}
+}
+
+function clearModal(){
+	$('#copyItemList').empty();
+}
+
+function checkParent(object, parent){
+	if($('#'+object).prop('checked')){
+		$('#'+parent+"-0").prop('checked',true);
+	}
+	else{
+		$('#'+parent+"-0").prop('checked',false);
+	}
+}
+
+function selAllItems(){
+	if($('#selAllChk').prop('checked')){
+		$('#copyItemList input:checkbox').prop('checked',true);
+		$('#btnCopyItems').show();
+	}else{
+		$('#copyItemList input:checkbox').prop('checked',false);
+		$('#btnCopyItems').hide();
+	}
+}
+
+function copyItems(){
+	let items = [];
+	$('#copyItemList input:checked').each(function(){ 
+		items.push(this.id);
+	});
+
+	myData = { mode: "copySomeItems", items:items, rid:$("a.nav-link.roomtab.active").attr("value")};
+	$.post("OrderItem.php",
+		myData, 
+		function(data, status, jqXHR) {
+			console.log(jqXHR['responseText']);
+			//loadItems($("a.nav-link.roomtab.active").attr("value"));
+		});
+}
+
+function copyItemRow(itemOrig){
+	console.log(itemOrig);
+	myData = { mode: "copyRowItem", item:itemOrig };
+	$.post("OrderItem.php",
+		myData, 
+		function(data, status, jqXHR) {
+			//console.log(jqXHR['responseText']);
+			loadItems($("a.nav-link.roomtab.active").attr("value"));
+		});
+	
+}
 </script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 <div class="navbar d-print-block navbar-expand-sm bg-light navbar-light">
 <div class="col-sm-12 col-md-12 col-lg-12 mx-auto pl-1 pr-1 ml-1 mr-1">
@@ -1699,8 +1770,19 @@ function printPrice(){
     <?php 
     if ($roomCount >0){
     ?>
-    <div class="d-flex justify-content-between"><!-- onClick=allItems('allItems','allItems');  --> <button type="button"  onClick=cleanEdit("add"); class="btn btn-primary pt-2 pb-2 d-print-none" data-toggle="modal" data-target="#editItemModal">Add Item<span class="ui-icon ui-icon-plus"></span></button>
-	<span class="ml-auto d-print-none" id="roomTotal"></span>
+    <div class="d-flex justify-content-between">
+		<!--button type="button"  onClick=cleanEdit("add"); class="btn btn-primary pt-2 pb-2 d-print-none" data-toggle="modal" data-target="#editItemModal">Add Item<span class="ui-icon ui-icon-plus"></span></button-->
+		<!--div class="input-group mb-3"-->
+		  <div class="input-group-prepend">
+			<button type="button" onClick="cleanEdit('add');" class="btn btn-primary py-2 d-print-none" data-toggle="modal" data-target="#editItemModal">Add Item<span class="ui-icon ui-icon-plus"></span></button>
+			<!--button type="button" class="btn bt-sm btn-primary py-2 d-print-none dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+			</button-->
+			<div class="dropdown-menu">
+			  <a class="dropdown-item" data-toggle="modal" data-target="#copyItemsModal">Copy Items from another order</a>
+			</div>
+		  </div>
+		<!--/div-->
+		<span class="ml-auto d-print-none" id="roomTotal"></span>
 	</div>
 	
 	<?php
@@ -1722,7 +1804,63 @@ function printPrice(){
     
 
 
-
+<!-- Modal Copy item-->
+    <div id="copyItemsModal" class="modal fade" role="dialog">
+        <div class="modal-dialog modal-xl">
+        
+        <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+					<div class="container-fluid">
+						<div class="row">
+							<div class="col">
+								<h5 class="modal-title">Copy Items</h5>
+							</div>
+							<div class="col">
+								<div class="form-group">
+									<div class="input-group mb-3">
+									  <div class="input-group-prepend">
+										<button disabled id="btnGetItems" onclick="getItemsCopy();" class="input-group-text" type="button">Get Items by Order</button>
+									  </div>
+									  <input id="copyOID" type="number" class="form-control" placeholder="Order ID" aria-label="" aria-describedby="search item by order" onchange="existOID(this.value);" onkeyup="existOID(this.value);">
+									</div>
+								</div>
+							</div>
+							<div class="col">
+								<button onclick="clearModal();" type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+						</div>
+					</div>
+                </div>
+                
+                <div class="modal-body">
+				<table id="itemTable" class="table table-striped">
+					<thead>
+						<tr>
+							<th><input type="checkbox" onchange="selAllItems();" id="selAllChk"/></th>
+							<th>Description</th>
+							<th>W</th>
+							<th>H</th>
+							<th>D</th>
+							<th>Hinged</th>
+							<th>F.E.</th>
+							<th>Note</th>
+						</tr>
+					</thead>
+					<tbody id="copyItemList">
+					</tbody>
+				</table>
+                </div>
+                
+                <div class="modal-footer">
+                    <button id="btnCopyItems" onClick="copyItems();" type="button" class="btn btn-default" data-dismiss="modal">Copy Items</button>
+                    <button onclick="clearModal();" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 
 <!-- Modal edit item-->
@@ -1737,67 +1875,64 @@ function printPrice(){
                 </div>
                 
                 <div class="modal-body">
-                    <p>Changes save as you finish making them.</p>Starts with:<input type="checkbox" id="startsWith" checked></input>
-                    <div class="col-xs-2">
-                    Find Item:
-                    <input class="col-xs-2" autocomplete="off" type="text"  id="editItemSearch" onkeyup="showResult(this.value)">
-                    </div>
-					<div class="col-xs-2" id="livesearch" ></div>
+					<p>Changes save as you finish making them.</p>
+					<div class="row">
+						<div class="col-7">
+							Starts with:<input type="checkbox" id="startsWith" checked></input>
+							<div class="col-xs-2">
+								Find Item:
+								<input class="col-xs-2" autocomplete="off" type="text"  id="editItemSearch" onkeyup="showResult(this.value)">
+							</div>
+							<div class="col-xs-2" id="livesearch"></div>
 
-					<input type="hidden" id="editOrderItemPID" name="editOrderItemPID" value="0" >
-                    <input type="hidden" id="editItemID" name="editItemID" value="0" >
-                    <input type="hidden" id="editOrderItemID" name="editOrderItemID" value="0" >
-                    <!-- 
-                    
-                    <select id="allItemsEdit" data-live-search="true" class="selectpicker col-12">
-                    </select> -->
-                    <br/><br/>
-                    <div class="row">
-                        <div class="col-auto text-left">
-                            <span class="form-inline">
-                            
-                            <label for="Qty">Quantity:</label>
-                            <textarea onchange="saveEditedItem('Qty','qty');" rows="1" cols="8" class="form-control" id="Qty"></textarea>
-                            </span>
-                            <br/>
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div id="itemSizes"  class="col-auto text-left">
-                            <span class="form-inline">
-                            
-                            <label for="W" data-toggle="tooltip" data-placement="top" title="Width">Width:</label>							
-                            <textarea data-toggle="tooltip" data-placement="top" title="Width" onchange="saveEditedItem('W','W');"  rows="1" cols="7" class="form-control" id="W"></textarea>&nbsp;
-                            <!--div id="W2div" class=""-->
-							<label id="W2lbl" for="W2" data-toggle="tooltip" data-placement="top" title="Right Width">Width Right:</label>
-                            <textarea data-toggle="tooltip" data-placement="top" title="Width" onchange="saveEditedItem('W2','W2');"  rows="1" cols="7" class="form-control" id="W2"></textarea>&nbsp;
-                            <!--/div-->
-                            <label for="H">Height:</label>
-                            <textarea onchange="saveEditedItem('H','H');" rows="1" cols="7" class="form-control" id="H"></textarea>&nbsp;
-                            
-							<label for="D" data-toggle="tooltip" data-placement="top" title="Depth">Depth:</label>
-                            <textarea onchange="saveEditedItem('D','D');"  rows="1" cols="7" class="form-control" id="D"></textarea>
-							<!--div id="D2div" class="col-auto text-left"-->
-							<label id="D2lbl" for="D2" data-toggle="tooltip" data-placement="top" title="Right Width">Depth Right:</label>
-                            <textarea data-toggle="tooltip" data-placement="top" title="Width" onchange="saveEditedItem('D2','D2');"  rows="1" cols="7" class="form-control" id="D2"></textarea>
-                            <!--/div-->
-							</span>
-                        </div>
+							<input type="hidden" id="editOrderItemPID" name="editOrderItemPID" value="0" >
+							<input type="hidden" id="editItemID" name="editItemID" value="0" >
+							<input type="hidden" id="editOrderItemID" name="editOrderItemID" value="0" >
+							<br/>
+							<div class="row">
+								<div class="col-auto text-left">
+									<span class="form-inline">
+									
+									<label for="Qty">Quantity:</label>
+									<textarea onchange="saveEditedItem('Qty','qty');" rows="1" cols="8" class="form-control" id="Qty"></textarea>
+									</span>
+									<br/>
+								</div>
+							</div>
+							<div id="itemSizes"  class="col-auto text-left">
+								<span class="form-inline">
+									<label for="W" data-toggle="tooltip" data-placement="top" title="Width">Width:</label>							
+									<textarea data-toggle="tooltip" data-placement="top" title="Width" onchange="saveEditedItem('W','W');"  rows="1" cols="7" class="form-control" id="W"></textarea>&nbsp;
+									<!--div id="W2div" class=""-->
+									<label id="W2lbl" for="W2" data-toggle="tooltip" data-placement="top" title="Right Width">Width Right:</label>
+									<textarea data-toggle="tooltip" data-placement="top" title="Width" onchange="saveEditedItem('W2','W2');"  rows="1" cols="7" class="form-control" id="W2"></textarea>&nbsp;
+									<!--/div-->
+									<label for="H">Height:</label>
+									<textarea onchange="saveEditedItem('H','H');" rows="1" cols="7" class="form-control" id="H"></textarea>&nbsp;
+									
+									<label for="D" data-toggle="tooltip" data-placement="top" title="Depth">Depth:</label>
+									<textarea onchange="saveEditedItem('D','D');"  rows="1" cols="7" class="form-control" id="D"></textarea>
+									<!--div id="D2div" class="col-auto text-left"-->
+									<label id="D2lbl" for="D2" data-toggle="tooltip" data-placement="top" title="Right Width">Depth Right:</label>
+									<textarea data-toggle="tooltip" data-placement="top" title="Width" onchange="saveEditedItem('D2','D2');"  rows="1" cols="7" class="form-control" id="D2"></textarea>
+									<!--/div-->
+								</span>
+							</div><br/>
+							<div class="row">
+								<div class="col-6 text-left">
+									<label for="Hinged">Hinge:</label> Left <input onchange="saveEditedItem('HL','hingeLeft');" type="checkbox" id="HL" checked></input><input onchange="saveEditedItem('HR','hingeRight');" type="checkbox" id="HR"></input>&nbsp;Right
+								</div>
+								<div class="col-6 text-left">
+									Finished: Left <input type="checkbox" value="" id="FL" onchange="saveEditedItem('FL','finishLeft');" ></input><input type="checkbox" id="FR" onchange="saveEditedItem('FR','finishRight');" ></input>&nbsp;Right
+								</div>
+							</div>
+						</div>
+						<div class="col-5">
+							<!--img id="itemImage" class="img-thumbnail rounded" width="300px" height="300px"-->
+						</div>
                     </div>
                     <br/>
-                    <div class="row">
-                        <div class="col-6 text-left">
-                        	<label for="Hinged">Hinge:</label> Left <input onchange="saveEditedItem('HL','hingeLeft');" type="checkbox" id="HL" checked></input><input onchange="saveEditedItem('HR','hingeRight');" type="checkbox" id="HR"></input>&nbsp;Right
-                        </div>
-                        <div class="col-6 text-left">
-                        	Finished: Left <input type="checkbox" value="" id="FL" onchange="saveEditedItem('FL','finishLeft');" ></input><input type="checkbox" id="FR" onchange="saveEditedItem('FR','finishRight');" ></input>&nbsp;Right
-                        </div>
-                    </div>
                     <div class="row">Notes:<textarea maxlength="138" onchange="saveEditedItem('note','note');"  rows="4" cols="20" class="form-control" id="note"></textarea></div>
-                    
-                    
-                    
                 </div>
                 
                 <div class="modal-footer">
@@ -2072,6 +2207,8 @@ $(document).ready(function(){
 	  $('#W2').hide();
 	  $('#D2lbl').hide();
 	  $('#D2').hide();
+	  $('#itemTable').hide();
+	  $('#btnCopyItems').hide();
 	  $('.datepicker').datepicker({ 
 			startDate: new Date()
 		});
