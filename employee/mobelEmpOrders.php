@@ -195,12 +195,12 @@ function setPrevState(){
 			foreach ($GLOBALS['$result2'] as $row2) {
 				$str = $row2['state'];
 				$state_ar = explode(', ', $str);//convert string to array to create control dinamically
-				$sql ="select m.oid,a.busName as 'company', m.tagName, m.po, concat(mu.firstName,' ',mu.lastName) as 'designer', email, s.name as 'status', DATE(m.dateSubmitted) dateSubmitted, m.state, isPriority, isWarranty from mosOrder m, state s, account a, mosUser mu where s.id = m.state and m.account = a.id and m.mosUser = mu.id and m.state in (".$row2['state'].") order by m.dateSubmitted asc";
+				$sql ="select m.oid,a.busName as 'company', m.tagName, m.po, concat(mu.firstName,' ',mu.lastName) as 'designer', email, s.name as 'status', DATE(m.dateSubmitted) dateSubmitted, m.state, isPriority, isWarranty, CLid from mosOrder m, state s, account a, mosUser mu where s.id = m.state and m.account = a.id and m.mosUser = mu.id and m.state in (".$row2['state'].") order by m.dateSubmitted asc";
 				opendb($sql);
 			}
 		}else{
 			opendb2("INSERT INTO employeeSettings (mosUser) VALUES ( ".$_SESSION["userid"] .")");//new user
-			opendb2("select m.*,DATE(m.dateSubmitted) dateSubmitted,s.name as 'status', a.busName as 'company', concat(mu.firstName,' ',mu.lastName) as 'designer', email, m.state, isPriority, isWarranty from mosOrder m, state s, account a, mosUser mu where s.id = m.state and m.account = a.id and m.mosUser = mu.id and m.state > 1 and m.state <> 10 order by m.dateSubmitted asc");
+			opendb2("select m.*,DATE(m.dateSubmitted) dateSubmitted,s.name as 'status', a.busName as 'company', concat(mu.firstName,' ',mu.lastName) as 'designer', email, m.state, isPriority, isWarranty, CLid from mosOrder m, state s, account a, mosUser mu where s.id = m.state and m.account = a.id and m.mosUser = mu.id and m.state > 1 and m.state <> 10 order by m.dateSubmitted asc");
 		}
 		echo "<br/><div class=\"container-fluid\">";
 			?>
@@ -238,7 +238,7 @@ function setPrevState(){
 						</div>
 					</div>
 					<div class="col-sm-6 col-lg-2">
-						<table><tr class="table-warning"><td>Service</td></tr><tr class="table-danger"><td>Service w/warranty</td></tr></table>
+						<table class="table table-sm mx-auto text-center"><tr><td class="table-warning p-0"><small><b>Service</b></small></td></tr><tr><td class="table-danger p-0"><small><b>Service w/warranty</b></small></td></tr><tr><td class="table-primary p-0"><small><b>Span Medical</b></small></td></tr><tr><td class="table-info p-0"><small><b>Builders</b></small></td></tr></table>
 					</div>
 					<div class="col-sm-6 col-lg-4 d-flex justify-content-start">
 						<div id="searchOrderBtn" class="col">
@@ -301,6 +301,10 @@ function setPrevState(){
 								$orderType="table-warning";
 							if($row['isWarranty']==1)
 								$orderType="table-danger";
+							if($row['CLid']==3)
+								$orderType="table-primary";
+							if($row['CLid']==2)
+								$orderType="table-info";
 							echo "<tr class=\"$orderType\">";
 							echo "<td><b><a href=\"http://".$_SERVER['SERVER_NAME'].$local."/Order.php?OID=" . $row['oid'] . "\">".$row['oid']."</b></td>";
 							echo "<td><b><a href=\"http://".$_SERVER['SERVER_NAME'].$local."/Order.php?OID=" . $row['oid'] . "\">".$row['company']."</b></td>";

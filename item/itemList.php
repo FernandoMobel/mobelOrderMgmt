@@ -832,7 +832,10 @@ function showFindItem(){
 											echo "<select id=\"CLGroup\" placeholder=\"Cabinet Line Group\" class=\"form-control\" name=\"CLGroup\">";
 											if($GLOBALS['$result2']->num_rows > 0){			
 												foreach ($GLOBALS['$result2'] as $row2) {
-													echo "<option value=\"".$row2['id']."\">".$row2['Name']."</option>" ;													
+													echo "<option value=\"".$row2['id']."\" ";
+													if($_SESSION["defaultCLid"]==$row2['id'])
+														echo "selected";
+													echo ">".$row2['Name']."</option>" ;													
 												}
 											}
 											echo "</select>";

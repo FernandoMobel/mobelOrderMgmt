@@ -3,8 +3,8 @@
 <?php $roomCount = 1; $dateRequired = ""; //$shipAddress = 0;?>
 <style>
 table.table-sm td{
-padding-top:.3rem;
-padding-bottom:.3rem;
+padding-top:.2rem;
+padding-bottom:.2rem;
 height: 1px !important;
 }
 
@@ -30,9 +30,9 @@ p{
 
 @media print {
   .d-print-none {display:none;}
-  .print  {display:block!important;}
+  .print {display:block!important;}
   body {font-size: 1.3em !important;}
-  table td {font-size: .8em !important;overflow: visible !important;}
+  table td {overflow:hidden !important;font-size: .8em !important;overflow: visible !important;}
   table th {font-size: .8em !important;overflow: visible !important;}
 }
 
@@ -124,7 +124,8 @@ function submitToMobel(){
 	$.post("save.php",
 			myData, 
 		       function(data, status, jqXHR) {
-		    	   window.location.reload();
+		    	   //console.log(jqXHR['responseText']);
+				   window.location.reload();
 		        });
 }
 
@@ -921,13 +922,12 @@ function copyItems(){
 	$.post("OrderItem.php",
 		myData, 
 		function(data, status, jqXHR) {
-			console.log(jqXHR['responseText']);
+			//console.log(jqXHR['responseText']);
 			//loadItems($("a.nav-link.roomtab.active").attr("value"));
 		});
 }
 
 function copyItemRow(itemOrig){
-	console.log(itemOrig);
 	myData = { mode: "copyRowItem", item:itemOrig };
 	$.post("OrderItem.php",
 		myData, 
@@ -940,124 +940,130 @@ function copyItemRow(itemOrig){
 </script>
 
 <div class="navbar d-print-block navbar-expand-sm bg-light navbar-light">
-<div class="col-sm-12 col-md-12 col-lg-12 mx-auto pl-1 pr-1 ml-1 mr-1">
-<div class="row">
-    <?php
-    
-    
-    $userFilter = " and mosUser = ".$_SESSION["userid"];
-    if($_SESSION["userType"] == 3){
-        $userFilter = "";
-    }
-    if($_SESSION["userType"] == 2){
-        $userFilter = " and account = ".$_SESSION["account"];
-    }
-    //echo "My user id is:" . $_SESSION["userid"];
-    //echo "My account id is:" . $_SESSION["account"];
-    //echo "My account type is:" . $_SESSION["userType"];
- 
-    opendb("select m.*,s.name as 'status' from mosOrder m, state s  where m.state = s.id and m.oid = ".$_GET["OID"] . $userFilter);
-    
-    if($GLOBALS['$result']->num_rows > 0){
-        
-        foreach ($GLOBALS['$result'] as $row) {
-            $dateRequired = $row['dateRequired'];
-            $isWarranty = $row['isWarranty'];
-            $isPriority = $row['isPriority'];
-            $CLid = $row['CLid'];
-            $fromOrder = $row['fromOrder'];
-            $state = $row['state'];			
-            
-            echo "<div class=\"col-sm-3 col-md-3 col-lg-3  align-self-center\">";
-            
-            echo "<label for=\"OID\">For Order Number ".$row['oid']."</label>";
-			echo "<label class=\"print\">Required: ".substr($dateRequired,0,10)."</label>";
-                        
-            echo "<input type=\"hidden\" value=\"".$row['oid']."\" id=\"OID\"><br/>";
-            
-            //echo "<div class=\"btn-group \">";
-			echo "<button data-toggle=\"modal\" onClick=\"setMinDate();hideSubmit();\" data-target=\"#orderOptions\" class=\"btn btn-primary text-nowrap px-2 py-2 mx-0  mt-0 d-print-none\" data-toggle=\"modal\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles( ".$_GET["OID"].");\">Options<span class=\"ui-icon ui-icon-gear\"></span></button>&nbsp;";
-            echo "<button class=\"btn btn-primary text-nowrap px-2 py-2 mx-0 mt-0 d-print-none\" data-toggle=\"modal\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles( ".$_GET["OID"].");\">Files<span class=\"ui-icon ui-icon-disk\"></span></button>&nbsp;";
-            
-            if($row['status'] == "Quoting"){
-                if($row['tagName'] == "Tag name not set"){
-                    echo "<button class=\"d-print-none\" type=\"button\" onClick=\"alert('Please set your tag name and refresh to submit your quote.')\">Submit to Mobel</button>";
-                    echo "<script>viewOnly = 0;</script>";
-                }else{
-                    echo "<button type=\"button\" data-toggle=\"modal\" onClick=\"setMinDate();showSubmit();\" data-target=\"#orderOptions\" class=\"btn btn-primary text-nowrap px-2 py-2  mt-0 mx-0 d-print-none\">Submit<span class=\"ui-icon ui-icon-circle-triangle-e\"></span></button>";
-                    echo "<script>viewOnly = 0;</script>";
-                }
-            }else{
-                if($_SESSION["userType"] == 3){
-                    echo "<script>viewOnly = 1;</script>";
-                }else{
-                    echo "<script>viewOnly = 1;</script>";
-                }
-                echo "<button type=\"button\" data-toggle=\"modal\" data-target=\"#orderOptions\"class=\"btn btn-primary text-nowrap px-2 py-2 mx-0  mt-0 \">Order Details</button>";
-                //echo $row['status'] . " " . substr($row['dateSubmitted'],0,10);
-                
-            }
-            
-            //echo "</div>";
-            
-            //echo "<div class=\"col-sm-2 col-md-2 col-lg-2\">";
-
-            echo "</div>";
-            
-            //$shipAddress = $row['shipAddress'];
-            echo "<div class=\"col-sm-2 col-md-2 col-lg-2\">";
-            echo "<label for=\"state\">Order Status:</label>";
-            echo "<textarea readonly class=\"form-control noresize\" rows=\"1\" id=\"state\">";
-            echo $row['status'];
-            echo "</textarea>";
-            echo "</div>";
-            
-            
-            echo "<div class=\"col-sm-3 col-md-3 col-lg-3\">";
-            echo "<label for=\"tagName\">Tag Name:</label>";
-            echo "<textarea onchange=\"saveOrder('tagName');\" rows=\"1\" class=\"form-control noresize\"  id=\"tagName\">";
-            echo $row['tagName'];
-            echo "</textarea>";
-            echo "</div>";
-            
-            
-            echo "<div class=\"col-sm-2 col-md-2 col-lg-2\">";
-            echo "<label for=\"PO\">P.O:</label>";
-            echo "<textarea onchange=\"saveOrder('PO');\" rows=\"1\" class=\"form-control rounded-0 noresize\" id=\"PO\">";
-            echo $row['po'];
-            echo "</textarea>";
-            echo "</div>";
-        }
-    }else{
-        //echo "Webpage forbidden";
-        ob_start();
-        header("Location: viewOrder.php");
-        ob_end_flush();
-        echo "<script> location.href='viewOrder.php'; </script>";
-        exit("Sorry, this page is not available for you.");
-    }
-    
-    opendb("select * from settings");
-    if($GLOBALS['$result']->num_rows > 0){
-        foreach ($GLOBALS['$result'] as $row){
-            echo "<div class=\"col-sm-1 col-md-2 col-lg-2\">";
-            echo "<label for=\"state\">Lead Time:</label>";
-            echo "<textarea title=\"Some factors may increase your lead time. We will inform you as soon as possible once your quote is submitted.\" rows=\"1\" readonly class=\"form-control noresize\" id=\"currentLeadtime\">";
-            echo substr($row['currentLeadtime'],0,10);
-            echo "</textarea>";
-            echo "</div>";
-        }
-    }
-    
-    if($_SESSION["userType"] == 3 && $state <> "1"){
-        echo "</div><div class=\"row\"><div class=\"col-12\">";
-        echo "Order Locked: <input type=\"checkbox\"";
-        echo "onchange=\"if($('#isLocked').is(':checked')){viewOnly=1;}else{viewOnly=0;};\"  \" checked id=\"isLocked\">";
-        echo "</div>";
-    }
-    ?>
-</div>
-</div>
+	<div class="col-sm-12 col-md-12 col-lg-12 mx-auto pl-1 pr-1 ml-1 mr-1">
+		<div class="row">
+			<?php
+			
+			
+			$userFilter = " and mosUser = ".$_SESSION["userid"];
+			if($_SESSION["userType"] == 3){
+				$userFilter = "";
+			}
+			if($_SESSION["userType"] == 2){
+				$userFilter = " and account = ".$_SESSION["account"];
+			}
+			//echo "My user id is:" . $_SESSION["userid"];
+			//echo "My account id is:" . $_SESSION["account"];
+			//echo "My account type is:" . $_SESSION["userType"];
+		 
+			opendb("select m.*,s.name as 'status' from mosOrder m, state s  where m.state = s.id and m.oid = ".$_GET["OID"] . $userFilter);
+			
+			if($GLOBALS['$result']->num_rows > 0){
+				
+				foreach ($GLOBALS['$result'] as $row) {
+					$dateRequired = $row['dateRequired'];
+					$isWarranty = $row['isWarranty'];
+					$isPriority = $row['isPriority'];
+					$CLid = $row['CLid'];
+					$fromOrder = $row['fromOrder'];
+					$state = $row['state'];			
+					
+					echo "<div class=\"col-sm-3 col-md-3 col-lg-3  align-self-center mb-0 pb-0\">";           
+						echo "<label for=\"OID\">For Order Number ".$row['oid']."</label><br/>";				
+						echo "<input class=\"d-print-none\" type=\"hidden\" value=\"".$row['oid']."\" id=\"OID\">";  
+						echo "<label class=\"print\">Required: ".substr($dateRequired,0,10)."</label>";				
+						echo "<button data-toggle=\"modal\" onClick=\"setMinDate();hideSubmit();\" data-target=\"#orderOptions\" class=\"btn btn-primary text-nowrap px-2 py-2 mx-0  mt-0 d-print-none\" data-toggle=\"modal\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles( ".$_GET["OID"].");\">Options<span class=\"ui-icon ui-icon-gear\"></span></button>&nbsp;";
+						echo "<button class=\"btn btn-primary text-nowrap px-2 py-2 mx-0 mt-0 d-print-none\" data-toggle=\"modal\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles( ".$_GET["OID"].");\">Files<span class=\"ui-icon ui-icon-disk\"></span></button>&nbsp;";
+					
+						if($row['status'] == "Quoting"){
+							if($row['tagName'] == "Tag name not set"){
+								echo "<button class=\"d-print-none\" type=\"button\" onClick=\"alert('Please set your tag name and refresh to submit your quote.')\">Submit to Mobel</button>";
+								echo "<script>viewOnly = 0;</script>";
+							}else{
+								echo "<button type=\"button\" data-toggle=\"modal\" onClick=\"setMinDate();showSubmit();\" data-target=\"#orderOptions\" class=\"btn btn-primary text-nowrap px-2 py-2  mt-0 mx-0 d-print-none\">Submit<span class=\"ui-icon ui-icon-circle-triangle-e\"></span></button>";
+								echo "<script>viewOnly = 0;</script>";
+							}
+						}else{
+							if($_SESSION["userType"] == 3){
+								echo "<script>viewOnly = 1;</script>";
+							}else{
+								echo "<script>viewOnly = 1;</script>";
+							}
+							echo "<button type=\"button\" data-toggle=\"modal\" data-target=\"#orderOptions\"class=\"btn btn-primary text-nowrap d-print-none px-2 py-2 mx-0  mt-0\">Order Details</button>";
+							//echo $row['status'] . " " . substr($row['dateSubmitted'],0,10);
+							
+						}
+					
+					echo "</div>";
+					
+					//$shipAddress = $row['shipAddress'];
+					echo "<div class=\"col-sm-2 col-md-2 col-lg-2\">";
+						echo "<label for=\"state\">Order Status:</label>";
+						echo "<textarea readonly class=\"form-control noresize\" rows=\"1\" id=\"state\">";
+						echo $row['status'];
+						echo "</textarea>";
+					echo "</div>";
+					
+					
+					echo "<div class=\"col-sm-3 col-md-3 col-lg-3\">";
+						echo "<label for=\"tagName\">Tag Name:</label>";
+						echo "<textarea onchange=\"saveOrder('tagName');\" rows=\"1\" class=\"form-control noresize\"  id=\"tagName\">";
+						echo $row['tagName'];
+						echo "</textarea>";
+					echo "</div>";
+					
+					
+					echo "<div class=\"col-sm-2 col-md-2 col-lg-2\">";
+						echo "<label for=\"PO\">P.O:</label>";
+						echo "<textarea onchange=\"saveOrder('PO');\" rows=\"1\" class=\"form-control rounded-0 noresize\" id=\"PO\">";
+						echo $row['po'];
+						echo "</textarea>";
+					echo "</div>";
+				}
+			}else{
+				//echo "Webpage forbidden";
+				ob_start();
+				header("Location: viewOrder.php");
+				ob_end_flush();
+				echo "<script> location.href='viewOrder.php'; </script>";
+				exit("Sorry, this page is not available for you.");
+			}
+			
+			opendb("select * from settings");
+			if($GLOBALS['$result']->num_rows > 0){
+				foreach ($GLOBALS['$result'] as $row){
+					echo "<div class=\"col-sm-1 col-md-2 col-lg-2\">";
+					echo "<label for=\"state\">Lead Time:</label>";
+					echo "<textarea title=\"Some factors may increase your lead time. We will inform you as soon as possible once your quote is submitted.\" rows=\"1\" readonly class=\"form-control noresize\" id=\"currentLeadtime\">";
+					echo substr($row['currentLeadtime'],0,10);
+					echo "</textarea>";
+					echo "</div>";
+				}
+			}
+			
+			if($_SESSION["userType"] == 3 && $state <> "1"){
+				echo "</div>";
+				echo "<div class=\"row d-print-none\">";
+					echo "<div class=\"col-12\">";
+					echo "Order Locked: <input type=\"checkbox\"";
+					echo "onchange=\"if($('#isLocked').is(':checked')){viewOnly=1;}else{viewOnly=0;};\"  \" checked id=\"isLocked\">";
+				echo "</div>";
+			}
+			?>
+		</div>
+		<div class="row print">
+			<?php
+			$sqlSh = "select shipAddress,(select concat(coalesce(unit,' '),' ',street,' ',city,' ',province,' ',country,' ',postalCode)  from accountAddress aA where aA.id =mo.shipAddress) shipTo from mosOrder mo where oid = ".$_GET["OID"];
+			$result = opendb($sqlSh);
+			$row = $result->fetch_assoc();
+			if(strlen($row['shipAddress'])>0){
+				echo "<label>Ship to: " .$row['shipTo']."</label>";
+			}else{
+				echo "<label>No shipping address selected</label>";
+			}
+			?>
+		</div>
+	</div>
 </div>
 
 

@@ -116,7 +116,8 @@ if($_POST['mode'] == "submitToMobel"){
     $CLid = 1;
     $sql = "update mosOrder set dateSubmitted = now(), state = '2', leadTime = (select currentLeadtime from settings) where oid = '" . $_POST['oid'] . "' and state = 1";
     opendb($sql);
-    $sql = "select * from mosOrder o, accountAddress aA, account a, mosUser mu where o.mosUser = mu.id and o.account = a.id and o.shipAddress = aA.id and o.oid = '" . $_POST['oid'] . "'";
+    //$sql = "select * from mosOrder o, accountAddress aA, account a, mosUser mu where o.mosUser = mu.id and o.account = a.id and o.shipAddress = aA.id and o.oid = '" . $_POST['oid'] . "'";
+	$sql = "select * ,(select concat(unit,' ',street,' ',city,' ',province,' ',country,' ',postalCode)  from accountAddress aA where aA.id =o.shipAddress) shipTo from mosOrder o, mosUser mu, account a where o.mosUser = mu.id and o.account = a.id and o.oid = '" . $_POST['oid'] . "'";
     opendb($sql);
     $msg = "<html><body><H1>Thank you for your order. </H1><p>We have recieved your order and will be sending back a confirmation shortly.</p>";
     if($GLOBALS['$result']->num_rows > 0){
@@ -131,8 +132,13 @@ if($_POST['mode'] == "submitToMobel"){
             $msg .= "Date Required: " . substr($row['dateRequired'],0,10) . "<br/>";
             $msg .= "Tag Name: " . $row['tagName'] . "<br/>";
             //$msg .= "PO: " . $row['po'] . "<br/>";
-            $msg .= "Ship To: " . $row['unit'] . " " . $row['street']. " " . $row['city']. ", ". $row['province']. ", ". $row['country']. " ". $row['postalCode']. "<br/>";
+			if(strlen($row['shipTo'])>0){
+				$msg .= "Ship To: " . $row['shipTo']. "<br/>";
+			}else{
+				$msg .= "Ship To: Please add a shipping address <br/>";
+			}
 			$CLid = $row['CLid'];
+			$accountName = $row['busDBA'];
         }
     
     $msg .= "<br/>";
@@ -250,7 +256,7 @@ if($_POST['mode'] == "submitToMobel"){
             $msg .=  $tdStyle . $hinging . "</td>";
             $msg .=  $tdStyle . $finishedEnds . "</td>";
             $aPrice = //getPrice($row['qty'],$row['price'],$row['sizePrice'],$parentPrice,$row['parentPercent'],$row['DFactor'],$row['IFactor'],$row['DApplies'],$row['IApplies'],$row['H'],$row['W'],$row['D'],$row['minSize'],$row['methodID']);
-            getPrice($row['qty'],$row['price'],$row['sizePrice'],$parentPrice,$row['parentPercent'],$row['DFactor'],$row['IFactor'],$row['FFactor'],$row['GFactor'],$row['SFactor'],$row['EFactor'],$row['drawerCharge'],$row['smallDrawerCharge'],$row['largeDrawerCharge'],  $row['DApplies'],$row['IApplies'],$row['FApplies'],$row['GApplies'],$row['SApplies'],$row['drawers'],$row['smallDrawerFronts'],$row['largeDrawerFronts'],$row['finishLeft']+$row['finishRight'], $row['H'],$row['W'],$row['D'],$row['minSize'],$row['methodID'],$row['FUpcharge']);
+            getPrice($row['qty'],$row['price'],$row['sizePrice'],$parentPrice,$row['parentPercent'],$row['DFactor'],$row['IFactor'],$row['FFactor'],$row['GFactor'],$row['SFactor'],$row['EFactor'],$row['drawerCharge'],$row['smallDrawerCharge'],$row['largeDrawerCharge'],  $row['DApplies'],$row['IApplies'],$row['FApplies'],$row['GApplies'],$row['SApplies'],$row['drawers'],$row['smallDrawerFronts'],$row['largeDrawerFronts'],$row['finishLeft']+$row['finishRight'], $row['H'],$row['W'],$row['D'],$row['minSize'],$row['methodID'],$row['FUpcharge'],0);
             if($isParent === 1){
                 $parentPrice = $aPrice;
             }
@@ -264,8 +270,8 @@ if($_POST['mode'] == "submitToMobel"){
     }
     
     $msg .= "</p><p>Thanks,</p><p>Mobel</p></body></html>";
-	sendmail("fernando@mobel.ca; orders@mobel.ca", $mailOID." Order Submitted", $msg);
-    //sendmail("markelgers@gmail.com", "Order Submitted", $msg);
+	sendmail("fernando@mobel.ca; orders@mobel.ca", "Order ".$mailOID." Submitted - ".$accountName, $msg);
+	//echo $msg;
 }
 
 function roomTable($species,$interiorFinish,$door,$frontFinish,$drawerBox,$glaze,$smallDrawerFront,$sheen,$largeDrawerFront,$hinge,$drawerGlides,$finishedEnd){

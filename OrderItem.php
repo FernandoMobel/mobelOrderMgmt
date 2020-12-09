@@ -319,8 +319,8 @@ if($_POST['mode']=="getItems"){
         <thead >
               <tr>
                 <th class="font-weight-bold">Item</th>
-                <th class="font-weight-bold">Description</th>
-                <th class="font-weight-bold" title="Width">W</th>
+                <th style="width: 250px;" class="font-weight-bold">Description</th>
+                <th style="width: 60px;" class="font-weight-bold" title="Width">W</th>
                 <th class="font-weight-bold" title="Height">H</th>
                 <th class="font-weight-bold" title="Depth">D</th>
                 <th class="font-weight-bold" title="Quantity">Qty</th>
@@ -333,7 +333,7 @@ if($_POST['mode']=="getItems"){
                 <th></th>
               </tr>
             </thead>
-            <tbody class="col-sm-12">
+            <tbody>
               <?php
         $i = 1;
         $si= 0;
@@ -370,7 +370,7 @@ if($_POST['mode']=="getItems"){
                 echo "<tr class=\"table-sm\">";
             }
 			if($isParent===1){
-				echo $tdStyle ."<a data-toggle=\"tooltip\" title=\"Copy item to the end\" class=\"text-primary\" onclick=\"copyItemRow(".$row['item'].")\">
+				echo $tdStyle ."<a data-toggle=\"tooltip\" title=\"Copy item to the end\" class=\"text-primary d-print-none\" onclick=\"copyItemRow(".$row['item'].")\">
 									<svg width=\"1em\" height=\"1em\" viewBox=\"0 0 16 16\" class=\"bi bi-clipboard-plus\" fill=\"currentColor\" xmlns=\"http://www.w3.org/2000/svg\">
 									  <path fill-rule=\"evenodd\" d=\"M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z\"/>
 									  <path fill-rule=\"evenodd\" d=\"M9.5 1h-3a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3zM8 7a.5.5 0 0 1 .5.5V9H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V10H6a.5.5 0 0 1 0-1h1.5V7.5A.5.5 0 0 1 8 7z\"/>
@@ -451,7 +451,7 @@ if($_POST['mode']=="getItems"){
                 echo "</td>";            
             }
             if($isParent === 1){
-                echo "<td >" . "<button type=\"button\" onClick=editItems(".$row['item'].",0) class=\"btn btn-primary pl-3 pr-3 btn-sm editbutton\" data-toggle=\"modal\" title=\"Edit\" data-target=\"#editItemModal\"><span class=\"ui-icon ui-icon-pencil \"></span></button>" . "";
+                echo $tdStyleNotPrint . "<button type=\"button\" onClick=editItems(".$row['item'].",0) class=\"btn btn-primary pl-3 pr-3 btn-sm editbutton\" data-toggle=\"modal\" title=\"Edit\" data-target=\"#editItemModal\"><span class=\"ui-icon ui-icon-pencil \"></span></button>" . "";
                 //if($_SERVER['HTTP_REFERER']=="https://mos.mobel.ca/Order2.php?OID=1"){
                     echo "<button type=\"button\" title=\"Add Mod\" onclick=\"var promise = new Promise(function(resolve,reject){cleanEdit();resolve();}); promise.then(function(){\$('#editOrderItemPID').val(". $parentID .");$('#editItemTitle').text('Edit/Delete Mod');});\" class=\"btn btn-primary btn-sm editbutton btn-primary ml-0 pl-3 pr-3\" data-toggle=\"modal\" data-target=\"#editItemModal\"><span class=\"ui-icon ui-icon-circle-plus\"></button>";
                     
@@ -464,7 +464,7 @@ if($_POST['mode']=="getItems"){
             }else{
                 //echo "<td >" . "<button type=\"button\" onClick=editItems(".$row['item'].",". $row['sid'] .") class=\"btn btn-primary btn-sm editbutton\" data-toggle=\"modal\" title=\"Edit\" data-target=\"#editItemModal\"><span class=\"ui-icon ui-icon-pencil\"></span></button>" . "";
                 //echo "<td>" . "<span class=\"td ui-icon ui-icon-pencil\"> <button type=\"button\" onClick=editItems(".$row['item'].",". $row['sid'] .") class=\"btn btn-primary btn-sm\" data-toggle=\"modal\" title=\"Edit\" data-target=\"#editItemModal\"></button></span>" . "";
-                echo $tdStyle ."&nbsp;&nbsp;<span onClick=\"cleanEdit();$('#editOrderItemPID').val(". $parentID ."); editItems(".$row['item'].",". $row['sid'] .");\" data-toggle=\"modal\" title=\"Edit\" data-target=\"#editItemModal\" class=\"btn ml-0 btn-primary pl-2 pr-2 pt-1 pb-1 btn-sm\"><span class=\"ui-icon ui-icon-pencil btn-primary pl-2 pr-2\" ></span></span>";
+                echo $tdStyleNotPrint ."&nbsp;&nbsp;<span onClick=\"cleanEdit();$('#editOrderItemPID').val(". $parentID ."); editItems(".$row['item'].",". $row['sid'] .");\" data-toggle=\"modal\" title=\"Edit\" data-target=\"#editItemModal\" class=\"btn ml-0 btn-primary pl-2 pr-2 pt-1 pb-1 btn-sm\"><span class=\"ui-icon ui-icon-pencil btn-primary pl-2 pr-2\" ></span></span>";
                 echo "<button class=\"btn btn-primary pl-2 pr-2 pt-1 pb-1 ml-1 btn-sm editbutton \" data-toggle=\"modal\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles(".$_POST['oid'] . ",$('a.nav-link.roomtab.active').attr('value'),".$parentID.",". $row['sid'] .");\"><span class=\"ui-icon ui-icon-disk\"></span></button></td>";
                 
             }
@@ -735,7 +735,14 @@ if($_POST['mode'] == "getOrderItemsforCopy"){
 if($_POST['mode'] == "copyRowItem"){
 	$sql = "insert into orderItem( iid,position,rid,name,description,qty,price,sizePrice,minSize,W,H,D,W2,H2,D2,minW,minH,minD,maxW,maxH,maxD,doorFactor,speciesFactor,finishFactor,interiorFactor,sheenFactor,glazeFactor,drawers,smallDrawerFronts,largeDrawerFronts,hingeLeft,hingeRight,finishLeft,finishRight,note,fromItem) select iid,position,rid,name,description,qty,price,sizePrice,minSize,W,H,D,W2,H2,D2,minW,minH,minD,maxW,maxH,maxD,doorFactor,speciesFactor,finishFactor,interiorFactor,sheenFactor,glazeFactor,drawers,smallDrawerFronts,largeDrawerFronts,hingeLeft,hingeRight,finishLeft,finishRight,note,id from orderItem where id =".$_POST['item'];
 	$result = opendb($sql);
-	//echo mysql_affected_rows();
+	$sql = "SELECT LAST_INSERT_ID() last";
+	$result = opendb($sql);
+	$row = $result->fetch_assoc();
+	$lastInsert = $row['last'];
+	$sql = "insert into orderItemMods (pid,position,rid,name,description,qty,price,sizePrice,minSize,W,H,D,W2,H2,D2,minW,minH,minD,maxW,maxH,maxD,doorFactor,speciesFactor,finishFactor,interiorFactor,sheenFactor,glazeFactor,drawers,smallDrawerFronts,largeDrawerFronts,hingeLeft,hingeRight,finishLeft,finishRight,mid,note)
+			select ".$lastInsert.",oim.position,oim.rid,im.name,im.description,oim.qty,im.price,im.sizePrice,im.minSize,oim.W,oim.H,oim.D,oim.W2,oim.H2,oim.D2,im.minW,im.minH,im.minD,im.maxW,im.maxH,im.maxD,im.doorFactor,im.speciesFactor,im.finishFactor,im.interiorFactor,im.sheenFactor,im.glazeFactor,im.drawers,im.smallDrawerFronts,im.largeDrawerFronts,oim.hingeLeft,oim.hingeRight,oim.finishLeft,oim.finishRight,im.id,oim.note 
+			from orderItemMods oim, itemMods im where oim.mid = im.id and oim.pid = ".$_POST['item'];
+	opendb($sql);
 }
 
 if($_POST['mode'] == "copySomeItems"){
