@@ -63,7 +63,7 @@ function saveOrder(objectID){
         		if(data == "success"){
         	    	$("#"+objectID).css("border-color", "#00b828");
 					if(objectID=="CLid"){//reload page when updating Cabinet Line
-						resetOrderDefault("<?php echo $_GET["OID"] ?>");
+						resetOrderDefault("<?php echo $_GET["OID"] ?>",$("#"+objectID).data('val'),$("#"+objectID).val());
 						window.location.reload();
         	    	//$("#"+objectID).attr('title',data);
 					}
@@ -75,13 +75,18 @@ function saveOrder(objectID){
 	        });
 }
 
-function resetOrderDefault(orderId){
-	myData = { mode: "resetOrder", oid: orderId};
-	$.post("OrderItem.php",
-		myData,
-			function(data, status, jqXHR){	
-			//console.log(jqXHR);			
-			});
+/*This function reset options where cabinet lines changes between Span and Kitchen (reset headers)*/
+function resetOrderDefault(orderId, ocl, ncl){
+	var kitchen = ['1','2'];//Cabinet lines for kitchens
+	var nokitchen = ['3'];//Cabinet lines not for kitchens
+	$('#CLid').data('val', ncl);
+	if((kitchen.includes(ocl) && nokitchen.includes(ncl)) || (kitchen.includes(ncl) && nokitchen.includes(ocl))){		
+		myData = { mode: "resetOrder", oid: orderId};
+		$.post("OrderItem.php",
+			myData,
+				function(data, status, jqXHR){	
+		});
+	}
 }
 
 
@@ -93,21 +98,16 @@ function saveStyle(col,objectID){
 	$("#"+objectID).css("border-color", "#ba0000");
 	var data = {mode:"setStyle",oid:<?php echo $_GET["OID"]?>, rid:$("a.nav-link.roomtab.active").attr("value"), column:col, id: $("#"+objectID).val()};
 	$.post("save.php",data,function(data, status){
-		//$(this). attr("href", newUrl);
-		
 	    if(status == "success"){
 	    	$("#"+objectID).css("border-color", "#00b828");
-	    	//if(col == "species" || col == "door" || col == "interiorFinish" || col == "frontFinish" || col == "interiorFinish" || col == "interiorFinish" || col == "interiorFinish" || col == "interiorFinish" || col == "interiorFinish" || col == "interiorFinish" || col == "interiorFinish"){
-				
-		    	loadItems($("a.nav-link.roomtab.active").attr("value"));
-				
-		    	if(col=="species" || col=="frontFinish"){
-		    		location.reload();
-		    	}
-	    	//}
+	    	loadItems($("a.nav-link.roomtab.active").attr("value"));
+			if(col=="species" || col=="frontFinish"){
+				location.reload();
+			}
 	    }
 	});
 }
+
 function setMinDate(){
 	$('.datepicker').on('click', function(e) {
 		   e.preventDefault();
@@ -830,8 +830,9 @@ function existOID(oid){
 }
 
 function getItemsCopy(){
-	$('#copyItemList').empty();
+	clearModal();
 	myData = { mode: "getOrderItemsforCopy", oid:$('#copyOID').val(), CLid:$('#CLid').val() };
+	var r = 0;
 	$.post("OrderItem.php",
 		myData, 
 		function(data, status, jqXHR) {
@@ -840,13 +841,18 @@ function getItemsCopy(){
 			//$('#btnCopyItems').show();
 			//console.log(jqXHR['responseText']);
 			var item = JSON.parse(jqXHR["responseText"]);
-			item.forEach(function(obj) { 
+			item.forEach(function(obj) {
+				if(r!==obj.rid){
+					r=obj.rid;
+					table = "<tr class=\"table-primary\"><td><input data-toggle=\"tooltip\" data-placement=\"top\" title=\"Select room\" onchange=\"checkRoom("+obj.rid+"),displayCopyBtn(this);\" type='checkbox' id=\"chkR"+obj.rid+"\"></td><td colspan='7'>Room: "+obj.orName+"</td></tr>";
+					$('#copyItemList').append(table);
+				}
 				table = "<tr>";
-				table += "<td><input onchange='displayCopyBtn()";
+				table += "<td>";
 				if(obj.sid=='0'){
-					table += ";' type='checkbox' id='"+obj.orderItemID+"'></td>";
+					table += "<input class=\""+obj.rid+" "+obj.orderItemID+"\" onchange='displayCopyBtn(this),checkChild("+obj.orderItemID+");' type='checkbox' id='"+obj.orderItemID+"'></td>";
 				}else{
-					table += ", checkParent(this.id,"+obj.orderItemID+");' type='checkbox' id='"+obj.orderItemID+"-"+obj.sid+"'></td>";
+					table += "<input class=\""+obj.rid+" "+obj.orderItemID+"\" type='checkbox' disabled></td>";
 				}
 				table += "<td>";
 				if(obj.sid=='0'){
@@ -875,30 +881,44 @@ function getItemsCopy(){
 				table += "</tr>";
 				//console.log(obj.rid); 	
 				$('#copyItemList').append(table);
-				});
+			});
 			
 		}
 	);
 }
 
-function displayCopyBtn(){
+function displayCopyBtn(obj){
 	if($('#copyItemList input:checkbox:checked').length>0){
 		$('#btnCopyItems').show();
 	}else{
 		$('#btnCopyItems').hide();
 	}
+	if($('#copyItemList input:checkbox:checked').length===$('#copyItemList input:checkbox').length){
+		$('#selAllChk').prop('checked',true);
+	}else{
+		$('#selAllChk').prop('checked',false);
+	}
+	if($('#copyItemList input:checkbox:checked').length>0){
+		$('#btnCopyItems').show();
+	}else{
+		$('#btnCopyItems').hide();
+	}
+	//console.log($(obj).prop('class'));
 }
 
 function clearModal(){
 	$('#copyItemList').empty();
+	$('#copyItemList input:checkbox').prop('checked',false);
+	$('#selAllChk').prop('checked',false);
+	$('#btnCopyItems').hide();
 }
 
-function checkParent(object, parent){
-	if($('#'+object).prop('checked')){
-		$('#'+parent+"-0").prop('checked',true);
+function checkChild(parent){
+	if($('#'+parent).prop('checked')){
+		$('.'+parent+':checkbox').prop('checked',true);
 	}
 	else{
-		$('#'+parent+"-0").prop('checked',false);
+		$('.'+parent+':checkbox:checked').prop('checked',false);
 	}
 }
 
@@ -912,7 +932,19 @@ function selAllItems(){
 	}
 }
 
+function checkRoom(rid){
+	if($('#chkR'+rid).prop('checked')){
+		$('.'+rid+':checkbox').prop('checked',true);
+	}else{
+		$('.'+rid+':checkbox:checked').prop('checked',false);
+	}
+}
+
 function copyItems(){
+	if(viewOnly>0){
+		alert(noChangeMsg);
+		return;
+	}
 	let items = [];
 	$('#copyItemList input:checked').each(function(){ 
 		items.push(this.id);
@@ -923,11 +955,15 @@ function copyItems(){
 		myData, 
 		function(data, status, jqXHR) {
 			//console.log(jqXHR['responseText']);
-			//loadItems($("a.nav-link.roomtab.active").attr("value"));
+			loadItems($("a.nav-link.roomtab.active").attr("value"));
 		});
 }
 
 function copyItemRow(itemOrig){
+	if(viewOnly>0){
+		alert(noChangeMsg);
+		return;
+	}
 	myData = { mode: "copyRowItem", item:itemOrig };
 	$.post("OrderItem.php",
 		myData, 
@@ -936,6 +972,17 @@ function copyItemRow(itemOrig){
 			loadItems($("a.nav-link.roomtab.active").attr("value"));
 		});
 	
+}
+
+function copyRoom(rid){
+	console.log(rid);
+	myData = { mode: "copyRoom", rid:rid };
+	$.post("OrderItem.php",
+		myData, 
+		function(data, status, jqXHR) {
+			//console.log(jqXHR['responseText']);
+			window.location.reload();
+		});
 }
 </script>
 
@@ -1093,8 +1140,31 @@ function copyItemRow(itemOrig){
     //window.location.replace(window.location.href+'test');
     if($GLOBALS['$result']->num_rows > 0){
         foreach ($GLOBALS['$result'] as $row) {
-//            echo "<li value=\"".$row['rid']."\" class=\"nav-item" . $s . "\"><a value=\"".$row['rid']."\" class=\"nav-link roomtab" . $s . "\" onclick=\"loadItems(" .$row['rid']. ");\" href=\"#r". $row['name'] . $i . "\">" . $row['name'] . "(" . $row['rid'] . ")</a></li>";
-            echo "<li value=\"".$row['rid']."\" class=\"nav-item" . $s . "\"><a value=\"".$row['rid']."\" class=\"nav-link roomtab" . $s . "\" onclick=\"loadItems(" .$row['rid']. ");\" href=\"#r". str_replace(" ","",$row['name']) . $i . "\"><span class=\"nav-link-active text-muted\"><b id=\"" . $row['name'] ."\">" . $row['name'] ."</b></span></a></li>";
+            echo "<li value=\"".$row['rid']."\" class=\"btn-group nav-item" . $s . "\">
+					<a value=\"".$row['rid']."\" class=\"nav-link roomtab" . $s . "\" onclick=\"loadItems(" .$row['rid']. ");\" href=\"#r". str_replace(" ","",$row['name']) . $i . "\">
+						<span class=\"nav-link-active text-muted\">
+							<b id=\"" . $row['name'] ."\">" . $row['name'] ."</b>
+						</span>
+					</a></li>";
+					/*<a data-toggle=\"tooltip\" title=\"Copy: '". $row['name'] ."'\" class=\"btn-sm text-muted\" onclick=\"copyRoom(".$row['rid'].")\">
+						<svg width=\"1em\" height=\"1em\" viewBox=\"0 0 16 16\" class=\"bi bi-clipboard-plus\" fill=\"currentColor\" xmlns=\"http://www.w3.org/2000/svg\">
+							  <path fill-rule=\"evenodd\" d=\"M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z\"/>
+							  <path fill-rule=\"evenodd\" d=\"M9.5 1h-3a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3zM8 7a.5.5 0 0 1 .5.5V9H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V10H6a.5.5 0 0 1 0-1h1.5V7.5A.5.5 0 0 1 8 7z\"/>
+						</svg>	
+					</a>";*/
+			/*echo "
+					  <a class=\"dropdown-toggle text-muted px-1\" href=\"#\" role=\"button\" id=\"dropdownMenuLink".$row['rid']."\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"false\">
+						<svg width=\"1em\" height=\"1em\" viewBox=\"0 0 16 16\" class=\"bi bi-clipboard-plus\" fill=\"currentColor\" xmlns=\"http://www.w3.org/2000/svg\">
+							  <path fill-rule=\"evenodd\" d=\"M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z\"/>
+							  <path fill-rule=\"evenodd\" d=\"M9.5 1h-3a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3zM8 7a.5.5 0 0 1 .5.5V9H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V10H6a.5.5 0 0 1 0-1h1.5V7.5A.5.5 0 0 1 8 7z\"/>
+						</svg>
+					  </a>
+
+					  <div class=\"dropdown-menu\" aria-labelledby=\"dropdownMenuLink".$row['rid']."\">
+						<a class=\"dropdown-item\" onclick=\"copyRoom(".$row['rid'].")\">Copy room: '".$row['name']."'</a>
+						<a class=\"dropdown-item\" data-toggle=\"modal\" data-target=\"#copyItemsModal\">Copy items from an order</a>
+					  </div>
+					";*/
             if($s != ""){
                 //$r = $i;
             }
@@ -1153,38 +1223,44 @@ function copyItemRow(itemOrig){
                 
                 echo "<div class=\"row\">";
                 
-                echo "<div class=\"col-2\"><button  class=\"btn btn-primary px-2 py-1 text-nowrap ml-0 editbutton d-print-none\" type=\"button\" onClick=\"editRoom(".$row['rid']. ",'" . $row['name'] . "');\"  data-toggle=\"modal\" title=\"Edit room\" data-target=\"#editRoomModal\"><span class=\"ui-icon ui-icon-pencil\"></span></button>";
-                
-				echo "<b><a  class=\"btn btn-primary px-3 py-1 mr-0 float-right d-print-none\" target=\"_blank\" ";
-
-				if($CLid==3){
-					echo "href=\"header/SPANSTYLES.pdf\">Span Catalogue</a></b></div>"; //"<label  for=\"doorstyle\"><a id=\"doorPDF\" href=\"header/SPANSTYLES.pdf\" target=\"_blank\">Style</a></label>";
-				}else{
-					echo "href=\"uploads/MobelCatalogue.pdf\">Catalogue</a></b></div>"; 
-				}				
+					echo "<div class=\"col-2\">
+							<button  class=\"btn btn-primary px-2 py-1 text-nowrap ml-0 editbutton d-print-none\" type=\"button\" onClick=\"editRoom(".$row['rid']. ",'" . $row['name'] . "');\"  data-toggle=\"modal\" title=\"Edit room\" data-target=\"#editRoomModal\">
+								<svg width=\".8em\" height=\".8em\" viewBox=\"0 0 16 16\" class=\"bi bi-pencil-fill\" fill=\"currentColor\" xmlns=\"http://www.w3.org/2000/svg\">
+								  <path fill-rule=\"evenodd\" d=\"M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11l.178-.178z\"/>
+								</svg>
+							</button>";
+							echo 	"<a class=\"btn btn-primary px-2 py-1 text-nowrap ml-0 editbutton d-print-none dropdown-toggle\" href=\"#\" role=\"button\" id=\"dropdownMenuLink\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"false\"></a>
+									<div class=\"dropdown-menu\" aria-labelledby=\"dropdownMenuLink\">
+										<a class=\"dropdown-item\" onclick=\"copyRoom(".$row['rid'].")\">Copy room: '".$row['name']."'</a>
+										<a class=\"dropdown-item\" data-toggle=\"modal\" data-target=\"#copyItemsModal\">Copy items from an order</a>
+									</div>";                
+							
+							echo "<b><a  class=\"btn btn-primary px-3 py-1 mr-0 float-right d-print-none\" target=\"_blank\" ";
+							if($CLid==3){
+								echo "href=\"header/SPANSTYLES.pdf\">Span Catalogue</a></b>
+								</div>"; 
+							}else{
+								echo "href=\"uploads/MobelCatalogue.pdf\">Catalogue</a></b>
+								</div>"; 
+							}
+							
+					echo "<div class=\"col text-left\"><button class=\"btn btn-primary px-3 py-1 ml-0 editbutton d-print-none\" data-toggle=\"modal\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles(".$_GET["OID"] . ",$('a.nav-link.roomtab.active').attr('value'));\">Room Files 
+							<svg width=\"1.1em\" height=\"1.1em\" viewBox=\"0 0 16 16\" class=\"bi bi-folder\" fill=\"currentColor\" xmlns=\"http://www.w3.org/2000/svg\">
+								<path d=\"M9.828 4a3 3 0 0 1-2.12-.879l-.83-.828A1 1 0 0 0 6.173 2H2.5a1 1 0 0 0-1 .981L1.546 4h-1L.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3v1z\"/>
+								<path fill-rule=\"evenodd\" d=\"M13.81 4H2.19a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4zM2.19 3A2 2 0 0 0 .198 5.181l.637 7A2 2 0 0 0 2.826 14h10.348a2 2 0 0 0 1.991-1.819l.637-7A2 2 0 0 0 13.81 3H2.19z\"/>
+							</svg></span></button>";                                      
+					echo "</div>";
 				
-                echo "<div class=\"col text-left\"><button class=\"btn btn-primary px-3 py-1 ml-0 editbutton d-print-none\" data-toggle=\"modal\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles(".$_GET["OID"] . ",$('a.nav-link.roomtab.active').attr('value'));\">Room Files<span class=\"ui-icon ui-icon-disk\"></span></button>";
-                                
-                if($_SESSION["userType"] == 3){
-                    //echo "<button onClick=\"alert('test');\">Testing Only</button>";
-                }
-                
-                echo "</div>";
-				
-				echo "<div class=\"col-9 text-left\">";
-				echo "<p class=\"d-print-none\" id=\"RoomNotePreview". $row['rid'] ."\">";
-				
-				if($row['note'])
-				echo "<b>Room note: </b>" . $row['note'] ;
-				
-				echo "</p>";
-				
-				echo "</div>";
-				if($row['note']){
-					echo "<h5 class=\"print\" id=\"RoomNotePrint". $row['rid'] ."\"><b>Room note: </b>" . $row['note']."</h5>";
-					echo "<div class=\"dropdown-divider mb-4\"></div>";
-				}
-				
+					echo "<div class=\"col-9 text-left\">";//note preview
+						echo "<p class=\"d-print-none\" id=\"RoomNotePreview". $row['rid'] ."\">";				
+						if($row['note'])
+						echo "<b>Room note: </b>" . $row['note'] ;						
+						echo "</p>";				
+					echo "</div>";
+					if($row['note']){//note only for printing
+						echo "<h5 class=\"print\" id=\"RoomNotePrint". $row['rid'] ."\"><b>Room note: </b>" . $row['note']."</h5>";
+						echo "<div class=\"dropdown-divider mb-4\"></div>";
+					}
 				echo "</div>";
 				
                 //echo "<button class=\"btn btn-primary ml-0 \" data-toggle=\"modal\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles( ".$_GET["OID"].");\">All Files<span class=\"ui-icon ui-icon-disk\"></span></button><br/>";
@@ -1806,9 +1882,28 @@ function copyItemRow(itemOrig){
     <?php 
     }
     ?>
-    <!-- Modal add item-->
+
     
 
+<div id="confirmCopyRoom" class="modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Copy room</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>this action will copy the entire room (including items and mods) as a new room.<br/>Do you want to continue?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="copyRoom()">Yes</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Modal Copy item-->
     <div id="copyItemsModal" class="modal fade" role="dialog">
@@ -1845,7 +1940,7 @@ function copyItemRow(itemOrig){
 				<table id="itemTable" class="table table-striped">
 					<thead>
 						<tr>
-							<th><input type="checkbox" onchange="selAllItems();" id="selAllChk"/></th>
+							<th><input data-toggle="tooltip" data-placement="top" title="Select All" type="checkbox" onchange="selAllItems();" id="selAllChk"/></th>
 							<th>Description</th>
 							<th>W</th>
 							<th>H</th>
@@ -1906,22 +2001,23 @@ function copyItemRow(itemOrig){
 								</div>
 							</div>
 							<div id="itemSizes"  class="col-auto text-left">
-								<span class="form-inline">
-									<label for="W" data-toggle="tooltip" data-placement="top" title="Width">Width:</label>							
+								<span class="form-inline d-flex justify-content-start">
+									<label for="W" data-toggle="tooltip" data-placement="top" title="Width">Width</label>							
 									<textarea data-toggle="tooltip" data-placement="top" title="Width" onchange="saveEditedItem('W','W');"  rows="1" cols="7" class="form-control" id="W"></textarea>&nbsp;
-									<!--div id="W2div" class=""-->
-									<label id="W2lbl" for="W2" data-toggle="tooltip" data-placement="top" title="Right Width">Width Right:</label>
-									<textarea data-toggle="tooltip" data-placement="top" title="Width" onchange="saveEditedItem('W2','W2');"  rows="1" cols="7" class="form-control" id="W2"></textarea>&nbsp;
-									<!--/div-->
-									<label for="H">Height:</label>
-									<textarea onchange="saveEditedItem('H','H');" rows="1" cols="7" class="form-control" id="H"></textarea>&nbsp;
-									
-									<label for="D" data-toggle="tooltip" data-placement="top" title="Depth">Depth:</label>
-									<textarea onchange="saveEditedItem('D','D');"  rows="1" cols="7" class="form-control" id="D"></textarea>
-									<!--div id="D2div" class="col-auto text-left"-->
-									<label id="D2lbl" for="D2" data-toggle="tooltip" data-placement="top" title="Right Width">Depth Right:</label>
-									<textarea data-toggle="tooltip" data-placement="top" title="Width" onchange="saveEditedItem('D2','D2');"  rows="1" cols="7" class="form-control" id="D2"></textarea>
-									<!--/div-->
+									<!--label id="W2lbl" for="W2" data-toggle="tooltip" data-placement="top" title="Width right">Width right:</label>
+									<textarea data-toggle="tooltip" data-placement="top" title="Width right" onchange="saveEditedItem('W2','W2');"  rows="1" cols="3" class="form-control" id="W2"></textarea>&nbsp;-->
+									<label data-toggle="tooltip" data-placement="top" title="Height" for="H">Height</label>
+									<textarea data-toggle="tooltip" data-placement="top" title="Height" onchange="saveEditedItem('H','H');" rows="1" cols="7" class="form-control" id="H"></textarea>&nbsp;
+									<label for="D" data-toggle="tooltip" data-placement="top" title="Depth">Depth</label>
+									<textarea data-toggle="tooltip" data-placement="top" title="Depth" onchange="saveEditedItem('D','D');"  rows="1" cols="7" class="form-control" id="D"></textarea>
+									<!--label id="D2lbl" for="D2" data-toggle="tooltip" data-placement="top" title="Depth right">Depth Right:</label>
+									<textarea data-toggle="tooltip" data-placement="top" title="Depth right" onchange="saveEditedItem('D2','D2');"  rows="1" cols="3" class="form-control" id="D2"></textarea-->
+								</span>
+								<span class="form-inline d-flex justify-content-start pt-3">
+									<label id="W2lbl" for="W2" data-toggle="tooltip" data-placement="top" title="Width right">Width right</label>
+									<textarea data-toggle="tooltip" data-placement="top" title="Width right" onchange="saveEditedItem('W2','W2');"  rows="1" cols="7" class="form-control" id="W2"></textarea>&nbsp;
+									<label id="D2lbl" for="D2" data-toggle="tooltip" data-placement="top" title="Depth right">Depth right</label>
+									<textarea data-toggle="tooltip" data-placement="top" title="Depth right" onchange="saveEditedItem('D2','D2');"  rows="1" cols="7" class="form-control" id="D2"></textarea>
 								</span>
 							</div><br/>
 							<div class="row">
@@ -2206,22 +2302,28 @@ function copyItemRow(itemOrig){
 <script>
 
 $(document).ready(function(){
-	  $(".nav-tabs a").click(function(){
+	$(".nav-tabs li a").click(function(){
+		//console.log(this);
 	    $(this).tab('show');
-	  });
-	  $('#W2lbl').hide();
-	  $('#W2').hide();
-	  $('#D2lbl').hide();
-	  $('#D2').hide();
-	  $('#itemTable').hide();
-	  $('#btnCopyItems').hide();
-	  $('.datepicker').datepicker({ 
-			startDate: new Date()
-		});
-		$('[data-toggle="tooltip"]').tooltip();
+	});
+	$(".dropdown-toggle a").click(function(){
+		console.log(this);
+	    //$(this).tab('show');
+	});
+	$('#W2lbl').hide();
+	$('#W2').hide();
+	$('#D2lbl').hide();
+	$('#D2').hide();
+	$('#itemTable').hide();
+	$('#btnCopyItems').hide();
+	$('.datepicker').datepicker({ 
+		startDate: new Date()
+	});
+	$('[data-toggle="tooltip"]').tooltip();
+	$('#CLid').on('focusin', function(){
+		$(this).data('val', $(this).val());
 	});
 
-$(document).ready(function(){
 	$('[href="' + window.location.hash + '"]').tab('show');
 	loadItems($("a.nav-link.roomtab.active").attr("value"));
 	$(".modal").draggable({
@@ -2231,33 +2333,20 @@ $(document).ready(function(){
 		minHeight: 630,
 		minWidth: 500
     });
+	$("#copyOID").keypress(function(e) {
+		if(e.keyCode == 13 && !$('#btnGetItems').prop('disabled'))
+		{
+			getItemsCopy($("#copyOID").val());
+		}
+	});
 });
 
-
-
-
-
 var arr = new Array();
-
-
-
 
 $('#allItems').on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
 	  addItemID = $('#allItems').val();
 	});
 
-/*
- 
- $( "#W" ).click(function() {
-	  refresh = 1;
-	});
-$( "#H" ).click(function() {
-	  refresh = 1;
-	});
-$( "#D" ).click(function() {
-	  refresh = 1;
-	});
-*/	
 $( "#itemSizes" ).click(function() {
 	  refresh = 1;
 	});

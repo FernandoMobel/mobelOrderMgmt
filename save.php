@@ -338,7 +338,7 @@ function itemUpdateConstraintsOK($table){
     //assumes id is the value we were going to set.
     $msg = "";
     $sql = "";
-    if(strcmp($_POST['column'],"W")==0){
+    if((strcmp($_POST['column'],"W")==0) || (strcmp($_POST['column'],"W2")==0)){
         $sql = "select case 
         when " . $_POST['id'] . " < i.minW then \"Sorry, this width is below the minimum.\" 
         when i.maxW <> 0 and " . $_POST['id'] . " > i.maxW then \"Sorry, this width is beyond the maximum.\" 
@@ -350,7 +350,7 @@ function itemUpdateConstraintsOK($table){
         when i.maxH <> 0 and " . $_POST['id'] . " > i.maxH then \"Sorry, this height is beyond the maximum.\"
         else \"ok\" end as allowed from " . $table . " i where i.id = " . $_POST['itemID'] . ";";
     }
-    if(strcmp($_POST['column'],"D")==0){
+    if((strcmp($_POST['column'],"D")==0) || (strcmp($_POST['column'],"D2")==0)){
         $sql = "select case
         when " . $_POST['id'] . " < i.minD then \"Sorry, this depth is below the minimum.\"
         when i.maxD <> 0 and " . $_POST['id'] . " > i.maxD then \"Sorry, this depth is beyond the maximum.\"

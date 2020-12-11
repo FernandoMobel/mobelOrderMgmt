@@ -673,7 +673,7 @@ if($_POST['mode'] == "copy"){
 }
 
 if($_POST['mode'] == "resetOrder"){
-	$sql = "update orderRoom set door=null, species=9, edge=null, frontFinish=null, glaze=13, sheen=7, hinge=1, smallDrawerFront=4, largeDrawerFront=4, drawerGlides=3, drawerBox=5, interiorFinish=15, finishedEnd=2  where oid =".$_POST['oid'];
+	$sql = "update orderRoom set door=null, species=null, edge=null, frontFinish=null, glaze=13, sheen=null, hinge=null, smallDrawerFront=null, largeDrawerFront=null, drawerGlides=null, drawerBox=null, interiorFinish=null, finishedEnd=null  where oid =".$_POST['oid'];
 	//echo $sql;
 	opendb($sql);
 }
@@ -700,18 +700,19 @@ if($_POST['mode'] == "existOID"){
 }
 
 if($_POST['mode'] == "getOrderItemsforCopy"){
-	$sql = "select * from (SELECT orr.rid, it.id as itemID, oi.id as orderItemID,0 as sid, oi.name, oi.description, oi.note, oi.W, oi.H, oi.D, oi.W2, oi.D2, if(oi.hingeLeft=0,'','L') HL,if(oi.hingeRight=0,'','R') HR,if(oi.finishLeft=0,'','L') FL,if(oi.finishRight=0,'','R') FR
+	$sql = "select * from (SELECT orr.rid,orr.name orName, it.id as itemID, oi.id as orderItemID,0 as sid, oi.name, oi.description, oi.note, oi.W, oi.H, oi.D, oi.W2, oi.D2, if(oi.hingeLeft=0,'','L') HL,if(oi.hingeRight=0,'','R') HR,if(oi.finishLeft=0,'','L') FL,if(oi.finishRight=0,'','R') FR
     FROM  orderItem oi, orderRoom orr, item it
     WHERE it.id = oi.iid and oi.rid = orr.rid and orr.oid = '" .$_POST['oid']. "' and (it.visible = 1 or it.visible is null) and it.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$_POST['CLid'].")
-    /*union all
-	SELECT orr.rid, it.id, oi.pid,oi.id as sid, oi.name, oi.description, oi.note, oi.W, oi.H, oi.D, oi.W2, oi.D2, if(oi.hingeLeft=0,'','L') HL,if(oi.hingeRight=0,'','R') HR,if(oi.finishLeft=0,'','L') FL,if(oi.finishRight=0,'','R') FR
+    union all
+	SELECT orr.rid,orr.name, it.id, oi.pid,oi.id as sid, oi.name, oi.description, oi.note, oi.W, oi.H, oi.D, oi.W2, oi.D2, if(oi.hingeLeft=0,'','L') HL,if(oi.hingeRight=0,'','R') HR,if(oi.finishLeft=0,'','L') FL,if(oi.finishRight=0,'','R') FR
     FROM  orderItemMods oi, orderRoom orr, itemMods it
-    WHERE it.id = oi.mid and oi.rid = orr.rid and orr.oid = '" .$_POST['oid']. "' and (it.visible = 1 or it.visible is null) and it.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$_POST['CLid'].")*/) as T1 order by rid,orderItemID,sid";
+    WHERE it.id = oi.mid and oi.rid = orr.rid and orr.oid = '" .$_POST['oid']. "' and (it.visible = 1 or it.visible is null) and it.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$_POST['CLid'].")) as T1 order by rid,orderItemID,sid";
 	//echo $sql;
 	$result = opendb($sql);
 	$items = array(); 
 	while ( $row = $result->fetch_assoc())  {
 		$data['rid'] = $row['rid'];
+		$data['orName'] = $row['orName'];
 		$data['itemID'] = $row['itemID'];
 		$data['orderItemID'] = $row['orderItemID'];
 		$data['sid'] = $row['sid'];
@@ -746,8 +747,8 @@ if($_POST['mode'] == "copyRowItem"){
 }
 
 if($_POST['mode'] == "copySomeItems"){
-	$arrLen = count ($_POST['items']);
-	$i=0;
+	/*$arrLen = count ($_POST['items']);
+	$/*i=0;
 	//query for items
 	$sql = "insert into orderItem( iid,position,rid,name,description,qty,price,sizePrice,minSize,W,H,D,W2,H2,D2,minW,minH,minD,maxW,maxH,maxD,doorFactor,speciesFactor,finishFactor,interiorFactor,
 						sheenFactor,glazeFactor,drawers,smallDrawerFronts,largeDrawerFronts,hingeLeft,hingeRight,finishLeft,finishRight,note,fromItem)
@@ -764,10 +765,50 @@ if($_POST['mode'] == "copySomeItems"){
 			$sql .= ",";
 	}
 	$sql .= ")";
-	echo $sql;
+	echo $sql;*/
 	//echo $_POST['rid']; //target room
+	copyItemsToRoom($_POST['items'],$_POST['rid']);
 }
 
+if($_POST['mode'] == "copyRoom"){
+	//copy room
+	$sql = "insert into orderRoom(name,oid,door,species,edge,frontFinish,glaze,sheen,hinge,smallDrawerFront,largeDrawerFront,drawerGlides,drawerBox,interiorFinish,finishedEnd,note,fromRoom,cc,fronts,pieces) select concat(name,'(',(select count(1)+1 from orderRoom orr2 where orr2.oid = orr.oid),')'),oid,door,species,edge,frontFinish,glaze,sheen,hinge,smallDrawerFront,largeDrawerFront,drawerGlides,drawerBox,interiorFinish,finishedEnd,note,rid,cc,fronts,pieces from orderRoom orr where orr.rid=".$_POST['rid'];
+	opendb($sql);
+	$newRID = getLastInsert();
+
+	//copy items
+	$items = array(); 
+	$sql = "select id from orderItem oi where oi.rid =".$_POST['rid'];
+	$result = opendb($sql);
+	while($row = $result->fetch_assoc()){
+		array_push($items, $row['id']); 
+	}
+	copyItemsToRoom($items,$newRID);
+}
+
+//copy items including mods to specific room
+function copyItemsToRoom($items,$rid){
+	$text = "";
+	foreach($items as &$item){
+		//copy item
+		$sql = "insert into orderItem( iid,position,rid,name,description,qty,price,sizePrice,minSize,W,H,D,W2,H2,D2,minW,minH,minD,maxW,maxH,maxD,doorFactor,speciesFactor,finishFactor,interiorFactor,sheenFactor,glazeFactor,drawers,smallDrawerFronts,largeDrawerFronts,hingeLeft,hingeRight,finishLeft,finishRight,note,fromItem) select iid,position,".$rid.",name,description,qty,price,sizePrice,minSize,W,H,D,W2,H2,D2,minW,minH,minD,maxW,maxH,maxD,doorFactor,speciesFactor,finishFactor,interiorFactor,sheenFactor,glazeFactor,drawers,smallDrawerFronts,largeDrawerFronts,hingeLeft,hingeRight,finishLeft,finishRight,note,id from orderItem where id =".$item;
+		$result = opendb($sql);
+		$lastItem = getLastInsert();
+		//copy mod
+		$sql = "insert into orderItemMods (pid,position,rid,name,description,qty,price,sizePrice,minSize,W,H,D,W2,H2,D2,minW,minH,minD,maxW,maxH,maxD,doorFactor,speciesFactor,finishFactor,interiorFactor,sheenFactor,glazeFactor,drawers,smallDrawerFronts,largeDrawerFronts,hingeLeft,hingeRight,finishLeft,finishRight,mid,note)
+				select ".$lastItem.",oim.position,".$rid.",im.name,im.description,oim.qty,im.price,im.sizePrice,im.minSize,oim.W,oim.H,oim.D,oim.W2,oim.H2,oim.D2,im.minW,im.minH,im.minD,im.maxW,im.maxH,im.maxD,im.doorFactor,im.speciesFactor,im.finishFactor,im.interiorFactor,im.sheenFactor,im.glazeFactor,im.drawers,im.smallDrawerFronts,im.largeDrawerFronts,oim.hingeLeft,oim.hingeRight,oim.finishLeft,oim.finishRight,im.id,oim.note 
+				from orderItemMods oim, itemMods im where oim.mid = im.id and oim.pid = ".$item;
+		opendb($sql);
+		//echo $sql;
+	}
+}
+
+function getLastInsert(){
+	$sql = "SELECT LAST_INSERT_ID() last";
+	$result = opendb($sql);
+	$row = $result->fetch_assoc();
+	return $row['last'];
+}
 
 function copyItem($Sroom, $Sitem, $Droom){
     //copies item Sitem in room Sroom to Droom.

@@ -1,7 +1,13 @@
 <?php session_start();?>
 
 <?php include_once 'includes/db.php';
-include 'includes/nav.php';
+//include 'includes/nav.php';
+/* For local environment */
+$local = "";
+if(strcmp($_SERVER['SERVER_NAME'],"localhost")==0 || strcmp($_SERVER['SERVER_NAME'],"192.168.16.199")==0){
+	$local = "/mobelOrderMgmt";
+}
+
 ?>
 <?php 
 $_SESSION["auth"] = false;
