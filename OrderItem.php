@@ -369,16 +369,11 @@ if($_POST['mode']=="getItems"){
             }else{
                 echo "<tr class=\"table-sm\">";
             }
-			if($isParent===1){
-				echo $tdStyle ."<a data-toggle=\"tooltip\" title=\"Copy item to the end\" class=\"text-primary d-print-none\" onclick=\"copyItemRow(".$row['item'].")\">
-									<svg width=\"1em\" height=\"1em\" viewBox=\"0 0 16 16\" class=\"bi bi-clipboard-plus\" fill=\"currentColor\" xmlns=\"http://www.w3.org/2000/svg\">
-									  <path fill-rule=\"evenodd\" d=\"M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z\"/>
-									  <path fill-rule=\"evenodd\" d=\"M9.5 1h-3a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3zM8 7a.5.5 0 0 1 .5.5V9H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V10H6a.5.5 0 0 1 0-1h1.5V7.5A.5.5 0 0 1 8 7z\"/>
-									</svg>
-								</a>". $i . "." . $si . "</td>";
-            }else{
+			//if($isParent===1){
 				echo $tdStyle . $i . "." . $si . "</td>";
-			}
+            //}else{
+				//echo $tdStyle . $i . "." . $si . "</td>";
+			//}
 			echo $tdStyle . "<span title=\"". str_replace("\"","inch",$row['description'])."\">" . $row['name'] . "</span>" . "</td>";
 			echo $tdStyle . (float)$row['W'] ;
 			if ((float)$row['W2']>0)
@@ -459,7 +454,14 @@ if($_POST['mode']=="getItems"){
                 //    echo "<button type=\"button\" onclick=\"allItems('allItems','modItems',". $parentID .");\" class=\"btn btn-primary btn-sm editbutton\" data-toggle=\"modal\" data-target=\"#addItemModal\"><span class=\"ui-icon ui-icon-circle-plus\"></button></td>";
                 //}
                 //echo "" . "<button type=\"button\" onClick=addModItems(".$row['item'].") class=\"btn btn-primary btn-sm editbutton\" data-toggle=\"modal\" title=\"Add a modification or accessory\" data-target=\"#addModModal\"><span class=\"ui-icon ui-icon-circle-plus\"></span></button>" . "</td>";
-                    echo "<button class=\"btn btn-primary pl-3 pr-3 btn-sm ml-0 editbutton\" data-toggle=\"modal\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles(".$_POST['oid'] . ",$('a.nav-link.roomtab.active').attr('value'),".$parentID.");\"><span class=\"ui-icon  ui-icon-disk\"></span></button></td>";
+                    echo "<button class=\"btn btn-primary pl-3 pr-3 btn-sm ml-0 editbutton\" data-toggle=\"modal\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles(".$_POST['oid'] . ",$('a.nav-link.roomtab.active').attr('value'),".$parentID.");\"><span class=\"ui-icon  ui-icon-disk\"></span></button>
+							<button data-toggle=\"tooltip\" title=\"Copy item to the end\" class=\"btn btn-primary pl-3 pr-3 btn-sm ml-0 editbutton d-print-none\" onclick=\"copyItemRow(".$row['item'].")\">
+								<svg width=\"1.3em\" height=\"1.3em\" viewBox=\"0 0 16 16\" class=\"bi bi-clipboard-plus\" fill=\"ui-icon\" xmlns=\"http://www.w3.org/2000/svg\">
+								  <path fill-rule=\"evenodd\" d=\"M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z\"/>
+								  <path fill-rule=\"evenodd\" d=\"M9.5 1h-3a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3zM8 7a.5.5 0 0 1 .5.5V9H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V10H6a.5.5 0 0 1 0-1h1.5V7.5A.5.5 0 0 1 8 7z\"/>
+								</svg>
+							</button>
+					</td>";
                     
             }else{
                 //echo "<td >" . "<button type=\"button\" onClick=editItems(".$row['item'].",". $row['sid'] .") class=\"btn btn-primary btn-sm editbutton\" data-toggle=\"modal\" title=\"Edit\" data-target=\"#editItemModal\"><span class=\"ui-icon ui-icon-pencil\"></span></button>" . "";
