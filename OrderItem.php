@@ -353,8 +353,6 @@ if($_POST['mode']=="getItems"){
                 foreach($GLOBALS['$result2'] as $row2){
                     $parentPrice = $row2['price'];
                 }
-                //echo $row['item'];
-                //closedb2();
                 $isParent = 0;
                 $si = $si + 1;
                 $i = $i - 1;
@@ -369,11 +367,7 @@ if($_POST['mode']=="getItems"){
             }else{
                 echo "<tr class=\"table-sm\">";
             }
-			//if($isParent===1){
-				echo $tdStyle . $i . "." . $si . "</td>";
-            //}else{
-				//echo $tdStyle . $i . "." . $si . "</td>";
-			//}
+			echo $tdStyle . $i . "." . $si . "</td>";
 			echo $tdStyle . "<span title=\"". str_replace("\"","inch",$row['description'])."\">" . $row['name'] . "</span>" . "</td>";
 			echo $tdStyle . (float)$row['W'] ;
 			if ((float)$row['W2']>0)
@@ -413,8 +407,7 @@ if($_POST['mode']=="getItems"){
 			$minWidth ="style=\"max-width:300px\"";
             echo $tdStyle;
             if(strlen(str_replace("\"","\\\"",$row['note']))>=1){
-                //echo "<span title='Note: ". $row['note'] ."' onClick='alert(\"" . str_replace("\"","\\\"",$row['note']) . "\");'>Y</span>";
-				echo "<p style=\"width: 200px;\" class=\"d-print-none mx-auto\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"". $row['note'] ."\">". $row['note'] ."</p>";
+                echo "<p style=\"width: 200px;\" class=\"d-print-none mx-auto\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"". $row['note'] ."\">". $row['note'] ."</p>";
 				echo "<h5 class=\"print\">" . $row['note']."</h5>";
             }else{
                 echo str_replace("\"","\\\"",$row['note']);
@@ -445,50 +438,21 @@ if($_POST['mode']=="getItems"){
                 }
                 echo "</td>";            
             }
-            if($isParent === 1){
-                echo $tdStyleNotPrint . "<button type=\"button\" onClick=editItems(".$row['item'].",0) class=\"btn btn-primary pl-3 pr-3 btn-sm editbutton\" data-toggle=\"modal\" title=\"Edit\" data-target=\"#editItemModal\"><span class=\"ui-icon ui-icon-pencil \"></span></button>" . "";
-                //if($_SERVER['HTTP_REFERER']=="https://mos.mobel.ca/Order2.php?OID=1"){
-                    echo "<button type=\"button\" title=\"Add Mod\" onclick=\"var promise = new Promise(function(resolve,reject){cleanEdit();resolve();}); promise.then(function(){\$('#editOrderItemPID').val(". $parentID .");$('#editItemTitle').text('Edit/Delete Mod');});\" class=\"btn btn-primary btn-sm editbutton btn-primary ml-0 pl-3 pr-3\" data-toggle=\"modal\" data-target=\"#editItemModal\"><span class=\"ui-icon ui-icon-circle-plus\"></button>";
-                    
-                //}else{
-                //    echo "<button type=\"button\" onclick=\"allItems('allItems','modItems',". $parentID .");\" class=\"btn btn-primary btn-sm editbutton\" data-toggle=\"modal\" data-target=\"#addItemModal\"><span class=\"ui-icon ui-icon-circle-plus\"></button></td>";
-                //}
-                //echo "" . "<button type=\"button\" onClick=addModItems(".$row['item'].") class=\"btn btn-primary btn-sm editbutton\" data-toggle=\"modal\" title=\"Add a modification or accessory\" data-target=\"#addModModal\"><span class=\"ui-icon ui-icon-circle-plus\"></span></button>" . "</td>";
-                    echo "<button class=\"btn btn-primary pl-3 pr-3 btn-sm ml-0 editbutton\" data-toggle=\"modal\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles(".$_POST['oid'] . ",$('a.nav-link.roomtab.active').attr('value'),".$parentID.");\"><span class=\"ui-icon  ui-icon-disk\"></span></button>
-							<button data-toggle=\"tooltip\" title=\"Copy item to the end\" class=\"btn btn-primary pl-3 pr-3 btn-sm ml-0 editbutton d-print-none\" onclick=\"copyItemRow(".$row['item'].")\">
-								<svg width=\"1.3em\" height=\"1.3em\" viewBox=\"0 0 16 16\" class=\"bi bi-clipboard-plus\" fill=\"ui-icon\" xmlns=\"http://www.w3.org/2000/svg\">
-								  <path fill-rule=\"evenodd\" d=\"M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z\"/>
-								  <path fill-rule=\"evenodd\" d=\"M9.5 1h-3a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3zM8 7a.5.5 0 0 1 .5.5V9H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V10H6a.5.5 0 0 1 0-1h1.5V7.5A.5.5 0 0 1 8 7z\"/>
-								</svg>
-							</button>
-					</td>";
-                    
+			echo $tdStyleNotPrint; 
+            if($isParent === 1){                
+				echo "<button type=\"button\" onClick=editItems(".$row['item'].",0) class=\"btn btn-primary pl-3 pr-3 btn-sm editbutton\" data-toggle=\"modal\" title=\"Edit\" data-target=\"#editItemModal\"><span class=\"ui-icon ui-icon-pencil \"></span></button>" . "";
+				echo "<button type=\"button\" title=\"Add Mod\" onclick=\"var promise = new Promise(function(resolve,reject){cleanEdit();resolve();}); promise.then(function(){\$('#editOrderItemPID').val(". $parentID .");$('#editItemTitle').text('Edit/Delete Mod');});\" class=\"btn btn-primary btn-sm editbutton btn-primary ml-0 pl-3 pr-3\" data-toggle=\"modal\" data-target=\"#editItemModal\"><span class=\"ui-icon ui-icon-circle-plus\"></button>";
+				echo "<button class=\"btn btn-primary pl-3 pr-3 btn-sm ml-0 editbutton\" data-toggle=\"modal\" title=\"Add files\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles(".$_POST['oid'] . ",$('a.nav-link.roomtab.active').attr('value'),".$parentID.");\"><span class=\"ui-icon  ui-icon-disk\"></span></button>";
+				echo "<button class=\"btn btn-primary btn-sm editbutton btn-primary ml-0 pl-3 pr-3\" data-toggle=\"tooltip\" title=\"Copy item to the end\" onclick=\"copyItemRow(".$row['item'].")\"><span class=\"ui-icon  ui-icon-copy\"></span></button>";
             }else{
-                //echo "<td >" . "<button type=\"button\" onClick=editItems(".$row['item'].",". $row['sid'] .") class=\"btn btn-primary btn-sm editbutton\" data-toggle=\"modal\" title=\"Edit\" data-target=\"#editItemModal\"><span class=\"ui-icon ui-icon-pencil\"></span></button>" . "";
-                //echo "<td>" . "<span class=\"td ui-icon ui-icon-pencil\"> <button type=\"button\" onClick=editItems(".$row['item'].",". $row['sid'] .") class=\"btn btn-primary btn-sm\" data-toggle=\"modal\" title=\"Edit\" data-target=\"#editItemModal\"></button></span>" . "";
-                echo $tdStyleNotPrint ."&nbsp;&nbsp;<span onClick=\"cleanEdit();$('#editOrderItemPID').val(". $parentID ."); editItems(".$row['item'].",". $row['sid'] .");\" data-toggle=\"modal\" title=\"Edit\" data-target=\"#editItemModal\" class=\"btn ml-0 btn-primary pl-2 pr-2 pt-1 pb-1 btn-sm\"><span class=\"ui-icon ui-icon-pencil btn-primary pl-2 pr-2\" ></span></span>";
-                echo "<button class=\"btn btn-primary pl-2 pr-2 pt-1 pb-1 ml-1 btn-sm editbutton \" data-toggle=\"modal\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles(".$_POST['oid'] . ",$('a.nav-link.roomtab.active').attr('value'),".$parentID.",". $row['sid'] .");\"><span class=\"ui-icon ui-icon-disk\"></span></button></td>";
-                
+                echo "<button class=\"btn btn-primary btn-sm editbutton btn-primary ml-0 pl-3 pr-3\" onClick=\"cleanEdit();$('#editOrderItemPID').val(". $parentID ."); editItems(".$row['item'].",". $row['sid'] .");\" data-toggle=\"modal\" title=\"Edit\" data-target=\"#editItemModal\"><span class=\"ui-icon ui-icon-pencil btn-primary pl-2 pr-2\" ></span></button>";
+                echo "<button class=\"btn btn-primary btn-sm editbutton btn-primary ml-0 pl-3 pr-3\" data-toggle=\"modal\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles(".$_POST['oid'] . ",$('a.nav-link.roomtab.active').attr('value'),".$parentID.",". $row['sid'] .");\"><span class=\"ui-icon ui-icon-disk\"></span></button>";                
             }
-            
-           echo "</tr>";
+			echo "</td>";
+			echo "</tr>";
             $i = $i + 1;
         }
         ?>
-        <!--  <tfoot>
-              <tr>
-                <th>Item#</th>
-                <th>Description</th>
-                <th>H</th>
-                <th>W</th>
-                <th>D</th>
-                <th>Qty</th>
-                <th>Hinged</th>
-                <th>F.E.</th>
-                <th>Price</th>
-                <th></th>
-              </tr>
-            </tfoot>-->
         </table>
         <?php
     }else{
@@ -496,7 +460,6 @@ if($_POST['mode']=="getItems"){
     }
     if($TotalPrice > 0.01){
         $TotalPrice = $TotalPrice + $roomFinishUpcharge;
-        //echo "<input type=/"hidden/">Total room price: $" . number_format($TotalPrice,2,'.','') .  "</b>";
         echo "<input type=\"hidden\" id=\"TotalPrice\" value=\"" . number_format($TotalPrice,2,'.','') ."\">";
     }
 }

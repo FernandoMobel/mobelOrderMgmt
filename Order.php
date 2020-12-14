@@ -1231,7 +1231,7 @@ function copyRoom(rid){
 							</a>
 							<div class=\"dropdown-menu\" aria-labelledby=\"dropdownMenuLink\">
 								<a class=\"dropdown-item\" onClick=\"editRoom(".$row['rid']. ",'" . $row['name'] . "');\"  data-toggle=\"modal\" title=\"Edit room\" data-target=\"#editRoomModal\">Edit Room Name/Notes</a>
-								<a class=\"dropdown-item\" onclick=\"copyRoom(".$row['rid'].")\">Copy Room ".ucfirst($row['name'])."</a>
+								<a class=\"dropdown-item\" onclick=\"copyRoom(".$row['rid'].")\">Copy Room '".ucfirst($row['name'])."'</a>
 								<a class=\"dropdown-item\" data-toggle=\"modal\" data-target=\"#copyItemsModal\">Copy Items From Order</a>
 							</div>";                							
 							echo "<b><a  class=\"btn btn-primary px-3 py-1 mr-0 float-right d-print-none\" target=\"_blank\" ";
