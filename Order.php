@@ -1,6 +1,6 @@
 <?php include 'includes/nav.php';?>
 <?php include_once 'includes/db.php';?>
-<?php $roomCount = 1; $dateRequired = ""; //$shipAddress = 0;?>
+<?php $roomCount = 1; $dateRequired = ""; ?>
 <style>
 table.table-sm td{
 padding-top:.2rem;
@@ -449,6 +449,7 @@ function saveItem(){
 	$.post("OrderItem.php",
 			myData, 
 		       function(data, status, jqXHR) {
+		       		//console.log(jqXHR['responseText']);
 	       			if($("#editOrderItemID").val() == 0){
 		       			//alert(data);
 	       				$("#editOrderItemID").val(data);
@@ -964,7 +965,7 @@ function copyItemRow(itemOrig){
 		alert(noChangeMsg);
 		return;
 	}
-	myData = { mode: "copyRowItem", item:itemOrig };
+	myData = { mode: "copyRowItem", item:itemOrig, rid:$("a.nav-link.roomtab.active").attr("value")};
 	$.post("OrderItem.php",
 		myData, 
 		function(data, status, jqXHR) {
