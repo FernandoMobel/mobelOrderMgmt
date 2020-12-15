@@ -171,11 +171,18 @@ function loadItems(rid){
 						incomplete = true;
 						break;
 					}
-				}	
+				}
 				if(!incomplete){//Header options are slected
 					$('#items').append(data);
 					$(".borderless").css('border-top','0px');
-					$("#roomTotal").html("<b>Room Total: $" + $('#TotalPrice').val() + "</br>pre HST & pre delivery ");
+					if($('#itemListingTable tbody tr').hasClass('table-danger')){
+						$('#beforeSbm').prop('disabled', true);
+						$('#afterSbm').prop('disabled', true);
+						$("#roomTotal").html("<b>Room Total: Please solve item incompatibilities</b>");
+						alert('One or more items are not compatible, please remove them');
+					}else{
+						$("#roomTotal").html("<b>Room Total: $" + $('#TotalPrice').val() + "</br>pre HST & pre delivery ");
+					}					
 				}else{//One or more headers aren't selected, prices and item list will not be displayed
 					$('#items').append("<h5 class=\"mx-auto\">Please ensure all the above options (Species, Finish, etc) are selected</h5>");
 					$(".borderless").css('border-top','0px');
@@ -1025,10 +1032,10 @@ function copyRoom(rid){
 					
 						if($row['status'] == "Quoting"){
 							if($row['tagName'] == "Tag name not set"){
-								echo "<button class=\"d-print-none\" type=\"button\" onClick=\"alert('Please set your tag name and refresh to submit your quote.')\">Submit to Mobel</button>";
+								echo "<button id=\"beforeSbm\" class=\"d-print-none\" type=\"button\" onClick=\"alert('Please set your tag name and refresh to submit your quote.')\">Submit to Mobel</button>";
 								echo "<script>viewOnly = 0;</script>";
 							}else{
-								echo "<button type=\"button\" data-toggle=\"modal\" onClick=\"setMinDate();showSubmit();\" data-target=\"#orderOptions\" class=\"btn btn-primary text-nowrap px-2 py-2  mt-0 mx-0 d-print-none\">Submit<span class=\"ui-icon ui-icon-circle-triangle-e\"></span></button>";
+								echo "<button id=\"afterSbm\" type=\"button\" data-toggle=\"modal\" onClick=\"setMinDate();showSubmit();\" data-target=\"#orderOptions\" class=\"btn btn-primary text-nowrap px-2 py-2  mt-0 mx-0 d-print-none\">Submit<span class=\"ui-icon ui-icon-circle-triangle-e\"></span></button>";
 								echo "<script>viewOnly = 0;</script>";
 							}
 						}else{
@@ -1274,13 +1281,54 @@ function copyRoom(rid){
 						</div>
 						<div class="col-4">
 							<select onchange="saveStyle('species','<?php echo "species" . $row['rid'];?>');" id="<?php echo "species" . $row['rid'];?>" class="custom-select">
-							<?php
-						
-							$sql = "select * from species s where s.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$CLid.") order by s.name";
-							echo $sql;
+							<?php	
+							$flag = false;					
+							$sql = "select id, name,visible from species s where s.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$CLid.") order by s.name";
 							opendb2($sql);
-							if($GLOBALS['$result2']->num_rows > 0){								
-								if(is_null($row['species'])){
+							/*$result = opendb2($sql);
+							$select = array();
+							while($row2 = $result ->fetch_assoc()){
+								$data['id'] = $row2['id'];
+								$data['name'] = $row2['name'];
+								$data['visible'] = $row2['visible'];
+								array_push($select,$data);
+							}
+							$disabled = "";
+							$avaText = "";
+							$selected ="";
+							foreach($select as $value) {
+								if(in_array($row['id'], $value['id']))
+									$selected ="selected";
+								if($value['id']==$row['species'])
+									$selected ="selected";
+								if(count($select)==1){
+									if($value['visible']==0){
+										$disabled = "disabled";
+										$avaText = " is disabled, Please select another";
+									}
+									$sql = "update orderRoom set species = ".$value['id']." WHERE rid = ". $row['rid']; 
+									opendb($sql);
+								}
+								echo "<option $selected $disabled value=\"".$value['id']."\">" . $value['name'] .$avaText."</option>";
+							}*/
+							if($GLOBALS['$result2']->num_rows == 1){
+								foreach ($GLOBALS['$result2'] as $row2) {
+									if($row2['visible']==0){//not available
+										$disabled = "disabled";
+									}else{
+										$disabled = "";
+									}
+									if($row2['visible']==0 && $state==1){
+										echo "<option ".$disabled." selected" ." value=\"0\">" . $row2['name'] . " is disabled, Please select another</option>";
+									}else{
+										echo "<option ".$disabled." selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									}	
+									//If only one option then save Species
+									$sql = "update orderRoom set species = ".$row2['id']." WHERE rid = ". $row['rid']; 
+									opendb($sql);
+								}
+							}else if($GLOBALS['$result2']->num_rows > 1){						
+								if(is_null($row['species'])||!$flag){
 									echo "<option selected value=\"0\">" . "Choose a species" . "</option>";
 								}
 								foreach ($GLOBALS['$result2'] as $row2) {
@@ -1290,6 +1338,7 @@ function copyRoom(rid){
 										$disabled = "";
 									}
 									if($row2['id']==$row['species']){
+										$flag = true;
 										if($row2['visible']==0 && $state==1){
 											echo "<option ".$disabled." selected" ." value=\"0\">" . $row2['name'] . " is disabled, Please select another one</option>";
 										}else{
@@ -1319,7 +1368,23 @@ function copyRoom(rid){
 							<select onchange="saveStyle('interiorFinish','<?php echo "interiorFinish" . $row['rid'];?>');" id="<?php echo "interiorFinish" . $row['rid'];?>" class="custom-select">						
 							<?php
 							opendb2("select * from interiorFinish inf where inf.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$CLid.") order by inf.name");
-							if($GLOBALS['$result2']->num_rows > 0){
+							if($GLOBALS['$result2']->num_rows == 1){
+								foreach ($GLOBALS['$result2'] as $row2) {
+									if($row2['visible']==0){//not available
+										$disabled = "disabled";
+									}else{
+										$disabled = "";
+									}
+									if($row2['visible']==0 && $state==1){
+										echo "<option ".$disabled." selected" ." value=\"0\">" . $row2['name'] . " is disabled, Please select another</option>";
+									}else{
+										echo "<option ".$disabled." selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									}	
+									//If only one option then save interiorFinish
+									$sql = "update orderRoom set interiorFinish = ".$row2['id']." where rid = ". $row['rid']; 
+									opendb($sql);
+								}
+							}else if($GLOBALS['$result2']->num_rows > 1){
 								if(is_null($row['interiorFinish'])){
 									echo "<option ". "selected" ." value=\"0\">" . "Choose an interior finish" . "</option>";
 								}
@@ -1387,10 +1452,27 @@ function copyRoom(rid){
 						<div class="col-4">
 							<select onchange="$('#doorPDF').attr('href','header/'+$('option:selected', this).attr('doorPDFTag')); saveStyle('door','<?php echo "doorstyle" . $row['rid'];?>');" id="<?php echo "doorstyle" . $row['rid'];?>" class="custom-select">						
 							<?php
-							$sql = "select d.*,ds.visible from door d, doorSpecies ds where d.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$CLid.") and d.id = ds.did and ds.sid = '" . $row['species'] . "' order by name";
-							echo $sql;
+							//$sql = "select d.*,ds.visible from door d, doorSpecies ds where d.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$CLid.") and d.id = ds.did and ds.sid = '" . $row['species'] . "' order by name";
+							$sql = "select d.*,ds.visible from door d, doorSpecies ds where d.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$CLid.") and d.id = ds.did and ds.sid = (select species from orderRoom where rid=".$row['rid'].") order by name";
+							//echo $sql;
 							opendb2($sql);
-							if($GLOBALS['$result2']->num_rows > 0){ 
+							if($GLOBALS['$result2']->num_rows == 1){
+								foreach ($GLOBALS['$result2'] as $row2) {
+									if($row2['visible']==0){//not available
+										$disabled = "disabled";
+									}else{
+										$disabled = "";
+									}
+									if($row2['visible']==0 && $state==1){
+										echo "<option ".$disabled." selected" ." value=\"0\">" . $row2['name'] . " is disabled, Please select another</option>";
+									}else{
+										echo "<option ".$disabled." selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									}	
+									//If only one option then save door
+									$sql = "update orderRoom set door = ".$row2['id']." where rid = ". $row['rid']; 
+									opendb($sql);
+								}
+							}else if($GLOBALS['$result2']->num_rows > 1){ 
 								$match = 0;
 								if(is_null($row['door'])){
 									echo "<option doorPDFTag= \"DOORSTYLES.pdf\"". "selected" ." value=\"0\">" . "Choose a door" . "</option>";
@@ -1434,7 +1516,23 @@ function copyRoom(rid){
 							<select onchange="saveStyle('frontFinish','<?php echo "frontFinish" . $row['rid'];?>');" id="<?php echo "frontFinish" . $row['rid'];?>" class="custom-select">						
 							<?php
 							opendb2("select * from frontFinish where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") and finishType in (select ftid from finishTypeMaterial where mid in (select mid from species where id in (select species from orderRoom where rid = " . $row['rid'] . "))) order by name");
-							if($GLOBALS['$result2']->num_rows > 0){
+							if($GLOBALS['$result2']->num_rows == 1){
+								foreach ($GLOBALS['$result2'] as $row2) {
+									if($row2['visible']==0){//not available
+										$disabled = "disabled";
+									}else{
+										$disabled = "";
+									}
+									if($row2['visible']==0 && $state==1){
+										echo "<option ".$disabled." selected" ." value=\"0\">" . $row2['name'] . " is disabled, Please select another</option>";
+									}else{
+										echo "<option ".$disabled." selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									}	
+									//If only one option then save frontFinish
+									$sql = "update orderRoom set frontFinish = ".$row2['id']." where rid = ". $row['rid']; 
+									opendb($sql);
+								}
+							}else if($GLOBALS['$result2']->num_rows > 1){
 								if(is_null($row['frontFinish'])){
 									echo "<option ". "selected" ." value=\"0\">" . "Choose a finish" . "</option>";
 								}
@@ -1474,7 +1572,23 @@ function copyRoom(rid){
 							<select onchange="saveStyle('drawerBox','<?php echo "drawerBox" . $row['rid'];?>');" id="<?php echo "drawerBox" . $row['rid'];?>" class="custom-select">						
 							<?php
 							opendb2("select * from drawerBox where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name");
-							if($GLOBALS['$result2']->num_rows > 0){
+							if($GLOBALS['$result2']->num_rows == 1){
+								foreach ($GLOBALS['$result2'] as $row2) {
+									if($row2['visible']==0){//not available
+										$disabled = "disabled";
+									}else{
+										$disabled = "";
+									}
+									if($row2['visible']==0 && $state==1){
+										echo "<option ".$disabled." selected" ." value=\"0\">" . $row2['name'] . " is disabled, Please select another</option>";
+									}else{
+										echo "<option ".$disabled." selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									}	
+									//If only one option then save drawerBox
+									$sql = "update orderRoom set drawerBox = ".$row2['id']." where rid = ". $row['rid']; 
+									opendb($sql);
+								}
+							}else if($GLOBALS['$result2']->num_rows > 1){
 								if(is_null($row['drawerBox'])){
 									echo "<option ". "selected" ." value=\"0\">" . "Choose a drawer box" . "</option>";
 								}
@@ -1508,7 +1622,23 @@ function copyRoom(rid){
 							
 							<?php
 							opendb2("select * from glaze where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name");
-							if($GLOBALS['$result2']->num_rows > 0){
+							if($GLOBALS['$result2']->num_rows == 1){
+								foreach ($GLOBALS['$result2'] as $row2) {
+									if($row2['visible']==0){//not available
+										$disabled = "disabled";
+									}else{
+										$disabled = "";
+									}
+									if($row2['visible']==0 && $state==1){
+										echo "<option ".$disabled." selected" ." value=\"0\">" . $row2['name'] . " is disabled, Please select another</option>";
+									}else{
+										echo "<option ".$disabled." selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									}	
+									//If only one option then save glaze
+									$sql = "update orderRoom set glaze = ".$row2['id']." where rid = ". $row['rid']; 
+									opendb($sql);
+								}
+							}else if($GLOBALS['$result2']->num_rows > 1){
 								if(is_null($row['glaze'])){
 									echo "<option ". "selected" ." value=\"0\">" . "Choose a glaze" . "</option>";
 									$invalidHeaderMessage = $invalidHeaderMessage . "<br>No glaze selected";
@@ -1546,7 +1676,23 @@ function copyRoom(rid){
 							
 							<?php
 							opendb2("select * from smallDrawerFront where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name");
-							if($GLOBALS['$result2']->num_rows > 0){
+							if($GLOBALS['$result2']->num_rows == 1){
+								foreach ($GLOBALS['$result2'] as $row2) {
+									if($row2['visible']==0){//not available
+										$disabled = "disabled";
+									}else{
+										$disabled = "";
+									}
+									if($row2['visible']==0 && $state==1){
+										echo "<option ".$disabled." selected" ." value=\"0\">" . $row2['name'] . " is disabled, Please select another</option>";
+									}else{
+										echo "<option ".$disabled." selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									}	
+									//If only one option then save smallDrawerFront
+									$sql = "update orderRoom set smallDrawerFront = ".$row2['id']." where rid = ". $row['rid']; 
+									opendb($sql);
+								}
+							}else if($GLOBALS['$result2']->num_rows > 1){
 								if(is_null($row['smallDrawerFront'])){
 									echo "<option selected value=\"0\">" . "Choose a small drawer front" . "</option>";
 								}
@@ -1660,7 +1806,23 @@ function copyRoom(rid){
 							
 							<?php
 							opendb2("select * from largeDrawerFront where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name");
-							if($GLOBALS['$result2']->num_rows > 0){
+							if($GLOBALS['$result2']->num_rows == 1){
+								foreach ($GLOBALS['$result2'] as $row2) {
+									if($row2['visible']==0){//not available
+										$disabled = "disabled";
+									}else{
+										$disabled = "";
+									}
+									if($row2['visible']==0 && $state==1){
+										echo "<option ".$disabled." selected" ." value=\"0\">" . $row2['name'] . " is disabled, Please select another</option>";
+									}else{
+										echo "<option ".$disabled." selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									}	
+									//If only one option then save largeDrawerFront
+									$sql = "update orderRoom set largeDrawerFront = ".$row2['id']." where rid = ". $row['rid']; 
+									opendb($sql);
+								}
+							}else if($GLOBALS['$result2']->num_rows > 1){
 								if(is_null($row['largeDrawerFront'])){
 									echo "<option ". "selected" ." value=\"0\">" . "Choose a large drawer front" . "</option>";
 								}
@@ -1693,7 +1855,23 @@ function copyRoom(rid){
 							
 							<?php
 							opendb2("select * from hinge where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name");
-							if($GLOBALS['$result2']->num_rows > 0){
+							if($GLOBALS['$result2']->num_rows == 1){
+								foreach ($GLOBALS['$result2'] as $row2) {
+									if($row2['visible']==0){//not available
+										$disabled = "disabled";
+									}else{
+										$disabled = "";
+									}
+									if($row2['visible']==0 && $state==1){
+										echo "<option ".$disabled." selected" ." value=\"0\">" . $row2['name'] . " is disabled, Please select another</option>";
+									}else{
+										echo "<option ".$disabled." selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									}	
+									//If only one option then save hinge
+									$sql = "update orderRoom set hinge = ".$row2['id']." where rid = ". $row['rid']; 
+									opendb($sql);
+								}
+							}else if($GLOBALS['$result2']->num_rows > 1){
 								if(is_null($row['hinge'])){
 									echo "<option ". "selected" ." value=\"0\">" . "Choose a hinge" . "</option>";
 								}
@@ -1726,7 +1904,23 @@ function copyRoom(rid){
 							
 							<?php
 							opendb2("select * from drawerGlides where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name");
-							if($GLOBALS['$result2']->num_rows > 0){
+							if($GLOBALS['$result2']->num_rows == 1){
+								foreach ($GLOBALS['$result2'] as $row2) {
+									if($row2['visible']==0){//not available
+										$disabled = "disabled";
+									}else{
+										$disabled = "";
+									}
+									if($row2['visible']==0 && $state==1){
+										echo "<option ".$disabled." selected" ." value=\"0\">" . $row2['name'] . " is disabled, Please select another</option>";
+									}else{
+										echo "<option ".$disabled." selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									}	
+									//If only one option then save drawerGlides
+									$sql = "update orderRoom set drawerGlides = ".$row2['id']." where rid = ". $row['rid']; 
+									opendb($sql);
+								}
+							}else if($GLOBALS['$result2']->num_rows > 1){
 								if(is_null($row['drawerGlides'])){
 									echo "<option ". "selected" ." value=\"0\">" . "Choose a drawer glide" . "</option>";
 								}
@@ -1758,7 +1952,23 @@ function copyRoom(rid){
 							<select onchange="saveStyle('finishedEnd','<?php echo "finishedEnd" . $row['rid'];?>');" id="<?php echo "finishedEnd" . $row['rid'];?>" class="custom-select">							
 							<?php
 							opendb2("select * from finishedEnd where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name");
-							if($GLOBALS['$result2']->num_rows > 0){
+							if($GLOBALS['$result2']->num_rows == 1){
+								foreach ($GLOBALS['$result2'] as $row2) {
+									if($row2['visible']==0){//not available
+										$disabled = "disabled";
+									}else{
+										$disabled = "";
+									}
+									if($row2['visible']==0 && $state==1){
+										echo "<option ".$disabled." selected" ." value=\"0\">" . $row2['name'] . " is disabled, Please select another</option>";
+									}else{
+										echo "<option ".$disabled." selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
+									}	
+									//If only one option then save finishedEnd
+									$sql = "update orderRoom set finishedEnd = ".$row2['id']." where rid = ". $row['rid']; 
+									opendb($sql);
+								}
+							}else if($GLOBALS['$result2']->num_rows > 1){
 								if(is_null($row['finishedEnd'])){
 									echo "<option ". "selected" ." value=\"0\">" . "Choose a finished end" . "</option>";
 								}
