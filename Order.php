@@ -1154,25 +1154,6 @@ function copyRoom(rid){
 							<b id=\"" . $row['name'] ."\">" . $row['name'] ."</b>
 						</span>
 					</a></li>";
-					/*<a data-toggle=\"tooltip\" title=\"Copy: '". $row['name'] ."'\" class=\"btn-sm text-muted\" onclick=\"copyRoom(".$row['rid'].")\">
-						<svg width=\"1em\" height=\"1em\" viewBox=\"0 0 16 16\" class=\"bi bi-clipboard-plus\" fill=\"currentColor\" xmlns=\"http://www.w3.org/2000/svg\">
-							  <path fill-rule=\"evenodd\" d=\"M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z\"/>
-							  <path fill-rule=\"evenodd\" d=\"M9.5 1h-3a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3zM8 7a.5.5 0 0 1 .5.5V9H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V10H6a.5.5 0 0 1 0-1h1.5V7.5A.5.5 0 0 1 8 7z\"/>
-						</svg>	
-					</a>";*/
-			/*echo "
-					  <a class=\"dropdown-toggle text-muted px-1\" href=\"#\" role=\"button\" id=\"dropdownMenuLink".$row['rid']."\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"false\">
-						<svg width=\"1em\" height=\"1em\" viewBox=\"0 0 16 16\" class=\"bi bi-clipboard-plus\" fill=\"currentColor\" xmlns=\"http://www.w3.org/2000/svg\">
-							  <path fill-rule=\"evenodd\" d=\"M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z\"/>
-							  <path fill-rule=\"evenodd\" d=\"M9.5 1h-3a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3zM8 7a.5.5 0 0 1 .5.5V9H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V10H6a.5.5 0 0 1 0-1h1.5V7.5A.5.5 0 0 1 8 7z\"/>
-						</svg>
-					  </a>
-
-					  <div class=\"dropdown-menu\" aria-labelledby=\"dropdownMenuLink".$row['rid']."\">
-						<a class=\"dropdown-item\" onclick=\"copyRoom(".$row['rid'].")\">Copy room: '".$row['name']."'</a>
-						<a class=\"dropdown-item\" data-toggle=\"modal\" data-target=\"#copyItemsModal\">Copy items from an order</a>
-					  </div>
-					";*/
             if($s != ""){
                 //$r = $i;
             }
@@ -1285,32 +1266,6 @@ function copyRoom(rid){
 							$flag = false;					
 							$sql = "select id, name,visible from species s where s.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$CLid.") order by s.name";
 							opendb2($sql);
-							/*$result = opendb2($sql);
-							$select = array();
-							while($row2 = $result ->fetch_assoc()){
-								$data['id'] = $row2['id'];
-								$data['name'] = $row2['name'];
-								$data['visible'] = $row2['visible'];
-								array_push($select,$data);
-							}
-							$disabled = "";
-							$avaText = "";
-							$selected ="";
-							foreach($select as $value) {
-								if(in_array($row['id'], $value['id']))
-									$selected ="selected";
-								if($value['id']==$row['species'])
-									$selected ="selected";
-								if(count($select)==1){
-									if($value['visible']==0){
-										$disabled = "disabled";
-										$avaText = " is disabled, Please select another";
-									}
-									$sql = "update orderRoom set species = ".$value['id']." WHERE rid = ". $row['rid']; 
-									opendb($sql);
-								}
-								echo "<option $selected $disabled value=\"".$value['id']."\">" . $value['name'] .$avaText."</option>";
-							}*/
 							if($GLOBALS['$result2']->num_rows == 1){
 								foreach ($GLOBALS['$result2'] as $row2) {
 									if($row2['visible']==0){//not available
