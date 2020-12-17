@@ -65,13 +65,38 @@ if($_POST['mode'] == "saveEditedItem"){
     if(itemUpdateConstraintsOK("orderItem",$_POST['column'])==0){
         //header("HTTP/1.1 500 Internal Server Error");
     }else{
-		$value = str_replace("'","\'",$_POST['id']);
+        if(strcmp($_POST['column'],'position')==0){
+            $sql = "select position,(select max(position) from orderItem oi2 where oi2.rid =". $_POST['rid'] . ") maxPos from orderItem oi where id = '" . $_POST['itemID'] . "' and rid = '". $_POST['rid'] . "'";
+            
+            $result = opendb($sql);
+            $row = $result->fetch_assoc();
+            //update position for all the items after item
+            $maxPos = $row['maxPos'];
+            $curPos = $row['position'];
+            $op = "+";
+            $pos = $_POST['id'];
+            if($pos<$curPos){
+                $op = "+";
+                $range = $pos." and ".$curPos;
+            }else{
+                $op = "-";
+                $range = $curPos." and ".$pos;
+            }       
+            $sql = "update orderItem oi set oi.position = oi.position".$op."1 where oi.position between ".$range." and rid=".$_POST['rid'];
+            opendb($sql);
+            
+            //end update items and mods
+        }
+        $value = str_replace("'","\'",$_POST['id']);
         if(is_numeric($_POST['id'])){
             $sql = "update orderItem set ". $_POST['column'] . " = " .$value. " where id = '" . $_POST['itemID'] . "' and rid = '". $_POST['rid'] . "'";
         }else{
             $sql = "update orderItem set ". $_POST['column'] . " = '".$value."' where id = '" . $_POST['itemID'] . "' and rid = '". $_POST['rid'] . "'";
         }
         opendb($sql);
+        $sql2 = "update orderItemMods oi set oi.position = (select oi2.position from orderItem oi2 where oi2.id = oi.pid) where rid=".$_POST['rid'];
+            //echo $sql;
+            opendb($sql2);
     }
 }
 

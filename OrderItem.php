@@ -462,7 +462,7 @@ if($_POST['mode']=="getItems"){
     				echo "<button type=\"button\" onClick=editItems(".$row['item'].",0) class=\"btn btn-primary pl-3 pr-3 btn-sm editbutton\" data-toggle=\"modal\" title=\"Edit\" data-target=\"#editItemModal\"><span class=\"ui-icon ui-icon-pencil \"></span></button>" . "";
     				echo "<button type=\"button\" title=\"Add Mod\" onclick=\"var promise = new Promise(function(resolve,reject){cleanEdit();resolve();}); promise.then(function(){\$('#editOrderItemPID').val(". $parentID .");$('#editItemTitle').text('Edit/Delete Mod');});\" class=\"btn btn-primary btn-sm editbutton btn-primary ml-0 pl-3 pr-3\" data-toggle=\"modal\" data-target=\"#editItemModal\"><span class=\"ui-icon ui-icon-circle-plus\"></button>";
     				echo "<button class=\"btn btn-primary pl-3 pr-3 btn-sm ml-0 editbutton\" data-toggle=\"modal\" title=\"Add files\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles(".$_POST['oid'] . ",$('a.nav-link.roomtab.active').attr('value'),".$parentID.");\"><span class=\"ui-icon  ui-icon-disk\"></span></button>";
-    				echo "<button class=\"btn btn-primary btn-sm editbutton btn-primary ml-0 pl-3 pr-3\" data-toggle=\"tooltip\" title=\"Copy item below\" onclick=\"copyItemRow(".$row['item'].")\"><span class=\"ui-icon  ui-icon-copy\"></span></button>";
+    				echo "<button class=\"btn btn-primary btn-sm editbutton btn-primary ml-0 pl-3 pr-3\" data-toggle=\"tooltip\" title=\"Copy item\" onclick=\"copyItemRow(".$row['item'].")\"><span class=\"ui-icon  ui-icon-copy\"></span></button>";
                 }else{
                     /*echo "<button class=\"btn btn-primary btn-sm editbutton btn-primary ml-0 pl-3 pr-3\" onClick=\"cleanEdit();$('#editOrderItemPID').val(". $parentID ."); title=\"Edit Mod\" editItems(".$row['item'].",". $row['sid'] .");\" data-toggle=\"modal\" title=\"Edit\" data-target=\"#editItemModal\"><span class=\"ui-icon ui-icon-pencil btn-primary pl-2 pr-2\" ></span></button>";
                     echo "<button class=\"btn btn-primary btn-sm editbutton btn-primary ml-0 pl-3 pr-3\" data-toggle=\"modal\" data-target=\"#fileModal\" title=\"Add files\" type=\"button\" onClick=\"loadFiles(".$_POST['oid'] . ",$('a.nav-link.roomtab.active').attr('value'),".$parentID.",". $row['sid'] .");\"><span class=\"ui-icon ui-icon-disk\"></span></button>";                */
@@ -618,13 +618,13 @@ if($_POST['mode'] == "editItemGetDetails"){
         $thisTable = "orderItemMods";
         $_POST['itemID'] = $_POST['mod'];
     }
-    $sql = "select " . $idField . " as iid, id,description, qty, price, minSize, doorFactor,interiorFactor, hingeLeft, hingeRight, finishLeft, finishRight,ifnull(w,'no width') as 'w',ifnull(h, 'no height') as 'h',ifnull(d,'no depth') as 'd',ifnull(w2,'no width') as 'w2',ifnull(h2, 'no height') as 'h2',ifnull(d2,'no depth') as 'd2',name, note from ". $thisTable ." where id = " . $_POST['itemID'];
+    $sql = "select " . $idField . " as iid, id,description, qty, price, minSize, doorFactor,interiorFactor, hingeLeft, hingeRight, finishLeft, finishRight,ifnull(w,'no width') as 'w',ifnull(h, 'no height') as 'h',ifnull(d,'no depth') as 'd',ifnull(w2,'no width') as 'w2',ifnull(h2, 'no height') as 'h2',ifnull(d2,'no depth') as 'd2',name, note, position from ". $thisTable ." where id = " . $_POST['itemID'];
     
     //echo "<option>Choose an item</option>";
     opendb($sql);
     if($GLOBALS['$result']->num_rows > 0){
         foreach ($GLOBALS['$result'] as $row) {
-            echo "{\"iid\":\"" . $row['iid']. "\",\"name\":\"" . $row['name']. "\",\"note\":\"" . str_replace("\"","\\\"",$row['note']). "\",\"description\":\"" . str_replace("\"","\\\"",$row['description']) . "\",\"w\":\"" . $row['w']. "\",\"h\":\"" . $row['h']. "\",\"d\":\"" . $row['d']. "\",\"w2\":\"" . $row['w2'] ."\",\"h2\":\"" . $row['h2']."\",\"d2\":\"" . $row['d2']."\",\"qty\":\"" . $row['qty']. "\",\"minSize\":\"" . $row['minSize']. "\",\"hingeLeft\":\"" . $row['hingeLeft']. "\",\"hingeRight\":\"" . $row['hingeRight']. "\",\"finishLeft\":\"" . $row['finishLeft']. "\",\"finishRight\":\"" . $row['finishRight']. "\",\"id\":\"" . $row['id']. "\"}";
+            echo "{\"iid\":\"" . $row['iid']. "\",\"name\":\"" . $row['name']. "\",\"note\":\"" . str_replace("\"","\\\"",$row['note']). "\",\"description\":\"" . str_replace("\"","\\\"",$row['description']) . "\",\"w\":\"" . $row['w']. "\",\"h\":\"" . $row['h']. "\",\"d\":\"" . $row['d']. "\",\"w2\":\"" . $row['w2'] ."\",\"h2\":\"" . $row['h2']."\",\"d2\":\"" . $row['d2']."\",\"qty\":\"" . $row['qty']. "\",\"minSize\":\"" . $row['minSize']. "\",\"hingeLeft\":\"" . $row['hingeLeft']. "\",\"hingeRight\":\"" . $row['hingeRight']. "\",\"finishLeft\":\"" . $row['finishLeft']. "\",\"finishRight\":\"" . $row['finishRight']. "\",\"id\":\"" . $row['id']. "\",\"position\":\"" . $row['position']. "\" }";
             //\"fieldname\":\"fieldvalue\",
             //echo "<option class=\"allItemList\" w=\"" . $row['w']. "\" h=\"" .$row['h']. "' d=\"" .$row['d']. "\" value=\"" . $row['id'] . "\">". $row['description'] . $row['id'] . " " . $row['w']. " " .$row['h']. " " .$row['d']. " Name:" .$row['name']. "</option>";
         }
@@ -722,15 +722,15 @@ if($_POST['mode'] == "getOrderItemsforCopy"){
 /*copy item inside an order*/
 if($_POST['mode'] == "copyRowItem"){
     //update position for all the items after item
-    $sql = "update orderItem oi set oi.position = oi.position+1 where oi.position > (select oi2.position from orderItem oi2 where oi2.id = ".$_POST['item'].") and rid=".$_POST['rid'];
-    opendb($sql);
-    $sql = "update orderItemMods oi set oi.position = oi.position+1 where oi.position > (select oi2.position from orderItem oi2 where oi2.id = ".$_POST['item'].") and rid=".$_POST['rid'];
-    opendb($sql);
-	$sql = "insert into orderItem( iid,position,rid,name,description,qty,price,sizePrice,minSize,W,H,D,W2,H2,D2,minW,minH,minD,maxW,maxH,maxD,doorFactor,speciesFactor,finishFactor,interiorFactor,sheenFactor,glazeFactor,drawers,smallDrawerFronts,largeDrawerFronts,hingeLeft,hingeRight,finishLeft,finishRight,note,fromItem) select iid,position+1,rid,name,description,qty,price,sizePrice,minSize,W,H,D,W2,H2,D2,minW,minH,minD,maxW,maxH,maxD,doorFactor,speciesFactor,finishFactor,interiorFactor,sheenFactor,glazeFactor,drawers,smallDrawerFronts,largeDrawerFronts,hingeLeft,hingeRight,finishLeft,finishRight,note,id from orderItem where id =".$_POST['item'];
+    //$sql = "update orderItem oi set oi.position = oi.position+1 where oi.position > (select oi2.position from orderItem oi2 where oi2.id = ".$_POST['item'].") and rid=".$_POST['rid'];
+    //opendb($sql);
+    //$sql = "update orderItemMods oi set oi.position = oi.position+1 where oi.position > (select oi2.position from orderItem oi2 where oi2.id = ".$_POST['item'].") and rid=".$_POST['rid'];
+    //opendb($sql);
+	$sql = "insert into orderItem( iid,position,rid,name,description,qty,price,sizePrice,minSize,W,H,D,W2,H2,D2,minW,minH,minD,maxW,maxH,maxD,doorFactor,speciesFactor,finishFactor,interiorFactor,sheenFactor,glazeFactor,drawers,smallDrawerFronts,largeDrawerFronts,hingeLeft,hingeRight,finishLeft,finishRight,note,fromItem) select iid,(select max(oi2.position)+1 from orderItem oi2 where oi2.rid=".$_POST['rid']."),rid,name,description,qty,price,sizePrice,minSize,W,H,D,W2,H2,D2,minW,minH,minD,maxW,maxH,maxD,doorFactor,speciesFactor,finishFactor,interiorFactor,sheenFactor,glazeFactor,drawers,smallDrawerFronts,largeDrawerFronts,hingeLeft,hingeRight,finishLeft,finishRight,note,id from orderItem where id =".$_POST['item'];
 	opendb($sql);
 	$lastInsert = getLastInsert();
 	$sql = "insert into orderItemMods (pid,position,rid,name,description,qty,price,sizePrice,minSize,W,H,D,W2,H2,D2,minW,minH,minD,maxW,maxH,maxD,doorFactor,speciesFactor,finishFactor,interiorFactor,sheenFactor,glazeFactor,drawers,smallDrawerFronts,largeDrawerFronts,hingeLeft,hingeRight,finishLeft,finishRight,mid,note)
-			select ".$lastInsert.",oim.position+1,oim.rid,im.name,im.description,oim.qty,im.price,im.sizePrice,im.minSize,oim.W,oim.H,oim.D,oim.W2,oim.H2,oim.D2,im.minW,im.minH,im.minD,im.maxW,im.maxH,im.maxD,im.doorFactor,im.speciesFactor,im.finishFactor,im.interiorFactor,im.sheenFactor,im.glazeFactor,im.drawers,im.smallDrawerFronts,im.largeDrawerFronts,oim.hingeLeft,oim.hingeRight,oim.finishLeft,oim.finishRight,im.id,oim.note 
+			select ".$lastInsert.",(select max(oi2.position) from orderItem oi2 where oi2.rid=".$_POST['rid']."),oim.rid,im.name,im.description,oim.qty,im.price,im.sizePrice,im.minSize,oim.W,oim.H,oim.D,oim.W2,oim.H2,oim.D2,im.minW,im.minH,im.minD,im.maxW,im.maxH,im.maxD,im.doorFactor,im.speciesFactor,im.finishFactor,im.interiorFactor,im.sheenFactor,im.glazeFactor,im.drawers,im.smallDrawerFronts,im.largeDrawerFronts,oim.hingeLeft,oim.hingeRight,oim.finishLeft,oim.finishRight,im.id,oim.note 
 			from orderItemMods oim, itemMods im where oim.mid = im.id and oim.pid = ".$_POST['item'];
 	opendb($sql);
 }

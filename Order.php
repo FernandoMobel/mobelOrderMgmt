@@ -173,7 +173,11 @@ function loadItems(rid){
 					}
 				}
 				if(!incomplete){//Header options are slected
+					$("#Position").empty();
 					$('#items').append(data);
+					for(i=1; i<=$('#items tr.font-weight-bold').length; i++){
+						$("#Position").append(new Option(i+".0", i));
+					}
 					$(".borderless").css('border-top','0px');
 					if($('#itemListingTable tbody tr').hasClass('table-danger')){
 						$('#beforeSbm').prop('disabled', true);
@@ -235,20 +239,20 @@ function editItems(itemID, mod){
 	if(mod>0){
 		$("#editOrderItemPID").val(itemID);
 		$('#editItemTitle').text("Edit/Delete Mod");
+		$('#Position').hide();
+		$('#lblPosition').hide();
 	}
 	//document.getElementById("#editItemSearch").innerHTML="";
 	//allItems('allItemsEdit','editItems',itemID, mod);
     cleanEdit();
 	//$("#editItemModal").empty();
 	//$('.bs-searchbox').attr("onkeyup=\"showResult(this.value)\"");
-
+	
 	myData = { mode: "editItemGetDetails", mod: mod, oid: "<?php echo $_GET["OID"] ?>", itemID: itemID};
 	$.post("OrderItem.php",
 			myData, 
 		       function(data, status, jqXHR) {
-					
 					refresh = 0;
-					// remove non-printable and other non-valid JSON chars
 					data = data.replace(/[\u0000-\u0019]+/g,"\\n"); 					
 					myObj= JSON.parse(data);
 					document.getElementById("livesearch").innerHTML=myObj.name;
@@ -260,6 +264,12 @@ function editItems(itemID, mod){
 	       			$('#D').val(parseFloat(myObj.d));
 	       			$('#D2').val(parseFloat(myObj.d2));
 	       			$('#Qty').val(parseFloat(myObj.qty));
+	       			if($('#editItemID').val()!==0){
+	       				$('#Position').val(myObj.position);
+	       				$('#Position').prop('disabled',false);
+	       			}else{
+	       				$('#Position').prop('disabled',true);
+	       			}
 	       			$('#HL').prop('checked',myObj.hingeLeft==1);
 	       			$('#HR').prop('checked',myObj.hingeRight==1);
 	       			$('#FL').prop('checked',myObj.finishLeft==1);
@@ -274,6 +284,11 @@ function editItems(itemID, mod){
 		           if(mod>0){
 		        	   $('#editItemTitle').text("Edit/Delete Mod");
 		        	   $('#editItemID').val(mod);
+		        	   $('#Position').hide();
+						$('#lblPosition').hide();
+		           }else{
+			           $('#Position').show();
+			           $('#lblPosition').show();
 		           }
 				   
 				   if(parseFloat(myObj.w2)>0){
@@ -331,7 +346,24 @@ function cleanEdit(rqst){
 	//Hide delete button when new item
 	if(rqst == "add"){
 		$('#deleteItemButton').hide();
+		$("#Position").empty();
+		for(i=1; i<=$('#items tr.font-weight-bold').length+1; i++){
+			$("#Position").append(new Option(i+".0", i));
+		}
+		$("#Position").val($('#items tr.font-weight-bold').length+1);
 	}		
+	if($('#editItemID').prop('value')==0){
+		$("#Position").prop('disabled',true);	
+	}else{
+		$("#Position").prop('disabled',false);
+	}
+	if($('#editItemTitle').text() == "Edit/Delete Mod"){
+		$("#Position").hide();
+		$("#lblPosition").hide();
+	}else{
+		$("#Position").show();
+		$("#lblPosition").show();
+	}
 }
 
 function solvefirst(W,H,D,W2,H2,D2,name,catid) {
@@ -367,9 +399,11 @@ function solvefirst(W,H,D,W2,H2,D2,name,catid) {
 			$('#D2lbl').hide();
 			$('#D2').hide();
 		}
+		$("#Position").prop('disabled', false);
     	resolve('');
     	//}, 5000); set time out
-  });
+		}
+  );
 }
 
 async function setSizes(W,H,D,W2,H2,D2,name,catid) {
@@ -394,6 +428,9 @@ function saveEditedItem(objectID,col){
 		}
 		$('#Qty').val(Math.round($('#Qty').val()));
 	}
+	if(objectID=="Position"){
+		refresh = 1;
+	}
 	var myMode = "";
 	if($('#editItemTitle').text() == "Edit/Delete Mod"){
 		myMode = "saveEditedMod";
@@ -415,6 +452,7 @@ function saveEditedItem(objectID,col){
 		if(status == "success"){
 	    	$("#"+objectID).css("border-color", "#00b828");
 	    	if(refresh>0){
+		    	//console.log(jqXHR['responseText']);
 		    	loadItems($("a.nav-link.roomtab.active").attr("value"));
 		    	refresh = 0;
 	    	}
@@ -2157,10 +2195,11 @@ function copyRoom(rid){
 							<br/>
 							<div class="row">
 								<div class="col-auto text-left">
-									<span class="form-inline">
-									
-									<label for="Qty">Quantity:</label>
-									<textarea onchange="saveEditedItem('Qty','qty');" rows="1" cols="8" class="form-control" id="Qty"></textarea>
+									<span class="form-inline">									
+										<label for="Qty">Quantity:</label>
+										<textarea onchange="saveEditedItem('Qty','qty');" rows="1" cols="8" class="form-control mx-1" id="Qty"></textarea>
+										<label id="lblPosition" for="Position">Position:</label>
+										<select disabled id="Position" class="form-control" onchange="saveEditedItem('Position','position');"></select>										
 									</span>
 									<br/>
 								</div>
