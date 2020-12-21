@@ -860,22 +860,34 @@ function printPrice(){
 }
 
 function existOID(oid){
+	var btnGetItems = "btnGetItems";
 	myData = { mode: "existOID", oid:oid};
 	$.post("OrderItem.php",
 		myData, 
 		function(data, status, jqXHR) {
+			if(($("#orderOptions").data('bs.modal') || {})._isShown)
+				btnGetItems = "btnGetItems2";
 			if(jqXHR['responseText']=='1'){
-				$('#btnGetItems').prop('disabled',false);					
-				$('#btnGetItems').addClass("btn-primary");	
+				$('#'+btnGetItems).prop('disabled',false);	
+				$('#'+btnGetItems).addClass("btn-primary");	
 			}else{
-				$('#btnGetItems').prop('disabled',true);
-				$('#btnGetItems').removeClass("btn-primary");
+				$('#'+btnGetItems).prop('disabled',true);
+				$('#'+btnGetItems).removeClass("btn-primary");
 			}
 		}
 	);
 }
 
 function getItemsCopy(){
+	var modal1 = "";
+	if(($("#orderOptions").data('bs.modal') || {})._isShown){
+		//modal1 = "2";
+		$('#orderOptions').modal('hide');
+		$('#copyItemsModal').modal('show');
+		$('#copyOID').val($('#copyOID2').val());
+		$('#btnGetItems').prop('disabled',false);	
+		$('#btnGetItems').addClass("btn-primary");
+	}
 	clearModal();
 	myData = { mode: "getOrderItemsforCopy", oid:$('#copyOID').val(), CLid:$('#CLid').val() };
 	var r = 0;
@@ -2376,10 +2388,18 @@ function copyRoom(rid){
 					</div>
 					<div class="col-3 service">
 						Original Order Number: 
+						<div class="form-group">
+									<div class="input-group mb-3">
+									  <div class="input-group-prepend">
+										<button disabled id="btnGetItems2" onclick="getItemsCopy();" class="input-group-text" type="button">Select Items</button>
+									  </div>
+									  <input id="copyOID2" type="number" class="form-control" placeholder="Order ID" aria-label="" aria-describedby="search item by order" onchange="existOID(this.value);" onkeyup="existOID(this.value);">
+									</div>
+								</div>
 						<?php 
-						echo "<input type=\"text\" maxlength=\"30\"";
+						/*echo "<input type=\"text\" maxlength=\"30\"";
 						echo "value=\"".$fromOrder."\"";
-						echo "onchange=\"saveOrder('fromOrder');\" class=\"form-control  \"  id=\"fromOrder\">";
+						echo "onchange=\"saveOrder('fromOrder');\" class=\"form-control  \"  id=\"fromOrder\">";*/
 						?>
 					</div>					
 					<div class="col-3">               
@@ -2541,6 +2561,12 @@ $(document).ready(function(){
 		if(e.keyCode == 13 && !$('#btnGetItems').prop('disabled'))
 		{
 			getItemsCopy($("#copyOID").val());
+		}
+	});
+	$("#copyOID2").keypress(function(e) {
+		if(e.keyCode == 13 && !$('#btnGetItems2').prop('disabled'))
+		{
+			getItemsCopy($("#copyOID2").val());
 		}
 	});
 });
