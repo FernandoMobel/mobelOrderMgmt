@@ -835,27 +835,12 @@ function fixDate(){
 }
 
 function printPrice(){
-	//this function add and remove classes for printing
-	var price = document.getElementById("roomTotal");
-	var printChk = document.getElementById("printChk");
-	var table = document.getElementById("itemListingTable");
-	var tdPrice = null;
 	if(printChk.checked == true){
-		price.classList.remove('d-print-none');
-		price.classList.add('d-print-block');
-		for (i=0; i<table.rows.length; i++){
-			tdPrice = document.getElementById("priceCol"+i);
-			tdPrice.classList.remove('d-print-none');
-			tdPrice.classList.add('d-print-block');			
-		}
+		$('#itemListingTable .priceCol').removeClass('d-print-none');
+		$('#itemListingTable .priceCol').addClass('d-print-block');
 	}else {
-		price.classList.remove('d-print-block');
-		price.classList.add('d-print-none');
-		for (i=0; i<table.rows.length; i++){
-			tdPrice = document.getElementById("priceCol"+i);
-			tdPrice.classList.remove('d-print-block');
-			tdPrice.classList.add('d-print-none');
-		}
+		$('#itemListingTable .priceCol').removeClass('d-print-block');
+		$('#itemListingTable .priceCol').addClass('d-print-none');
 	}
 }
 
