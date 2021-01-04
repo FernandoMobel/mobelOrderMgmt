@@ -1076,8 +1076,52 @@ function getImage(item,orderItem){
 	});
 }
 
+/**********************************************************************************
+Validation before display modal for submission
+***********************************************************************************/
 function orderValidation(){
-	console.log('validate');
+	/*PO field validation*/
+	if(!$('#PO').val()){
+		alert("P.O is a mandatory field, please add some relevant information.");
+		$('#PO').css('border-color','red');
+		return;//exit if is empty
+	}
+	$('#PO').css('border-color','#ced4da');//set PO input color to default
+	/*getting all headers for all the order (header class was added to identify the headers and their select objects)*/
+	var arr = $('.container.tab-pane.float-left.col-12.header select').map(function(){
+		  return this.value
+	}).get();
+	var incomplete = false;//initialize variable for incomplete headers
+	for (i = 0; i < arr.length; i++) {//looping headers array to confirm all the options are selected
+		if(arr[i]=="0"){
+			//This means there is one option in header not selected, price will not be displayed
+			incomplete = true;
+			break;//exit the loop, there is no need to resume the iteration
+		}		
+	}
+	//if some room is incomplete alert is displayed and function is stopped
+	if(incomplete){
+		alert("Warning!\nOne or more rooms options are not selected.\nPlease complete the options or delete the incomplete room to proceed.");
+		return;
+	}
+	/*Validation to prevent send a room without items*/
+	myData = { mode: "isSomeRoomEmpty", OID:<?php echo $_GET["OID"]?>, CLid:$('#CLid').val() };
+	$.ajax({
+	url: 'OrderItem.php',
+	type: 'POST',
+	data: myData,
+	success: function(data, status, jqXHR) {
+				if(jqXHR["responseText"]==1){
+					alert("Warning!\nOne or more rooms are empty.\nPlease add some items or delete the room.");
+					return;
+				}else{
+					//if everything is ok validation was completed successfully then resume process
+					setMinDate();
+					showSubmit();
+					$('#orderOptions').modal('toggle');	
+				}
+			}
+	});	
 }
 </script>
 
@@ -1122,7 +1166,7 @@ function orderValidation(){
 								echo "<button id=\"beforeSbm\" class=\"d-print-none\" type=\"button\" onClick=\"alert('Please set your tag name and refresh to submit your quote.')\">Submit to Mobel</button>";
 								echo "<script>viewOnly = 0;</script>";
 							}else{
-								echo "<button id=\"afterSbm\" type=\"button\" data-toggle=\"modal\" onClick=\"orderValidation();setMinDate();showSubmit();\" data-target=\"#orderOptions\" class=\"btn btn-primary text-nowrap px-2 py-2  mt-0 mx-0 d-print-none\">Submit<span class=\"ui-icon ui-icon-circle-triangle-e\"></span></button>";
+								echo "<button id=\"afterSbm\" type=\"button\" data-toggle=\"modal\" onClick=\"orderValidation();\" class=\"btn btn-primary text-nowrap px-2 py-2  mt-0 mx-0 d-print-none\">Submit<span class=\"ui-icon ui-icon-circle-triangle-e\"></span></button>";
 								echo "<script>viewOnly = 0;</script>";
 							}
 						}else{
@@ -1291,7 +1335,7 @@ function orderValidation(){
         if($GLOBALS['$result']->num_rows > 0){
             foreach ($GLOBALS['$result'] as $row) {
                 //$i=$i+1;
-                echo "<div id=\"r" . str_replace(" ","",$row['name']) . $i ."\" class=\"container tab-pane float-left col-12 ";
+                echo "<div id=\"r" . str_replace(" ","",$row['name']) . $i ."\" class=\"container tab-pane float-left col-12 header ";
                 if($i==0){
                     echo " active";
                 }

@@ -768,6 +768,19 @@ if($_POST['mode'] == "itemFilter"){
     echo json_encode($items);
 }
 
+if($_POST['mode'] == "isSomeRoomEmpty"){
+    $sql = "select orr.rid, (select count(1) from orderItem oi, item i where oi.rid = orr.rid and i.id = oi.iid and i.CLGroup in(select clg.CLGid from cabinetLineGroups clg where clg.CLid = ".$_POST['CLid'].") ) qty from orderRoom orr where orr.oid=".$_POST['OID'];
+    $result = opendb($sql);
+    $empty = 0;
+    while($row = $result->fetch_assoc()){
+        if(strcmp($row['qty'],"0")==0){
+            $empty = 1;
+            break;
+        }
+    }
+    echo $empty;
+}
+
 if($_POST['mode']=="getImage"){
     try{
         if(strcmp($_POST['orderItem'],'true')==0){
