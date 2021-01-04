@@ -120,15 +120,17 @@ function updateDetail(rid,col,val){
 		alert("This date: "+val+" selected, either is too soon or is not valid, please select another one. For that reason, date will not be updated");
 		return;
 	}
-	if(col=="deliveryDate")
+	if(col=="deliveryDate"){
 		$('#deliveryDate').val(val);
+		countBoxesxDay(val);
+	}
 		
 	myData = { mode: 'updateRoomDetails',  oid:$('#orderID').attr('value'), rid: rid, col:col, val:val};
-	console.log(myData);
+	//console.log(myData);
 	$.post("EmployeeMenuSettings.php",
 	myData, 
 	function(data, status, jqXHR) { 
-			console.log(jqXHR['responseText']);
+			//console.log(jqXHR['responseText']);
 			$("#"+col).css("border-color", "#00b828");
 		});
 }
@@ -183,9 +185,30 @@ function setPrevious(prev){
 function setPrevState(){
 	$('#state'+$('#orderID').attr('value')).val(prevState);
 }
+
+function countBoxesxDay(date){
+	//console.log(date);
+	myData = { mode: "countBoxesxDay", date: date }; 
+	$.ajax({
+	    url: 'EmployeeMenuSettings.php',
+	    type: 'POST',
+	    data: myData,
+	    success: function(data, status, jqXHR) {	 
+	    	$('#lblBoxes').html('<b>'+jqXHR['responseText']+'</b> boxes are scheduled for: <b>'+date+'</b>');  
+    	}
+	});	
+}
 </script> 
 <div class="col-sm-12 col-md-11 col-lg-11 mx-auto">
-	<div class="card card-signin my-3">
+	<div class="d-flex justify-content-end">
+		<a id="pop1" tabindex="0" role="button" data-toggle="popover" data-trigger="focus" data-content="Here you can see and update all the order status. If you can't find something change your filters.">
+			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-question-square" viewBox="0 0 16 16">
+			  <path fill-rule="evenodd" d="M14 1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+			  <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
+			</svg>
+		</a>
+	</div>
+	<div class="card card-signin my-1">
 		<div class="card-body pt-0">
 		<?php 	
 		mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
@@ -195,12 +218,12 @@ function setPrevState(){
 			foreach ($GLOBALS['$result2'] as $row2) {
 				$str = $row2['state'];
 				$state_ar = explode(', ', $str);//convert string to array to create control dinamically
-				$sql ="select m.oid,a.busName as 'company', m.tagName, m.po, concat(mu.firstName,' ',mu.lastName) as 'designer', email, s.name as 'status', DATE(m.dateSubmitted) dateSubmitted, m.state, isPriority, isWarranty, CLid from mosOrder m, state s, account a, mosUser mu where s.id = m.state and m.account = a.id and m.mosUser = mu.id and m.state in (".$row2['state'].") order by m.dateSubmitted asc";
+				$sql ="select m.oid,a.busName as 'company', m.tagName, m.po, concat(mu.firstName,' ',mu.lastName) as 'designer', email, s.name as 'status', DATE(m.dateSubmitted) dateSubmitted, m.state, isPriority, isWarranty, CLid, m.deliveryDate from mosOrder m, state s, account a, mosUser mu where s.id = m.state and m.account = a.id and m.mosUser = mu.id and m.state in (".$row2['state'].") order by m.dateSubmitted asc";
 				opendb($sql);
 			}
 		}else{
 			opendb2("INSERT INTO employeeSettings (mosUser) VALUES ( ".$_SESSION["userid"] .")");//new user
-			opendb2("select m.*,DATE(m.dateSubmitted) dateSubmitted,s.name as 'status', a.busName as 'company', concat(mu.firstName,' ',mu.lastName) as 'designer', email, m.state, isPriority, isWarranty, CLid from mosOrder m, state s, account a, mosUser mu where s.id = m.state and m.account = a.id and m.mosUser = mu.id and m.state > 1 and m.state <> 10 order by m.dateSubmitted asc");
+			opendb2("select m.*,DATE(m.dateSubmitted) dateSubmitted,s.name as 'status', a.busName as 'company', concat(mu.firstName,' ',mu.lastName) as 'designer', email, m.state, isPriority, isWarranty, CLid, m.deliveryDate from mosOrder m, state s, account a, mosUser mu where s.id = m.state and m.account = a.id and m.mosUser = mu.id and m.state > 1 and m.state <> 10 order by m.dateSubmitted asc");
 		}
 		echo "<br/><div class=\"container-fluid\">";
 			?>
@@ -278,6 +301,7 @@ function setPrevState(){
 							<th>UserName</th>
 							<th>Status</th>
 							<th data-toggle="tooltip" title="YYYY-MM-DD">Submitted Date</th>
+							<th data-toggle="tooltip" title="Completition date">Scheduled Date</th>
 						</tr>
 					</thead>
 					<tfoot class="thead-light">
@@ -290,6 +314,7 @@ function setPrevState(){
 							<th>UserName</th>
 							<th>Status</th>
 							<th data-toggle="tooltip" title="YYYY-MM-DD">Submitted Date</th>
+							<th data-toggle="tooltip" title="YYYY-MM-DD">Scheduled Date</th>
 						</tr>
 					</tfoot>
 					<tbody id="orders">
@@ -329,7 +354,8 @@ function setPrevState(){
 							}
 							echo "</select>";
 							echo  "</td>";	
-							echo "<td  data-toggle=\"tooltip\" title=\"YYYY-MM-DD\"><b><a href=\"http://".$_SERVER['SERVER_NAME'].$local."/Order.php?OID=" . $row['oid'] . "\">".$row['dateSubmitted']."</b></td>";			
+							echo "<td  data-toggle=\"tooltip\" title=\"Submitted date\"><b><a href=\"http://".$_SERVER['SERVER_NAME'].$local."/Order.php?OID=" . $row['oid'] . "\">".$row['dateSubmitted']."</b></td>";	
+							echo "<td  data-toggle=\"tooltip\" title=\"Completition date\"><b><a href=\"http://".$_SERVER['SERVER_NAME'].$local."/Order.php?OID=" . $row['oid'] . "\">".$row['deliveryDate']."</b></td>";		
 							echo "</tr>";
 						}
 					?>
@@ -355,6 +381,7 @@ function setPrevState(){
 				<div class="modal-header">
 					<input id="orderID" hidden></input>
 					<h5 class="modal-title" id="detailsModalLabel"></h5>
+					<h5 id="lblBoxes" class="modal-title mx-auto"></h5>
 					<button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="setPrevState();">
 					  <span aria-hidden="true">&times;</span>
 					</button>
@@ -368,7 +395,7 @@ function setPrevState(){
 									<div class="input-group-prepend">
 										<span class="input-group-text">Order Delivery Date</span>
 									</div>
-									<input required id="deliveryDate" type="text" maxlength="10" data-provide="datepicker" data-date-format="yyyy-mm-dd" class="form-control datepicker text-center" value="<?php echo date('Y-m-d'); ?>" onchange="updateDetail(1, this.id, this.value)">
+									<input required id="deliveryDate" type="text" maxlength="10" data-provide="datepicker" data-date-format="yyyy-mm-dd" class="form-control datepicker text-center" value="<?php echo date('Y-m-d'); ?>" onchange="updateDetail(1, this.id, this.value);">
 								</div>		
 							</div>								
 						</div>
@@ -436,5 +463,6 @@ $(document).ready(function () {
 			$.post("EmployeeMenuSettings.php",myData);
 		}
 	});
+	$('[data-toggle="popover"]').popover({ title: "What is this page for?" });
 });
 </script>

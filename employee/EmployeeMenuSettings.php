@@ -336,7 +336,7 @@ if($_POST['mode']=="loadSchWeek"){
 				$day = $row['myDate'];//new day
 				$oid = $row['oid'];//new order
 				echo "<tr>";
-				echo "<td class=\"align-middle\" rowspan=\"".$row['jobsDay']."\" scope=\"rowgroup\">".date("l M j",strtotime($day))."</br><small>Current total boxes: ".$row['boxCurQty']."</small></td>";
+				echo "<td class=\"align-middle\" rowspan=\"".$row['jobsDay']."\" scope=\"rowgroup\">".date("l M j",strtotime($day))."</br><small>Total boxes: ".$row['boxCurQty']."</small></td>";
 				echo "<td id=\"".$row['oid']."\" class=\"align-middle $updated\" rowspan=\"".$row['rooms']."\" scope=\"rowgroup\"><b>".$row['oid']."</b></td>";//Order id header
 				echo "<td class=\"rmnm align-middle $updated\" scope=\"row\">".$row['roomName']."</td>";//header row room
 				echo "<td class=\"box align-middle $updated\">".$row['cc']."</td>";
@@ -388,5 +388,13 @@ if($_POST['mode']=="updateOrderStatus"){
 	}
 	echo $sql;
 	echo $sql2;
+}
+
+if($_POST['mode']=="countBoxesxDay"){
+	$sql = "select coalesce(sum(cc),0) total from orderRoom orr where orr.oid in (select mo.oid from mosOrder mo where mo.oid = orr.oid and mo.deliveryDate = '".$_POST['date']."' and mo.state = 5)";
+	//echo $sql;
+	$query = opendb($sql);
+	$row = $query->fetch_assoc();
+	echo $row['total'];
 }
 ?>

@@ -190,8 +190,8 @@ if($_POST['mode']=="getItemById"){
 }
 
 if($_POST['mode']=="getImage"){
-	$path = "../uploads/ItemImages/".substr($_POST['id'], -2)."/";
-	$files = glob($path . $_POST['id'] . ".*", GLOB_ERR);
+	$path = "../uploads/ItemImages/".bin2hex($_POST['cat']);
+	$files = glob($path.".*", GLOB_ERR);
 	if(count($files)>0){
 		echo $files[0];
 	}else{

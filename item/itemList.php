@@ -46,14 +46,14 @@ function validateForm() {
 function createItem(){
 var formData = $("#formItem").serialize();
 	if(validateForm()){
-		console.log(formData);
+		//console.log(formData);
 		myData = { mode: "insertNewItem",  data: formData};
 			$.ajax({
 			url: '../item/itemActions.php',
 			type: 'POST',
 			data: myData,
 			success: function(data, status, jqXHR) {
-							console.log(jqXHR);
+							//console.log(jqXHR);
 							document.getElementById("dbMessage").innerText = "Your item has been created!";
 							$('.toast').toast('show');
 							$('#createBtn').hide();
@@ -137,7 +137,7 @@ function updateItem(){
 	data: myData,
 	success: function(data, status, jqXHR) {
 					$('#livesearch').empty();
-					console.log(jqXHR);
+					//console.log(jqXHR);
 					document.getElementById("dbMessage").innerText = "Your item has been updated!";
 					$('.toast').toast('show');
 					$('#updateBtn').hide();
@@ -179,9 +179,9 @@ function loadItemData(id) {
 					document.getElementById("editItemSearch").value ="";
 					document.getElementById("itemID").innerHTML =item[0].id;
 					document.getElementById("name").value =item[0].name;
-					document.getElementById("itemName").innerHTML =item[0].name;
+					//document.getElementById("itemName").innerHTML =item[0].name;
 					document.getElementById("description").value =item[0].description;
-					document.getElementById("itemDescription").innerHTML =item[0].description;
+					//document.getElementById("itemDescription").innerHTML =item[0].description;
 					document.getElementById("price").value =item[0].price;
 					document.getElementById("sizePrice").value =item[0].sizePrice;
 					$('#pricingMethod').val(item[0].pricingMethod);
@@ -223,9 +223,9 @@ function loadItemData(id) {
 	});
 }
 
-function imageExists(itemId){
-	myData = { mode: "getImage", id: itemId};
-
+function imageExists(cat){
+	$('#itemImg').removeAttr('src');
+	myData = { mode: "getImage", cat: cat};
 	$.ajax({
 	url: '../item/itemActions.php',
 	type: 'POST',
@@ -285,7 +285,7 @@ function uploadImage(){
 	files = myFile.files;
 	var formData = new FormData();
 	file = files[0]; 
-	console.log(files);
+	//console.log(files);
 	// Check the file type
 	if (!file.type.match('image.*')) {
 		$('#fileAlert').show();
@@ -305,8 +305,9 @@ function uploadImage(){
 	$('#fileName').text(file.name);
 	
 	// Add the file and others to the AJAX request
+	//console.log($('#selCat').val());
     formData.append('fileToUpload', file, file.name);
-    formData.append('itemID', $('#itemID').html());
+    formData.append('itemID', $('#selCat').val());
     formData.append('mode', 'uploadItemImg');
     formData.append('imgExist', $('#imgExist').val());
 
@@ -330,8 +331,8 @@ function uploadImage(){
 		$('#fileAlert').removeClass('alert-warning');
 		$('#fileAlert').addClass('alert-success');
 		$('#imgExist').val(xhr['responseText'].trim());
-		$("#itemImg").attr("src", xhr['responseText'].trim()+'#'+ new Date().getTime());
-		console.log('hecho...');
+		$("#itemImg").attr("src", "."+xhr['responseText'].trim()+'#'+ new Date().getTime());
+		//console.log(xhr['responseText'].trim());
       } else {
         $('#fileAlert').html('Upload error. Try again.');
 		$('#fileAlert').removeClass('alert-info');
@@ -352,7 +353,6 @@ function showFindItem(){
 	$('#itemsMainDiv').removeClass( "col-lg-12");	
 	$('#itemsMainDiv').addClass( "col-lg-4" );	
 }
-
 </script>
 <div class="container-fluid">
 	<div class="row">
@@ -465,7 +465,7 @@ function showFindItem(){
 			</div>
 			<!--------------************************************** Find Item Box End **************************************-------------->
 			<!--------------************************************** Item Image Start **************************************-------------->
-			<div hidden id="itemImage" class="card my-1">
+			<!--div hidden id="itemImage" class="card my-1">
 				<div class="card-header">
 					<h5 id="itemName"></h5>
 					<small id="itemDescription"></small>
@@ -492,7 +492,7 @@ function showFindItem(){
 						<input type="hidden" id="imgExist" name="imgExist" value="0"/>
 					</form>					
 				</div>
-			</div>
+			</div-->
 			<!--------------************************************** Item Image End **************************************-------------->
 		</div>
 		<!--------------************************************** Find Item End **************************************-------------->
@@ -501,6 +501,7 @@ function showFindItem(){
 				<h5 class="card-header">
 					<label id="lbTitle" >Item Actions</label>
 					<div class="float-right">
+						<button type="button" class="btn btn-info" data-toggle="modal" data-target="#addImage">Upload Image</button>
 						<button type="button" class="btn btn-outline-primary" onclick="enableUpdView()" id="enableUpdBtn">Return to update item</button>
 						<button type="button" class="btn btn-outline-primary" onclick="addItem()" id="enableNewBtn">Add new item</button>
 					</div>
@@ -910,6 +911,76 @@ function showFindItem(){
         <button type="button" class="btn btn-primary" onclick="updateItem()">Yes</button>
         <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<div id="addImage" class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+    	<div class="modal-header">
+        	<h5 class="modal-title">Load image for a category</h5>
+        	<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          		<span aria-hidden="true">&times;</span>
+        	</button>
+      	</div>
+      	<div class="modal-body">
+        	<div class="container-fluid">
+        		<div class="row">
+        			<div class="col-12">
+        				<div class="input-group mb-3">
+						  	<div class="input-group-prepend">
+						    	<label class="input-group-text" for="selCat">Categories</label>
+						  	</div>
+							<?php 
+							$flag = true;
+							$sql = "select distinct(description) cat from item where CLGroup = 4 order by cat";
+							$result = opendb($sql);							
+							echo "<select id=\"selCat\" onchange=\"imageExists(this.value)\" class=\"custom-select\" max-width=\"500px\">";
+							while ($row = $result->fetch_assoc()){
+								if($flag){
+									echo "<option value=\"\">Please choose a category</option>";
+									$flag = false;
+									echo "<option value=\"".htmlspecialchars($row['cat'])."\">".$row['cat']."</option>";
+								}else{
+									echo "<option value=\"".htmlspecialchars($row['cat'])."\">".$row['cat']."</option>";
+								}
+							};
+							echo "</select>";
+							?>	
+      					</div>
+      				</div>
+      			</div>
+      			<div class="row d-flex justify-content-center">
+      				<img id="itemImg" class="img-fluid">
+      			</div>
+      			<div class="row d-flex justify-content-center">
+					<div id="fileAlert" class="alert alert-info text-center" role="alert">
+					  No selection
+					</div>
+				</div>
+				<div class="row d-flex justify-content-center">
+					<div class="progress" style="height: 2px;">
+						<div id="progressBar" class="progress-bar  progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%"></div>
+					</div>
+					<form id="imageAjax" action="upload.php" method="POST">
+						<div class="input-group">
+							<div class="input-group-prepend">
+								<span class="input-group-text" id="inputGroupFileAddon01">Select an Image file</span>
+							</div>
+							<div class="custom-file">
+								<input onchange="uploadImage();" type="file" class="custom-file-input" name="fileToUpload" id="fileToUpload" aria-describedby="fileToUpload">
+								<label id="fileName" class="custom-file-label" for="fileToUpload">Choose file</label>							
+							</div>
+						</div>
+						<input type="hidden" id="imgExist" name="imgExist" value="0"/>
+					</form>
+      			</div>
+      		</div>
+      	</div>
+      	<div class="modal-footer">
+    	    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      	</div>
     </div>
   </div>
 </div>

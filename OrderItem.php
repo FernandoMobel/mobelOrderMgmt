@@ -12,6 +12,7 @@ if(isset($_SESSION["username"])){
 ?>
 <?php include_once 'includes/db.php';?>
 <?php
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 if($_POST['mode']=="getFileModal"){
     
 
@@ -230,7 +231,7 @@ if($_POST['mode']=="getNewItem"){
     if($GLOBALS['$result']->num_rows > 0){
         foreach ($GLOBALS['$result'] as $row){
             //the id returned is the id from the mod or items table (not the orders table)
-            echo "<option onClick=\"setSizes(".$row['w'].",".$row['h'].",".$row['d'].",".$row['w2'].",".$row['h2'].",".$row['d2'].",'".$row['name']."',".$row['id'].");\" class=\"allItemList\" w=\"" . $row['w']. "\" h=\"" .$row['h']. "\" d=\"" .$row['d']. "\" value=\"" . $row['id'] . "\">". $row['description'] . " Code: " .$row['name']. "</option>";
+            echo "<option onClick=\"setSizes(".$row['w'].",".$row['h'].",".$row['d'].",".$row['w2'].",".$row['h2'].",".$row['d2'].",'".$row['name']."','".htmlspecialchars($row['description'])."',".$row['id'].");\" class=\"allItemList\" w=\"" . $row['w']. "\" h=\"" .$row['h']. "\" d=\"" .$row['d']. "\" value=\"" . $row['id'] . "\">". $row['description'] . " Code: " .$row['name']. "</option>";
         }
     }
 }
@@ -752,6 +753,39 @@ if($_POST['mode'] == "copyRoom"){
 		array_push($items, $row['id']); 
 	}
 	copyItemsToRoom($items,$newRID);
+}
+
+if($_POST['mode'] == "itemFilter"){
+    $sql = "select id,name,description from item where description = '".$_POST['filter']."'";
+    $result = opendb($sql);
+    $items = array();
+    while($row = $result->fetch_assoc()){
+        $data['id'] = $row['id'];
+        $data['name'] = $row['name'];
+        $data['description'] = $row['description'];
+        array_push($items, $data); 
+    }
+    echo json_encode($items);
+}
+
+if($_POST['mode']=="getImage"){
+    try{
+        if(strcmp($_POST['orderItem'],'true')==0){
+            $sql = "select description from item where id = (select iid from orderItem where id=".$_POST['item'].")";
+        }else{
+            $sql = "select description from item where id=".$_POST['item'];
+        }
+        $result = opendb($sql);
+        $row = $result->fetch_assoc();
+        $path = "uploads/ItemImages/".bin2hex($row['description']);
+        $files = glob($path.".*", GLOB_ERR);
+        if(count($files)>0){
+            echo $files[0];
+        }else{
+            echo "false";
+        };
+    }catch (Exception $ex){echo $ex;}
+    
 }
 
 //copy items including mods to specific room

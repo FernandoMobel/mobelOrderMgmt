@@ -143,7 +143,7 @@ if($_POST['mode'] == "submitToMobel"){
     //$sql = "select * from mosOrder o, accountAddress aA, account a, mosUser mu where o.mosUser = mu.id and o.account = a.id and o.shipAddress = aA.id and o.oid = '" . $_POST['oid'] . "'";
 	$sql = "select * ,(select concat(unit,' ',street,' ',city,' ',province,' ',country,' ',postalCode)  from accountAddress aA where aA.id =o.shipAddress) shipTo from mosOrder o, mosUser mu, account a where o.mosUser = mu.id and o.account = a.id and o.oid = '" . $_POST['oid'] . "'";
     opendb($sql);
-    $msg = "<html><body><H1>Thank you for your order. </H1><p>We have recieved your order and will be sending back a confirmation shortly.</p>";
+    $msg = "<html><body><H1>Thank you for your order. </H1><p>We have recieved your order and will be sending back a confirmation soon.</p>";
     if($GLOBALS['$result']->num_rows > 0){
         $msg .= "<p>";
     }
@@ -515,7 +515,7 @@ function testNewEmailLayout(){
                 $msg .="</tbody></table>";
                 $totalOrder += $roomTotal+$roomFinishUpcharge;
             }
-        $msg .= "<div><h4 class=\"text-center\">Total Order: $$totalOrder pre HST & pre delivery</h4></div>";
+        $msg .= "<div><h4 class=\"text-center\">Order Total: $$totalOrder pre HST & pre delivery</h4></div>";
         $msg .="</div>
         <script src=\"https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js\" integrity=\"sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW\" crossorigin=\"anonymous\"></script>
     </body>

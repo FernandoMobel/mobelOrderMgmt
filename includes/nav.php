@@ -187,7 +187,8 @@ body {
 				echo "<a class=\"nav-link\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/viewOrder.php\">Orders</a>";
 				echo "</li>"; 
 				echo "<li class=\"nav-item\">";
-				echo "<a class=\"nav-link\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/myAccount.php\">Account</a>";
+				//echo "<a class=\"nav-link\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/myAccount.php\">Account</a>";
+        echo "<a class=\"nav-link\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/userProfiles.php\">Account</a>";
 				echo "</li>";
 				if(array_key_exists("userType",$_SESSION)){
 					if($_SESSION["userType"]==3){				  

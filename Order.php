@@ -1,6 +1,7 @@
 <?php include 'includes/nav.php';?>
 <?php include_once 'includes/db.php';?>
-<?php $roomCount = 1; $dateRequired = ""; ?>
+<?php $roomCount = 1; $dateRequired = ""; 
+?>
 <style>
 table.table-sm td{
 padding-top:.2rem;
@@ -10,6 +11,12 @@ height: 1px !important;
 
 table{
 	text-align: center;
+}
+
+.zoom:hover {
+  -ms-transform: scale(1.5); /* IE 9 */
+  -webkit-transform: scale(1.5); /* Safari 3-8 */
+  transform: scale(1.5); 
 }
 
 option{ white-space: normal; }
@@ -225,8 +232,7 @@ function showResult(str) {
 	}else{
 		$("#startsWith").val(0);
 	}
-	
-    if($('#editOrderItemPID').val()=="0"){
+	if($('#editItemTitle').text() == "Edit/Delete Item"){//$('#editOrderItemPID').val()=="0" || 
     	xmlhttp.send("filter="+str+"&mode=getNewItem&com=and&type=item&startsWith="+$("#startsWith").val()+"&cabinetLine="+$("#CLid").val());
     }else{
     	xmlhttp.send("filter="+str+"&mode=getNewItem&com=and&type=mod&startsWith="+$("#startsWith").val()+"&cabinetLine="+$("#CLid").val());
@@ -264,10 +270,11 @@ function editItems(itemID, mod){
 	       			$('#D').val(parseFloat(myObj.d));
 	       			$('#D2').val(parseFloat(myObj.d2));
 	       			$('#Qty').val(parseFloat(myObj.qty));
-	       			if($('#editItemID').val()!==0){
+	       			//Disable option for mods or enable for items
+	       			if($('#editItemID').val()!==0){//items
 	       				$('#Position').val(myObj.position);
 	       				$('#Position').prop('disabled',false);
-	       			}else{
+	       			}else{//mods
 	       				$('#Position').prop('disabled',true);
 	       			}
 	       			$('#HL').prop('checked',myObj.hingeLeft==1);
@@ -289,6 +296,7 @@ function editItems(itemID, mod){
 		           }else{
 			           $('#Position').show();
 			           $('#lblPosition').show();
+	       				getImage(itemID,true);
 		           }
 				   
 				   if(parseFloat(myObj.w2)>0){
@@ -316,6 +324,7 @@ function editItems(itemID, mod){
 }
 
 function cleanEdit(rqst){
+	$('#itemImg').removeAttr('src');
 	$('#editItemID').val(0);
 	$('#editOrderItemID').val(0);
 	$('#editOrderItemPID').val(0);
@@ -363,6 +372,7 @@ function cleanEdit(rqst){
 	}else{
 		$("#Position").show();
 		$("#lblPosition").show();
+
 	}
 }
 
@@ -406,11 +416,13 @@ function solvefirst(W,H,D,W2,H2,D2,name,catid) {
   );
 }
 
-async function setSizes(W,H,D,W2,H2,D2,name,catid) {
+async function setSizes(W,H,D,W2,H2,D2,name,desc,catid) {
   const result = await solvefirst(W,H,D,W2,H2,D2,name,catid);
   $('#editItemSearch').val(result);
 	document.getElementById("livesearch").innerHTML=name;
 	loadItems($("a.nav-link.roomtab.active").attr("value"));
+	if($('#editItemTitle').text() != "Edit/Delete Mod")
+		getImage(catid,false);
 }
 
 function saveEditedItem(objectID,col){
@@ -854,10 +866,12 @@ function existOID(oid){
 				btnGetItems = "btnGetItems2";
 			if(jqXHR['responseText']=='1'){
 				$('#'+btnGetItems).prop('disabled',false);	
-				$('#'+btnGetItems).addClass("btn-primary");	
+				$('#'+btnGetItems).addClass("btn-primary");
+				$('#'+btnGetItems).show();					
 			}else{
 				$('#'+btnGetItems).prop('disabled',true);
 				$('#'+btnGetItems).removeClass("btn-primary");
+				$('#'+btnGetItems).hide();
 			}
 		}
 	);
@@ -887,7 +901,7 @@ function getItemsCopy(){
 			item.forEach(function(obj) {
 				if(r!==obj.rid){
 					r=obj.rid;
-					table = "<tr class=\"table-primary\"><td><input data-toggle=\"tooltip\" data-placement=\"top\" title=\"Select room\" onchange=\"checkRoom("+obj.rid+"),displayCopyBtn(this);\" type='checkbox' id=\"chkR"+obj.rid+"\"></td><td colspan='7'>Room: "+obj.orName+"</td></tr>";
+					table = "<tr class=\"table-primary\"><td><input data-toggle=\"tooltip\" data-placement=\"top\" title=\"Select room\" onchange=\"checkRoom("+obj.rid+"),displayCopyBtn(this);\" type='checkbox' id=\"chkR"+obj.rid+"\"></td><td colspan='7'>Room: <b>"+obj.orName+"</b></td></tr>";
 					$('#copyItemList').append(table);
 				}
 				table = "<tr>";
@@ -1018,7 +1032,7 @@ function copyItemRow(itemOrig){
 }
 
 function copyRoom(rid){
-	console.log(rid);
+	//console.log(rid);
 	myData = { mode: "copyRoom", rid:rid };
 	$.post("OrderItem.php",
 		myData, 
@@ -1026,6 +1040,44 @@ function copyRoom(rid){
 			//console.log(jqXHR['responseText']);
 			window.location.reload();
 		});
+}
+
+function itemFilter(desc){
+	console.log(desc);
+	myData = { mode: "itemFilter", filter:desc};
+	$.ajax({
+	    url: 'OrderItem.php',
+	    type: 'POST',
+	    data: myData,
+	    success: function(data, status, jqXHR) {
+	    				var options = "";
+						var item = JSON.parse(jqXHR["responseText"]);
+						item.forEach(function(obj) {
+							console.log('id:'+obj.id+' name:'+obj.name+" description: "+obj.description);	
+							console.log(obj.name.split('-'));
+						});					    		        
+    	}
+	});	
+}
+
+function getImage(item,orderItem){
+	$('#itemImg').removeAttr('src');
+	myData = { mode: "getImage", item: item, orderItem:orderItem};
+	$.ajax({
+	url: 'OrderItem.php',
+	type: 'POST',
+	data: myData,
+	success: function(data, status, jqXHR) {
+				$image=jqXHR["responseText"];
+				if($image!="false"){
+					$('#itemImg').attr('src', $image+'#'+ new Date().getTime());
+				}
+			}
+	});
+}
+
+function orderValidation(){
+	console.log('validate');
 }
 </script>
 
@@ -1070,7 +1122,7 @@ function copyRoom(rid){
 								echo "<button id=\"beforeSbm\" class=\"d-print-none\" type=\"button\" onClick=\"alert('Please set your tag name and refresh to submit your quote.')\">Submit to Mobel</button>";
 								echo "<script>viewOnly = 0;</script>";
 							}else{
-								echo "<button id=\"afterSbm\" type=\"button\" data-toggle=\"modal\" onClick=\"setMinDate();showSubmit();\" data-target=\"#orderOptions\" class=\"btn btn-primary text-nowrap px-2 py-2  mt-0 mx-0 d-print-none\">Submit<span class=\"ui-icon ui-icon-circle-triangle-e\"></span></button>";
+								echo "<button id=\"afterSbm\" type=\"button\" data-toggle=\"modal\" onClick=\"orderValidation();setMinDate();showSubmit();\" data-target=\"#orderOptions\" class=\"btn btn-primary text-nowrap px-2 py-2  mt-0 mx-0 d-print-none\">Submit<span class=\"ui-icon ui-icon-circle-triangle-e\"></span></button>";
 								echo "<script>viewOnly = 0;</script>";
 							}
 						}else{
@@ -2107,7 +2159,7 @@ function copyRoom(rid){
 
 <!-- Modal Copy item-->
     <div id="copyItemsModal" class="modal fade" role="dialog">
-        <div class="modal-dialog modal-xl">
+        <div class="modal-dialog modal-dialog-scrollable modal-xl">
         
         <!-- Modal content-->
             <div class="modal-content">
@@ -2119,11 +2171,11 @@ function copyRoom(rid){
 							</div>
 							<div class="col">
 								<div class="form-group">
-									<div class="input-group mb-3">
-									  <div class="input-group-prepend">
+									<div class="input-group mb-3">									  
+									  <input id="copyOID" type="number" class="form-control" placeholder="Order ID" aria-label="" aria-describedby="search item by order" onchange="existOID(this.value);" onkeyup="existOID(this.value);">
+									  <div class="input-group-append">
 										<button disabled id="btnGetItems" onclick="getItemsCopy();" class="input-group-text" type="button">Get Items by Order</button>
 									  </div>
-									  <input id="copyOID" type="number" class="form-control" placeholder="Order ID" aria-label="" aria-describedby="search item by order" onchange="existOID(this.value);" onkeyup="existOID(this.value);">
 									</div>
 								</div>
 							</div>
@@ -2230,8 +2282,8 @@ function copyRoom(rid){
 								</div>
 							</div>
 						</div>
-						<div class="col-5">
-							<!--img id="itemImage" class="img-thumbnail rounded" width="300px" height="300px"-->
+						<div class="col-5 zoom">
+							<img id="itemImg" class="img-fluid">
 						</div>
                     </div>
                     <br/>
@@ -2375,10 +2427,10 @@ function copyRoom(rid){
 						Original Order Number: 
 						<div class="form-group">
 									<div class="input-group mb-3">
-									  <div class="input-group-prepend">
+									  <input id="copyOID2" type="number" class="form-control" placeholder="Order ID" aria-label="" aria-describedby="search item by order" onchange="existOID(this.value);" onkeyup="existOID(this.value);">
+									  <div class="input-group-append">
 										<button disabled id="btnGetItems2" onclick="getItemsCopy();" class="input-group-text" type="button">Select Items</button>
 									  </div>
-									  <input id="copyOID2" type="number" class="form-control" placeholder="Order ID" aria-label="" aria-describedby="search item by order" onchange="existOID(this.value);" onkeyup="existOID(this.value);">
 									</div>
 								</div>
 						<?php 
@@ -2516,9 +2568,11 @@ $(document).ready(function(){
 	    $(this).tab('show');
 	});
 	$(".dropdown-toggle a").click(function(){
-		console.log(this);
+		//console.log(this);
 	    //$(this).tab('show');
 	});
+	$('#btnGetItems').hide();
+	$('#btnGetItems2').hide();
 	$('#W2lbl').hide();
 	$('#W2').hide();
 	$('#D2lbl').hide();

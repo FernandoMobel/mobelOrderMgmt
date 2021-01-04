@@ -7,6 +7,9 @@ $row = $result->fetch_assoc();
 if(strlen($_SESSION["firstName"])==1 && $_SESSION["account"]==2){
 	echo "const department =".(int)$_SESSION['firstName'].";";
 	echo "const dateType =".$row['dateType'].";";
+	echo "setTimeout(function(){
+		   window.location.reload(1);
+		}, 60000);";
 }else{
 	echo "const department =1;";
 	echo "const dateType =3;";
@@ -14,10 +17,9 @@ if(strlen($_SESSION["firstName"])==1 && $_SESSION["account"]==2){
 ?>
 
 function loadSchWeek(date, dept){	
-	if(date.length==1){
-		date = 0;
-		currentDate = getMondayCurWeek();
-	}
+	/*if(date.length==1){
+		date = 0;//localStorage.setItem('date',getMondayCurWeek());
+	}*/
 	//What schedule are using
 	/*switch (department){
 		case '3'://Shipping
@@ -33,8 +35,8 @@ function loadSchWeek(date, dept){
 		// code block
 	}*/
 
-	console.log('Date:'+date+' dateType:'+dateType+' Department:'+department+' Filter:'+localStorage.getItem('onlyReady')+' see complete: '+localStorage.getItem('displayComp'));
-	myData = { mode: "loadSchWeek", date: date, dateType: dateType, mydid:department, filter:localStorage.getItem('onlyReady'), displayComp:localStorage.getItem('displayComp')};
+	console.log('Date:'+localStorage.getItem('date')+' dateType:'+dateType+' Department:'+department+' Filter:'+localStorage.getItem('onlyReady')+' see complete: '+localStorage.getItem('displayComp'));
+	myData = { mode: "loadSchWeek", date: date/*localStorage.getItem('date')*/, dateType: dateType, mydid:department, filter:localStorage.getItem('onlyReady'), displayComp:localStorage.getItem('displayComp')};
 	
 	$.ajax({
 			url: 'EmployeeMenuSettings.php',
@@ -45,9 +47,9 @@ function loadSchWeek(date, dept){
 			$('#scheduleWeek').empty();
 			$('#scheduleWeek').append(data);
 			if(date==0){
-				$('#fromDate').text('Jobs');
+				$('#fromDate').text('All Jobs');
 			}else{
-				$('#fromDate').text(currentDate);
+				$('#fromDate').text(localStorage.getItem('date'));
 			}
 			loadFilters();
 	  })
@@ -68,6 +70,7 @@ function getNewWeek(nextWeek){
 		newDate2.setDate(newDate2.getDate() - 6);
 	}
 	currentDate = formatDate(newDate2);
+	localStorage.setItem('date',currentDate);
 	loadSchWeek(currentDate);
 }
 
@@ -185,7 +188,7 @@ function onlyCompleted(){
 	}else{
 		localStorage.setItem('onlyReady',false);
 	}
-	loadSchWeek(0);
+	loadSchWeek(localStorage.getItem('date'));
 }
 
 function hideMyCompleted(){
@@ -194,7 +197,7 @@ function hideMyCompleted(){
 	}else{
 		localStorage.setItem('displayComp',false);
 	}
-	loadSchWeek(0);
+	loadSchWeek(localStorage.getItem('date'));
 }
 
 function setWithExpiry(key, value, ttl) {
@@ -268,7 +271,7 @@ function getWithExpiry(key) {
 	</div-->
 			
 	<div class="card-body px-3">			
-		<div class="row">
+		<div class="row d-print-none">
 			<div class="d-flex justify-content-start col-sm-6 col-lg-4 mx-auto">
 				<div class="p-2">
 					<select id="columns" multiple="multiple">
@@ -304,7 +307,7 @@ function getWithExpiry(key) {
 						</a>
 					</div>
 					<div class="d-flex justify-content-center align-middle col-sm-8 p-2">
-						<h5 id="fromDate"></h5>
+						<h5 id="fromDate" onclick="loadSchWeek(0);" data-toggle="tooltip" data-placement="top" title="Click to see all jobs"></h5>
 					</div>
 					<div class="d-flex justify-content-end align-middle col-sm-2 p-2">
 						<a class="btn-sm" onclick="getNewWeek(true);"><small class="hidden-mobile">Next week</small>
@@ -342,9 +345,10 @@ function getWithExpiry(key) {
 <?php if(strlen($_SESSION["firstName"])==1 && $_SESSION["account"]==2) include '../includes/foot.php';?>  
 <script>
 $(document).ready(function () {
-	//loadSchWeek(getMondayCurWeek());
-	loadSchWeek(0);	
-	
+	if(!localStorage.getItem('date')){
+		localStorage.setItem('date',getMondayCurWeek());
+	}	
+	loadSchWeek(localStorage.getItem('date'));
 	loadFilters();
 	
 	$('#columns').multiselect({

@@ -62,7 +62,7 @@ input::-webkit-inner-spin-button {
 <?php
 	if(strlen($_SESSION["firstName"])==1 && $_SESSION["account"]==2){}else{
 ?>
-		<div class="container-fluid">
+		<div class="container-fluid  d-print-none">
 			<ul id="empTabs" class="nav nav-tabs">
 				  <li class="nav-item border rounded-top">
 					<a class="nav-link active" id="orderView" onclick="navtab(this.id)"><b>Orders</b></a>
@@ -79,7 +79,7 @@ input::-webkit-inner-spin-button {
 				  <li class="nav-item border rounded-top">
 					<a class="nav-link" id="scheduleView" onclick="navtab(this.id)"><b>Schedules</b></a>
 				  </li>
-			</ul>
+			</ul>			
 		</div>
 <?php 
 	}
