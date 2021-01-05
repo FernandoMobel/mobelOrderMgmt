@@ -747,7 +747,7 @@ if($_POST['mode'] == "copySomeItems"){
 
 if($_POST['mode'] == "copyRoom"){
 	//copy room
-	$sql = "insert into orderRoom(name,oid,door,species,edge,frontFinish,glaze,sheen,hinge,smallDrawerFront,largeDrawerFront,drawerGlides,drawerBox,interiorFinish,finishedEnd,note,fromRoom,cc,fronts,pieces) select concat(name,'(',(select count(1)+1 from orderRoom orr2 where orr2.oid = orr.oid),')'),oid,door,species,edge,frontFinish,glaze,sheen,hinge,smallDrawerFront,largeDrawerFront,drawerGlides,drawerBox,interiorFinish,finishedEnd,note,rid,cc,fronts,pieces from orderRoom orr where orr.rid=".$_POST['rid'];
+	$sql = "insert into orderRoom(name,oid,door,species,edge,frontFinish,glaze,sheen,hinge,smallDrawerFront,largeDrawerFront,drawerGlides,drawerBox,interiorFinish,finishedEnd,note,fromRoom,cc,fronts,pieces) select concat(name,'-',(select count(1)+1 from orderRoom orr2 where orr2.oid = orr.oid)),oid,door,species,edge,frontFinish,glaze,sheen,hinge,smallDrawerFront,largeDrawerFront,drawerGlides,drawerBox,interiorFinish,finishedEnd,note,rid,cc,fronts,pieces from orderRoom orr where orr.rid=".$_POST['rid'];
 	opendb($sql);
 	$newRID = getLastInsert();
 

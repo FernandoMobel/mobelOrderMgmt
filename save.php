@@ -46,8 +46,6 @@ if($_POST['mode'] == "deleteRoom"){
     opendb($sql);
     $sql = "delete from orderRoom where oid = " . $_POST['oid'] . " and rid = " . $_POST['rid'];
     opendb($sql);
-    
-    //echo $sql;
 }
 
 if($_POST['mode'] == "deleteItem"){
