@@ -686,13 +686,19 @@ if($_POST['mode'] == "existOID"){
 }
 
 if($_POST['mode'] == "getOrderItemsforCopy"){
+    $CL = 0;
+    if(isset($_POST['CLid'])){
+        $CL = $_POST['CLid'];
+    }else{
+        $CL = $_SESSION["defaultCLid"];
+    }
 	$sql = "select * from (SELECT orr.rid,orr.name orName, it.id as itemID, oi.id as orderItemID,0 as sid, oi.name, oi.description, oi.note, oi.W, oi.H, oi.D, oi.W2, oi.D2, if(oi.hingeLeft=0,'','L') HL,if(oi.hingeRight=0,'','R') HR,if(oi.finishLeft=0,'','L') FL,if(oi.finishRight=0,'','R') FR
     FROM  orderItem oi, orderRoom orr, item it
-    WHERE it.id = oi.iid and oi.rid = orr.rid and orr.oid = '" .$_POST['oid']. "' and (it.visible = 1 or it.visible is null) and it.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$_POST['CLid'].")
+    WHERE it.id = oi.iid and oi.rid = orr.rid and orr.oid = '" .$_POST['oid']. "' and (it.visible = 1 or it.visible is null) and it.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$CL.")
     union all
 	SELECT orr.rid,orr.name, it.id, oi.pid,oi.id as sid, oi.name, oi.description, oi.note, oi.W, oi.H, oi.D, oi.W2, oi.D2, if(oi.hingeLeft=0,'','L') HL,if(oi.hingeRight=0,'','R') HR,if(oi.finishLeft=0,'','L') FL,if(oi.finishRight=0,'','R') FR
     FROM  orderItemMods oi, orderRoom orr, itemMods it
-    WHERE it.id = oi.mid and oi.rid = orr.rid and orr.oid = '" .$_POST['oid']. "' and (it.visible = 1 or it.visible is null) and it.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$_POST['CLid'].")) as T1 order by rid,orderItemID,sid";
+    WHERE it.id = oi.mid and oi.rid = orr.rid and orr.oid = '" .$_POST['oid']. "' and (it.visible = 1 or it.visible is null) and it.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$CL.")) as T1 order by rid,orderItemID,sid";
 	//echo $sql;
 	$result = opendb($sql);
 	$items = array(); 
@@ -769,8 +775,15 @@ if($_POST['mode'] == "itemFilter"){
 }
 
 if($_POST['mode'] == "isSomeRoomEmpty"){
-    $sql = "select orr.rid, (select count(1) from orderItem oi, item i where oi.rid = orr.rid and i.id = oi.iid and i.CLGroup in(select clg.CLGid from cabinetLineGroups clg where clg.CLid = ".$_POST['CLid'].") ) qty from orderRoom orr where orr.oid=".$_POST['OID'];
+    $CL = 0;
+    if(isset($_POST['CLid'])){
+        $CL = $_POST['CLid'];
+    }else{
+        $CL = $_SESSION["defaultCLid"];
+    }
+    $sql = "select orr.rid, (select count(1) from orderItem oi, item i where oi.rid = orr.rid and i.id = oi.iid and i.CLGroup in(select clg.CLGid from cabinetLineGroups clg where clg.CLid = ".$CL.") ) qty from orderRoom orr where orr.oid=".$_POST['OID'];
     $result = opendb($sql);
+    echo $sql;
     $empty = 0;
     while($row = $result->fetch_assoc()){
         if(strcmp($row['qty'],"0")==0){
