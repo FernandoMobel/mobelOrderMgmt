@@ -86,7 +86,7 @@ if($_POST['mode']=="addNewAccount"){
 	$sql = "insert into account(busName,busDBA,phone,discount,CLgroup) values(";
 	$sql .= completeQuery();
 	echo $sql;
-	//opendb($sql);
+	opendb($sql);
 }
 
 if($_POST['mode']=="addNewAccountAddress"){
