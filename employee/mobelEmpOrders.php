@@ -424,7 +424,8 @@ function countBoxesxDay(date){
 $(document).ready(function () {
 	table = $('#example').DataTable({
 		"order": [[ 7, "asc" ]],
-		"lengthMenu": [30, 50, 100]
+		"lengthMenu": [30, 50, 100],
+		"stateSave": true
 	});
 	
 	//Filter options
