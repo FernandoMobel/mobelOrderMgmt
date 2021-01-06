@@ -168,7 +168,7 @@ function loadItems(rid){
 			data: myData,
 			success: function(data, status, jqXHR) {
 				//getting all the current options
-				var arr = $('.container.tab-pane.float-left.col-12.active select').map(function(){
+				var arr = $('.container.tab-pane.float-left.col-12.header.active select').map(function(){
 					  return this.value
 				}).get();
 				var incomplete = false;
@@ -179,7 +179,7 @@ function loadItems(rid){
 						break;
 					}
 				}
-				if(!incomplete){//Header options are slected
+				if(!incomplete){//Header options are selected
 					$("#Position").empty();
 					$('#items').append(data);
 					for(i=1; i<=$('#items tr.font-weight-bold').length; i++){
@@ -587,6 +587,7 @@ function saveRoom(objectID){
             	    	$("#"+objectID).css("border-color", "#00b828");
             	    	//Change room name here!
             	    	if(objectID=="RoomName"){
+            	    		console.log($("#"+objectID).val());
             	    		$("#"+$('#RoomName').prop('title')).html($("#"+objectID).val());
             	    	}
             	    	if(objectID=="RoomNote"){
@@ -633,6 +634,7 @@ function DeleteRoomDialog(message){
         	$.post("save.php",
         			myData,
         		       function(data, status, jqXHR) {
+        		       		console.log(jqXHR['responseText']);
                     		if(status == "success"){
                     	    	location.reload();
                     	    }
@@ -907,7 +909,7 @@ function getItemsCopy(){
 				table = "<tr>";
 				table += "<td>";
 				if(obj.sid=='0'){
-					table += "<input class=\""+obj.rid+" "+obj.orderItemID+"\" onchange='displayCopyBtn(this),checkChild("+obj.orderItemID+");' type='checkbox' id='"+obj.orderItemID+"'></td>";
+					table += "<input class=\"item "+obj.rid+" "+obj.orderItemID+"\" onchange='displayCopyBtn(this),checkChild("+obj.orderItemID+");' type='checkbox' id='"+obj.orderItemID+"'></td>";
 				}else{
 					table += "<input class=\""+obj.rid+" "+obj.orderItemID+"\" type='checkbox' disabled></td>";
 				}
@@ -1003,15 +1005,13 @@ function copyItems(){
 		return;
 	}
 	let items = [];
-	$('#copyItemList input:checked').each(function(){ 
+	$('#copyItemList input.item:checked').each(function(){ 
 		items.push(this.id);
 	});
-
 	myData = { mode: "copySomeItems", items:items, rid:$("a.nav-link.roomtab.active").attr("value")};
 	$.post("OrderItem.php",
 		myData, 
 		function(data, status, jqXHR) {
-			//console.log(jqXHR['responseText']);
 			loadItems($("a.nav-link.roomtab.active").attr("value"));
 		});
 }
@@ -1106,11 +1106,13 @@ function orderValidation(){
 	}
 	/*Validation to prevent send a room without items*/
 	myData = { mode: "isSomeRoomEmpty", OID:<?php echo $_GET["OID"]?>, CLid:$('#CLid').val() };
+	console.log(myData);
 	$.ajax({
 	url: 'OrderItem.php',
 	type: 'POST',
 	data: myData,
 	success: function(data, status, jqXHR) {
+				console.log(jqXHR["responseText"]);
 				if(jqXHR["responseText"]==1){
 					alert("Warning!\nOne or more rooms are empty.\nPlease add some items or delete the room.");
 					return;
@@ -1335,7 +1337,7 @@ function orderValidation(){
         if($GLOBALS['$result']->num_rows > 0){
             foreach ($GLOBALS['$result'] as $row) {
                 //$i=$i+1;
-                echo "<div id=\"r" . str_replace(" ","",$row['name']) . $i ."\" class=\"container tab-pane float-left col-12 header ";
+                echo "<div id=\"r" . str_replace(" ","",$row['name']) . $i ."\" class=\"container tab-pane float-left col-12 header";
                 if($i==0){
                     echo " active";
                 }
@@ -2077,7 +2079,8 @@ function orderValidation(){
 							}
 							?>
 							</select>
-						</div>						
+						</div>
+
 					</div>
 
 					<div class="row">
@@ -2214,6 +2217,7 @@ function orderValidation(){
 								<h5 class="modal-title">Copy Items</h5>
 							</div>
 							<div class="col">
+								<select></select>
 								<div class="form-group">
 									<div class="input-group mb-3">									  
 									  <input id="copyOID" type="number" class="form-control" placeholder="Order ID" aria-label="" aria-describedby="search item by order" onchange="existOID(this.value);" onkeyup="existOID(this.value);">
@@ -2608,7 +2612,6 @@ function orderValidation(){
 
 $(document).ready(function(){
 	$(".nav-tabs li a").click(function(){
-		//console.log(this);
 	    $(this).tab('show');
 	});
 	$(".dropdown-toggle a").click(function(){
