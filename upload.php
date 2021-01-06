@@ -19,28 +19,31 @@ if(isset($_SESSION["username"])){
 *	Description: Upload images for Items
 *	Update: Fernando Guazo
 **********************************************************/
-if($_POST['mode']=="uploadItemImg"){
-	$fileExtensions = ['jpeg','jpg','png','gif'];
-	$path = "uploads/ItemImages/".bin2hex($_POST["itemID"]);
-	foreach ($fileExtensions as $ext) {
-		if (file_exists($path.".".$ext)) {  
-			unlink($path.".".$ext);
+if(isset($_POST['mode'])){
+	if($_POST['mode']=="uploadItemImg"){
+		$fileExtensions = ['jpeg','jpg','png','gif'];
+		$path = "uploads/ItemImages/".bin2hex($_POST["itemID"]);
+		foreach ($fileExtensions as $ext) {
+			if (file_exists($path.".".$ext)) {  
+				unlink($path.".".$ext);
+			}
 		}
-	}$fileTmpName = $_FILES['fileToUpload']['name'];
-	$imageFileType = strtolower(pathinfo($fileTmpName,PATHINFO_EXTENSION));
-	$fileName =	bin2hex($_POST["itemID"]).".".$imageFileType;
-	$target_dir = "./uploads/ItemImages/";
-	$target_file = $target_dir.$fileName;
-	if (!file_exists($target_dir)) {
-		mkdir($target_dir, 0777, true);
-	} 
-	if(move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)){
-		echo $target_file;
-	}else{
-		echo "File was not uploaded, please try again";
+		$fileTmpName = $_FILES['fileToUpload']['name'];
+		$imageFileType = strtolower(pathinfo($fileTmpName,PATHINFO_EXTENSION));
+		$fileName =	bin2hex($_POST["itemID"]).".".$imageFileType;
+		$target_dir = "./uploads/ItemImages/";
+		$target_file = $target_dir.$fileName;
+		if (!file_exists($target_dir)) {
+			mkdir($target_dir, 0777, true);
+		} 
+		if(move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)){
+			echo $target_file;
+		}else{
+			echo "File was not uploaded, please try again";
+		}
+	}else if($_POST['mode']=="uploadUserImg"){
+		
 	}
-}else if($_POST['mode']=="uploadUserImg"){
-	
 }else{
 	/**********************************************************
 	*	Description: Upload images for Orders
@@ -52,7 +55,12 @@ if($_POST['mode']=="uploadItemImg"){
 	$target_dir = "uploads/DealerFiles/".$row['account']."/".$_POST["oid"]."/";
 	$target_file = $target_dir . basename($_FILES["fileToUpload"]["name"]);
 	$uploadOk = 1;
-	$imageFileType = strtolower(pathinfo($_FILES["fileToUpload"]["tmp_name"],PATHINFO_EXTENSION));
+
+	$fileTmpName = $_FILES['fileToUpload']['name'];
+	//$imageFileType = strtolower(pathinfo($_FILES["fileToUpload"]["tmp_name"],PATHINFO_EXTENSION));
+	$imageFileType = strtolower(pathinfo($fileTmpName,PATHINFO_EXTENSION));
+	
+
 	// Check if image file is a actual image or fake image
 	if(isset($_POST["submit"])) {
 		$check = getimagesize($_FILES["fileToUpload"]["tmp_name"]);
