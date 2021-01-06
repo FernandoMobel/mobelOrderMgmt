@@ -858,47 +858,27 @@ function printPrice(){
 	}
 }
 
-function existOID(oid){
-	var btnGetItems = "btnGetItems";
-	myData = { mode: "existOID", oid:oid};
-	$.post("OrderItem.php",
-		myData, 
-		function(data, status, jqXHR) {
-			if(($("#orderOptions").data('bs.modal') || {})._isShown)
-				btnGetItems = "btnGetItems2";
-			if(jqXHR['responseText']=='1'){
-				$('#'+btnGetItems).prop('disabled',false);	
-				$('#'+btnGetItems).addClass("btn-primary");
-				$('#'+btnGetItems).show();					
-			}else{
-				$('#'+btnGetItems).prop('disabled',true);
-				$('#'+btnGetItems).removeClass("btn-primary");
-				$('#'+btnGetItems).hide();
-			}
-		}
-	);
-}
-
-function getItemsCopy(){
+/***********************************************************************************************************************************************
+*	Get items from the order selected to make a selection and create them into the order.
+***********************************************************************************************************************************************/
+function getYourOrderItems(oid){
+	//If order options modal is displayed, this should be closed and the copy items modal is displayed instead
 	var modal1 = "";
 	if(($("#orderOptions").data('bs.modal') || {})._isShown){
 		//modal1 = "2";
 		$('#orderOptions').modal('hide');
 		$('#copyItemsModal').modal('show');
-		$('#copyOID').val($('#copyOID2').val());
 		$('#btnGetItems').prop('disabled',false);	
 		$('#btnGetItems').addClass("btn-primary");
 	}
 	clearModal();
-	myData = { mode: "getOrderItemsforCopy", oid:$('#copyOID').val(), CLid:$('#CLid').val() };
+	myData = { mode: "getOrderItemsforCopy", oid:oid, CLid:$('#CLid').val() };
 	var r = 0;
 	$.post("OrderItem.php",
 		myData, 
 		function(data, status, jqXHR) {
 			$('#itemTable').show();
 			var table = "";
-			//$('#btnCopyItems').show();
-			//console.log(jqXHR['responseText']);
 			var item = JSON.parse(jqXHR["responseText"]);
 			item.forEach(function(obj) {
 				if(r!==obj.rid){
@@ -937,8 +917,7 @@ function getItemsCopy(){
 				}else{
 					table += "<td></td>";
 				}
-				table += "</tr>";
-				//console.log(obj.rid); 	
+				table += "</tr>";	
 				$('#copyItemList').append(table);
 			});
 			
@@ -1077,7 +1056,7 @@ function getImage(item,orderItem){
 }
 
 /**********************************************************************************
-Validation before display modal for submission
+*	Validation before display modal for submission
 ***********************************************************************************/
 function orderValidation(){
 	/*PO field validation*/
@@ -1140,9 +1119,6 @@ function orderValidation(){
 			if($_SESSION["userType"] == 2){
 				$userFilter = " and account = ".$_SESSION["account"];
 			}
-			//echo "My user id is:" . $_SESSION["userid"];
-			//echo "My account id is:" . $_SESSION["account"];
-			//echo "My account type is:" . $_SESSION["userType"];
 		 
 			opendb("select m.*,s.name as 'status' from mosOrder m, state s  where m.state = s.id and m.oid = ".$_GET["OID"] . $userFilter);
 			
@@ -1184,7 +1160,6 @@ function orderValidation(){
 					
 					echo "</div>";
 					
-					//$shipAddress = $row['shipAddress'];
 					echo "<div class=\"col-sm-2 col-md-2 col-lg-2\">";
 						echo "<label for=\"state\">Order Status:</label>";
 						echo "<textarea readonly class=\"form-control noresize\" rows=\"1\" id=\"state\">";
@@ -1253,20 +1228,6 @@ function orderValidation(){
 		</div>
 	</div>
 </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1354,7 +1315,7 @@ function orderValidation(){
 							<div class=\"dropdown-menu\" aria-labelledby=\"dropdownMenuLink\">
 								<a class=\"dropdown-item\" onClick=\"editRoom(".$row['rid']. ",'" . $row['name'] . "');\"  data-toggle=\"modal\" title=\"Edit room\" data-target=\"#editRoomModal\">Edit Room Name/Notes</a>
 								<a class=\"dropdown-item\" onclick=\"copyRoom(".$row['rid'].")\">Copy Room '".ucfirst($row['name'])."'</a>
-								<a class=\"dropdown-item\" data-toggle=\"modal\" data-target=\"#copyItemsModal\">Copy Items From Order</a>
+								<a class=\"dropdown-item\" data-toggle=\"modal\" data-target=\"#copyItemsModal\" onclick=\"clearModal();\">Copy Items From Order</a>
 							</div>";                							
 							echo "<b><a  class=\"btn btn-primary px-3 py-1 mr-0 float-right d-print-none\" target=\"_blank\" ";
 							if($CLid==3){
@@ -2217,15 +2178,20 @@ function orderValidation(){
 								<h5 class="modal-title">Copy Items</h5>
 							</div>
 							<div class="col">
-								<select></select>
-								<div class="form-group">
-									<div class="input-group mb-3">									  
-									  <input id="copyOID" type="number" class="form-control" placeholder="Order ID" aria-label="" aria-describedby="search item by order" onchange="existOID(this.value);" onkeyup="existOID(this.value);">
-									  <div class="input-group-append">
-										<button disabled id="btnGetItems" onclick="getItemsCopy();" class="input-group-text" type="button">Get Items by Order</button>
-									  </div>
-									</div>
-								</div>
+								<select onchange="getYourOrderItems(this.value)" class="custom-select">
+									<option value="">Please select an order</option>
+									<?php
+									$admin = "";
+									if($_SESSION["userType"]>1){
+										$admin = "or m.account = " . $_SESSION["account"];
+									}
+									$sql = "select m.oid,m.tagName from mosOrder m, mosUser u where m.mosUser = u.id and (u.email = '" . $_SESSION["username"] . "' ". $admin ."  )";
+									$result = opendb($sql);
+									while($row=$result->fetch_assoc()){
+										echo "<option value=\"".$row['oid']."\">".$row['oid']." - ".$row['tagName']."</option>";
+									}
+									?>
+								</select>
 							</div>
 							<div class="col">
 								<button onclick="clearModal();" type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -2472,20 +2438,21 @@ function orderValidation(){
 						?>
 					</div>
 					<div class="col-3 service">
-						Original Order Number: 
-						<div class="form-group">
-									<div class="input-group mb-3">
-									  <input id="copyOID2" type="number" class="form-control" placeholder="Order ID" aria-label="" aria-describedby="search item by order" onchange="existOID(this.value);" onkeyup="existOID(this.value);">
-									  <div class="input-group-append">
-										<button disabled id="btnGetItems2" onclick="getItemsCopy();" class="input-group-text" type="button">Select Items</button>
-									  </div>
-									</div>
-								</div>
-						<?php 
-						/*echo "<input type=\"text\" maxlength=\"30\"";
-						echo "value=\"".$fromOrder."\"";
-						echo "onchange=\"saveOrder('fromOrder');\" class=\"form-control  \"  id=\"fromOrder\">";*/
-						?>
+						Original Order Number:
+						<select onchange="getYourOrderItems(this.value)" class="custom-select">
+							<option value="">Please select an order</option>
+							<?php
+							$admin = "";
+							if($_SESSION["userType"]>1){
+								$admin = "or m.account = " . $_SESSION["account"];
+							}
+							$sql = "select m.oid,m.tagName from mosOrder m, mosUser u where m.mosUser = u.id and (u.email = '" . $_SESSION["username"] . "' ". $admin ."  )";
+							$result = opendb($sql);
+							while($row=$result->fetch_assoc()){
+								echo "<option value=\"".$row['oid']."\">".$row['oid']." - ".$row['tagName']."</option>";
+							}
+							?>
+						</select>						
 					</div>					
 					<div class="col-3">               
 						<?php 
@@ -2642,19 +2609,7 @@ $(document).ready(function(){
 	$(".modal-content").resizable({
 		minHeight: 630,
 		minWidth: 500
-    });
-	$("#copyOID").keypress(function(e) {
-		if(e.keyCode == 13 && !$('#btnGetItems').prop('disabled'))
-		{
-			getItemsCopy($("#copyOID").val());
-		}
-	});
-	$("#copyOID2").keypress(function(e) {
-		if(e.keyCode == 13 && !$('#btnGetItems2').prop('disabled'))
-		{
-			getItemsCopy($("#copyOID2").val());
-		}
-	});
+    });	
 });
 
 var arr = new Array();
