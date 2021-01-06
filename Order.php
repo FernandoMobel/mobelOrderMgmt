@@ -1123,7 +1123,6 @@ function orderValidation(){
 			opendb("select m.*,s.name as 'status' from mosOrder m, state s  where m.state = s.id and m.oid = ".$_GET["OID"] . $userFilter);
 			
 			if($GLOBALS['$result']->num_rows > 0){
-				
 				foreach ($GLOBALS['$result'] as $row) {
 					$dateRequired = $row['dateRequired'];
 					$isWarranty = $row['isWarranty'];
@@ -1216,9 +1215,10 @@ function orderValidation(){
 		</div>
 		<div class="row print">
 			<?php
-			$sqlSh = "select shipAddress,(select concat(coalesce(unit,' '),' ',street,' ',city,' ',province,' ',country,' ',postalCode)  from accountAddress aA where aA.id =mo.shipAddress) shipTo from mosOrder mo where oid = ".$_GET["OID"];
+			$sqlSh = "select (select a.busDBA from account a where a.id = mo.account)busName,shipAddress,(select concat(coalesce(unit,' '),' ',street,' ',city,' ',province,' ',country,' ',postalCode)  from accountAddress aA where aA.id =mo.shipAddress) shipTo from mosOrder mo where oid = ".$_GET["OID"];
 			$result = opendb($sqlSh);
 			$row = $result->fetch_assoc();
+			echo "<label>Customer: " .$row['busName']."</label></br>";
 			if(strlen($row['shipAddress'])>0){
 				echo "<label>Ship to: " .$row['shipTo']."</label>";
 			}else{
