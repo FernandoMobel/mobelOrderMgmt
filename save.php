@@ -52,6 +52,8 @@ if($_POST['mode'] == "deleteItem"){
     if($_POST['mod']>0){
         $sql = "delete from orderItemMods where id = " . $_POST['itemID'] . " and rid = " . $_POST['rid'];
     }else{
+        $sql = "delete from orderItemMods where pid = " . $_POST['itemID'] . " and rid = " . $_POST['rid'];
+        opendb($sql);
         $sql = "delete from orderItem where id = " . $_POST['itemID'] . " and rid = " . $_POST['rid'];
     }
     opendb($sql);
