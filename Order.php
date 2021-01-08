@@ -587,7 +587,6 @@ function saveRoom(objectID){
             	    	$("#"+objectID).css("border-color", "#00b828");
             	    	//Change room name here!
             	    	if(objectID=="RoomName"){
-            	    		console.log($("#"+objectID).val());
             	    		$("#"+$('#RoomName').prop('title')).html($("#"+objectID).val());
             	    	}
             	    	if(objectID=="RoomNote"){
@@ -634,7 +633,7 @@ function DeleteRoomDialog(message){
         	$.post("save.php",
         			myData,
         		       function(data, status, jqXHR) {
-        		       		console.log(jqXHR['responseText']);
+        		       		//console.log(jqXHR['responseText']);
                     		if(status == "success"){
                     	    	location.reload();
                     	    }
@@ -1022,7 +1021,7 @@ function copyRoom(rid){
 }
 
 function itemFilter(desc){
-	console.log(desc);
+	//console.log(desc);
 	myData = { mode: "itemFilter", filter:desc};
 	$.ajax({
 	    url: 'OrderItem.php',
@@ -1032,8 +1031,8 @@ function itemFilter(desc){
 	    				var options = "";
 						var item = JSON.parse(jqXHR["responseText"]);
 						item.forEach(function(obj) {
-							console.log('id:'+obj.id+' name:'+obj.name+" description: "+obj.description);	
-							console.log(obj.name.split('-'));
+							//console.log('id:'+obj.id+' name:'+obj.name+" description: "+obj.description);	
+							//console.log(obj.name.split('-'));
 						});					    		        
     	}
 	});	
@@ -1085,13 +1084,13 @@ function orderValidation(){
 	}
 	/*Validation to prevent send a room without items*/
 	myData = { mode: "isSomeRoomEmpty", OID:<?php echo $_GET["OID"]?>, CLid:$('#CLid').val() };
-	console.log(myData);
+	//console.log(myData);
 	$.ajax({
 	url: 'OrderItem.php',
 	type: 'POST',
 	data: myData,
 	success: function(data, status, jqXHR) {
-				console.log(jqXHR["responseText"]);
+				//console.log(jqXHR["responseText"]);
 				if(jqXHR["responseText"]==1){
 					alert("Warning!\nOne or more rooms are empty.\nPlease add some items or delete the room.");
 					return;

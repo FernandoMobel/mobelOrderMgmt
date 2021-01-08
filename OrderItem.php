@@ -389,7 +389,10 @@ if($_POST['mode']=="getItems"){
                     echo "<tr class=\"table-sm".$warning."\">";
                 }
 			    echo $tdStyle . $i . "." . $si . "</td>";
-			    echo $tdStyle . "<span title=\"". str_replace("\"","inch",$row['description'])."\">" . $row['name'] . "</span>" . "</td>";
+			    echo $tdStyle . "<span title=\"". str_replace("\"","inch",$row['description'])."\">" . $row['name']; 
+                if($_SESSION["userType"]<3)
+                     echo "<label class=\"print\">".str_replace("\"","inch",$row['description'])."</label>"; 
+                echo "</span>" . "</td>";
 			    echo $tdStyle . (float)$row['W'] ;
     			if ((float)$row['W2']>0)
     				echo ", ".(float)$row['W2'];

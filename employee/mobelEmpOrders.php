@@ -38,7 +38,8 @@ function saveOrder(objectID,OID){
 	$("#"+objectID+OID).css("border-color", "#ba0000");
 	if($("#"+objectID+OID).val()==5){
 		countBoxes(OID);
-		getOrderRooms(OID);						
+		getOrderRooms(OID);
+		getRequiredDate(OID);					
 	}else{
 		myData = { mode: "updateOrder", id: objectID, value: $("#"+objectID+OID).val(), oid: OID};
 		$.post("../OrderItem.php",
@@ -123,16 +124,15 @@ function updateDetail(rid,col,val){
 	if(col=="deliveryDate"){
 		$('#deliveryDate').val(val);
 		countBoxesxDay(val);
+	}else{
+		myData = { mode: 'updateRoomDetails',  oid:$('#orderID').attr('value'), rid: rid, col:col, val:val};
+		$.post("EmployeeMenuSettings.php",
+		myData, 
+		function(data, status, jqXHR) { 
+				//console.log(jqXHR['responseText']);
+				$("#"+col).css("border-color", "#00b828");
+			});
 	}
-		
-	myData = { mode: 'updateRoomDetails',  oid:$('#orderID').attr('value'), rid: rid, col:col, val:val};
-	//console.log(myData);
-	$.post("EmployeeMenuSettings.php",
-	myData, 
-	function(data, status, jqXHR) { 
-			//console.log(jqXHR['responseText']);
-			$("#"+col).css("border-color", "#00b828");
-		});
 }
 
 function getOrderID(OID){
@@ -195,6 +195,19 @@ function countBoxesxDay(date){
 	    data: myData,
 	    success: function(data, status, jqXHR) {	 
 	    	$('#lblBoxes').html('<b>'+jqXHR['responseText']+'</b> boxes are scheduled for: <b>'+date+'</b>');  
+    	}
+	});	
+}
+
+function getRequiredDate(oid){
+	myData = {mode:"getRequiredDate", oid:oid};
+	$.ajax({
+	    url: 'EmployeeMenuSettings.php',
+	    type: 'POST',
+	    data: myData,
+	    success: function(data, status, jqXHR) {	 
+	    	//console.log(jqXHR['responseText']);
+	    	$('#deliveryDate').val(jqXHR['responseText']);  
     	}
 	});	
 }
@@ -395,7 +408,7 @@ function countBoxesxDay(date){
 									<div class="input-group-prepend">
 										<span class="input-group-text">Order Delivery Date</span>
 									</div>
-									<input required id="deliveryDate" type="text" maxlength="10" data-provide="datepicker" data-date-format="yyyy-mm-dd" class="form-control datepicker text-center" value="<?php echo date('Y-m-d'); ?>" onchange="updateDetail(1, this.id, this.value);">
+									<input required id="deliveryDate" type="text" maxlength="10" data-provide="datepicker" data-date-format="yyyy-mm-dd" class="form-control datepicker text-center" onchange="updateDetail(1, this.id, this.value);">
 								</div>		
 							</div>								
 						</div>

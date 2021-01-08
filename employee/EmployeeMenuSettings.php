@@ -97,7 +97,7 @@ if($_POST['mode']=="updateCalDay"){
 }
 
 if($_POST['mode']=="getOrderRooms"){ 
-	$sql = "select orr.rid, orr.name, orr.cc, COALESCE(orr.fronts,0) fronts, DATE(COALESCE(deliveryDate,dateRequired)) dateRequired, (select count(1) from orderItem oi, item i where oi.iid = i.id and i.isCabinet = 0 and oi.rid = orr.rid)pieces from orderRoom orr, mosOrder mo where mo.oid = orr.oid and orr.oid = ".$_POST["oid"]." order by orr.name asc";
+	$sql = "select orr.rid, orr.name, orr.cc, COALESCE(orr.fronts,0) fronts, DATE(COALESCE(deliveryDate,dateRequired)) dateRequired, pieces from orderRoom orr, mosOrder mo where mo.oid = orr.oid and orr.oid = ".$_POST["oid"]." order by orr.name asc";
 	$query = opendb($sql);
 	$header = true;
 	while($row = $query->fetch_assoc()){ 
@@ -167,7 +167,7 @@ if($_POST['mode']=="getOrderRooms"){
 
 if($_POST['mode']=="updateRoomDetails"){ 
 	if(strcmp($_POST['col'],"deliveryDate")==0){
-		//updating delivery date
+		//Update delivery date (this is updated only when order status is sucessfully changed to "Detailed and Production Ready")
 		$sql = "update mosOrder set ".$_POST['col']." = '".$_POST['val']."' where oid = ".$_POST['oid'] ;
 		opendb($sql);
 		//Calculate and Insert or update wrapping and finishing dates into schedule
@@ -208,6 +208,9 @@ if($_POST['mode']=="updateRoomDetails"){
 			echo $sql2;
 			opendb($sql2);
 		}
+		//Update control date when status Detailed and Production ready
+		$sql2 = "update mosOrder set dateDetailed = CURRENT_TIMESTAMP() where oid = ".$_POST['oid'];
+		opendb($sql2);
 	}else{
 		//updating boxes and pieces
 		$sql = "update orderRoom set ".$_POST['col']." = ".$_POST['val']." where rid = ".$_POST['rid'] ;
@@ -229,7 +232,7 @@ if($_POST['mode']=="loadRoomDet"){
 }
 
 if($_POST['mode']=="countBoxes"){ 
-	$sql = "select distinct rid, (select count(1) from orderItem oi, item i where oi.iid = i.id and oi.rid = orr.rid and i.isCabinet=1) boxes,(select count(1) from orderItem oi, item i where oi.iid = i.id and oi.rid = orr.rid and i.isCabinet=0) pieces from orderRoom orr where orr.oid =".$_POST["oid"];
+	$sql = "select distinct rid, (select count(1) from orderItem oi, item i where oi.iid = i.id and oi.rid = orr.rid and i.isCabinet=1) boxes,(select round(sum(qty)) from orderItem oi, item i where oi.iid = i.id and oi.rid = orr.rid and i.isCabinet=0) pieces from orderRoom orr where orr.oid =".$_POST["oid"];
 	$query = opendb($sql);
 	while($row = $query->fetch_assoc()){ 
 		$sql2 = "update orderRoom set cc = ".$row['boxes'].", pieces=".$row['pieces']." where rid = ".$row['rid'];
@@ -396,5 +399,13 @@ if($_POST['mode']=="countBoxesxDay"){
 	$query = opendb($sql);
 	$row = $query->fetch_assoc();
 	echo $row['total'];
+}
+
+if($_POST['mode']=="getRequiredDate"){
+	$sql = "select DATE_FORMAT(COALESCE(dateRequired,deliveryDate,curdate()), \"%Y-%m-%d\") mydate from mosOrder where oid =".$_POST['oid'];
+	//echo $sql;
+	$query = opendb($sql);
+	$row = $query->fetch_assoc();
+	echo $row['mydate'];
 }
 ?>
