@@ -293,7 +293,7 @@ if($_POST['mode'] == "submitToMobel"){
     
     $msg .= "</p><p>Thanks,</p><p>Mobel</p></body></html>";
     testNewEmailLayout();
-	sendmail("fernando@mobel.ca; orders@mobel.ca", "Order ".$mailOID." Submitted - ".$accountName, $msg);
+	//sendmail("fernando@mobel.ca; orders@mobel.ca", "Order ".$mailOID." Submitted - ".$accountName, $msg);
 	//echo $msg;
 }
 
@@ -521,7 +521,7 @@ function testNewEmailLayout(){
     </body>
     </html>";
     //echo $msg;
-    sendmail("fernando@mobel.ca; orders@mobel.ca", "Order ".$mailOID." New Layout - ".$accountName, $msg);
+    sendmail("fernando@mobel.ca; orders@mobel.ca", "Order ".$mailOID." - ".$accountName, $msg);
 }
 
 function roomTable($species,$interiorFinish,$door,$frontFinish,$drawerBox,$glaze,$smallDrawerFront,$sheen,$largeDrawerFront,$hinge,$drawerGlides,$finishedEnd){
