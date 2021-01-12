@@ -151,9 +151,15 @@ function getOrderID(OID){
 }
 
 function saveEmployeeSettings(objectID){
-	var arr = $("#"+objectID).val();
-	if(arr.length==0){
-		 arr = ["1","2","3","4","5","6","7","8","9","10"]; 
+	var arr = $("#"+objectID).val();//Getting all values from input multiselect options
+	switch(objectID){
+		case 'stateFilter'://Order states evaluation (Quoting, submitted, etc.)
+			if(arr.length==0){//if 0 then all the states will be selected
+				 arr = ["1","2","3","4","5","6","7","8","9","10"]; 
+			}
+		break;
+		default:
+		break;
 	}
 	myData = { mode: "setFilter", id: objectID, value: arr}; 
 	$.post("EmployeeMenuSettings.php",
@@ -163,7 +169,7 @@ function saveEmployeeSettings(objectID){
 					//console.log(jqXHR);
 					window.location.reload();
 				});
-	loadOrders(arr);					
+	//loadOrders(arr);
 }
 
 function loadOrders(objectID){
@@ -187,7 +193,6 @@ function setPrevState(){
 }
 
 function countBoxesxDay(date){
-	//console.log(date);
 	myData = { mode: "countBoxesxDay", date: date }; 
 	$.ajax({
 	    url: 'EmployeeMenuSettings.php',
@@ -205,106 +210,161 @@ function getRequiredDate(oid){
 	    url: 'EmployeeMenuSettings.php',
 	    type: 'POST',
 	    data: myData,
-	    success: function(data, status, jqXHR) {	 
-	    	//console.log(jqXHR['responseText']);
+	    success: function(data, status, jqXHR) {
 	    	$('#deliveryDate').val(jqXHR['responseText']);  
     	}
 	});	
 }
 </script> 
-<div class="col-sm-12 col-md-11 col-lg-11 mx-auto">
-	<div class="d-flex justify-content-end">
-		<a id="pop1" tabindex="0" role="button" data-toggle="popover" data-trigger="focus" data-content="Here you can see and update all the order status. If you can't find something change your filters.">
-			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-question-square" viewBox="0 0 16 16">
-			  <path fill-rule="evenodd" d="M14 1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
-			  <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
-			</svg>
-		</a>
-	</div>
-	<div class="card card-signin my-1">
-		<div class="card-body pt-0">
-		<?php 	
-		mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
-		//Getting employee settings
-		opendb2("select mainMenuDefaultStateFilter as state from employeeSettings where mosUser = " .$_SESSION["userid"]);
-		if($GLOBALS['$result2']-> num_rows >0){	
-			foreach ($GLOBALS['$result2'] as $row2) {
-				$str = $row2['state'];
-				$state_ar = explode(', ', $str);//convert string to array to create control dinamically
-				$sql ="select m.oid,a.busName as 'company', m.tagName, m.po, concat(mu.firstName,' ',mu.lastName) as 'designer', email, s.name as 'status', DATE(m.dateSubmitted) dateSubmitted, m.state, isPriority, isWarranty, CLid, m.deliveryDate from mosOrder m, state s, account a, mosUser mu where s.id = m.state and m.account = a.id and m.mosUser = mu.id and m.state in (".$row2['state'].") order by m.dateSubmitted asc";
-				opendb($sql);
-			}
+<style>
+div.sticky {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+}
+</style>
+<?php 	
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+//Getting employee settings
+opendb2("select mainMenuDefaultStateFilter as state, clFilter, servFilter from employeeSettings where mosUser = " .$_SESSION["userid"]);
+if($GLOBALS['$result2']-> num_rows >0){	
+	foreach ($GLOBALS['$result2'] as $row2) {
+		$state = $row2['state'];
+		$state_ar = explode(', ', $state);//convert string to array to create control dinamically
+		if($row2['clFilter']==""){
+			$clfilter = '1,2,3';
 		}else{
-			opendb2("INSERT INTO employeeSettings (mosUser) VALUES ( ".$_SESSION["userid"] .")");//new user
-			opendb2("select m.*,DATE(m.dateSubmitted) dateSubmitted,s.name as 'status', a.busName as 'company', concat(mu.firstName,' ',mu.lastName) as 'designer', email, m.state, isPriority, isWarranty, CLid, m.deliveryDate from mosOrder m, state s, account a, mosUser mu where s.id = m.state and m.account = a.id and m.mosUser = mu.id and m.state > 1 and m.state <> 10 order by m.dateSubmitted asc");
+			$clfilter = $row2['clFilter'];			
 		}
-		echo "<br/><div class=\"container-fluid\">";
-			?>
-			<div class="container-fluid" id="orderView">
-				<div class="row">
-					<div class="col-sm-6 col-lg-5 my-1">
-						<div class="input-group">
-							<div class="input-group-prepend">
-								<label class="input-group-text bg-primary text-white" for="stateFilter">
-									<svg width="1.5em" height="1.5em" viewBox="0 0 16 16" class="bi bi-funnel" fill="currentColor">
-										<path fill-rule="evenodd" d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5v-2zm1 .5v1.308l4.372 4.858A.5.5 0 0 1 7 8.5v5.306l2-.666V8.5a.5.5 0 0 1 .128-.334L13.5 3.308V2h-11z"/>
-									</svg>
-								</label>
-							</div>
-							<select class="custom-select" id="stateFilter" onchange="saveEmployeeSettings('stateFilter')" placeholder="Status" multiple>
-							<?php						
-							/*Table Filters Start*/
-							//Getting all states
-							opendb2("select * from state order by position asc");
-							//Building filter
-							if($GLOBALS['$result2']->num_rows > 0){			
-								foreach ($GLOBALS['$result2'] as $row2) {	
-									$selected = ">";
-									foreach ($state_ar as &$value) {									
-										if($value==$row2['id']){
-											$selected = "selected>";
-											break;
-										}
-									}
-									echo "<option value=\"".$row2['id']."\" ".$selected.$row2['name']."</option>" ;
+		if($row2['servFilter']==""){
+			$servfilter = "0";
+		}else{
+			$servfilter = $row2['servFilter'];			
+		}
+		$cl_ar = explode(', ', $clfilter);//convert string to array to create control dinamically
+		$srv_ar = explode(',', $servfilter);//convert string to array to create control dinamically
+		$sqlS ="";
+		$sqlW = "";
+		foreach ($srv_ar as &$value2) {	
+			switch($value2){
+				case 4:
+					$sqlS = " and isPriority = 1 ";
+				break;
+				case 5:
+					$sqlW = " and isWarranty = 1 ";
+				break;
+			}
+		}
+		$sql ="select m.oid,a.busName as 'company', m.tagName, m.po, concat(mu.firstName,' ',mu.lastName) as 'designer', email, s.name as 'status', DATE(m.dateSubmitted) dateSubmitted, m.state, isPriority, isWarranty, CLid, m.deliveryDate from mosOrder m, state s, account a, mosUser mu where s.id = m.state and m.account = a.id and m.mosUser = mu.id and m.state in (".$state.") and CLid in(".$clfilter.")".$sqlS.$sqlW." order by m.dateSubmitted asc";
+		//echo $sql;
+		opendb($sql);
+	}
+}else{
+	opendb2("INSERT INTO employeeSettings (mosUser) VALUES ( ".$_SESSION["userid"] .")");//new user
+	opendb2("select m.*,DATE(m.dateSubmitted) dateSubmitted,s.name as 'status', a.busName as 'company', concat(mu.firstName,' ',mu.lastName) as 'designer', email, m.state, isPriority, isWarranty, CLid, m.deliveryDate from mosOrder m, state s, account a, mosUser mu where s.id = m.state and m.account = a.id and m.mosUser = mu.id and m.state > 1 and m.state <> 10 order by m.dateSubmitted asc");
+}
+?>
+<div class="container-fluid sticky-top bg-white py-2" id="orderView">
+	<div class="row">
+		<div class="col-sm-6 col-lg-4">
+			<div class="input-group">
+				<div class="input-group-prepend">
+					<label class="input-group-text bg-primary text-white" for="stateFilter">State</label>
+				</div>
+				<select class="custom-select" id="stateFilter" onchange="saveEmployeeSettings('stateFilter')" placeholder="Status" multiple>
+				<?php				
+				//Getting all states
+				opendb2("select * from state order by position asc");
+				//Building filter
+				if($GLOBALS['$result2']->num_rows > 0){			
+					foreach ($GLOBALS['$result2'] as $row2) {	
+						$selected = ">";
+						foreach ($state_ar as &$value) {									
+							if($value==$row2['id']){
+								$selected = "selected>";
+								break;
+							}
+						}
+						echo "<option value=\"".$row2['id']."\" ".$selected.$row2['name']."</option>" ;
+					}
+				}
+				?>
+				</select>
+			</div>
+		</div>
+		<div class="col-sm-6 col-lg-4">
+			<div class="input-group">
+				<div class="input-group-prepend">
+					<a id="popOrderType" tabindex="0" role="button" data-toggle="popover" data-placement="bottom" data-trigger="focus" data-container="body" data-html="true">
+						<label class="input-group-text bg-primary text-white" for="stateFilter">Order Types</label>
+					</a>
+				</div>
+				<select class="custom-select" id="orderTypeFilter" multiple>
+					<optgroup id="clFilter" class="font-weight-bold" label="Cabinet Lines">
+						<?php
+						$result = opendb2("select id, CabinetLine from cabinetLine");
+						while($rowf = $result->fetch_assoc()){
+							echo "<option ";
+							foreach ($cl_ar as &$value) {									
+								if($value==$rowf['id']){
+									echo "selected ";
 								}
 							}
-							?>
-							</select>
-						</div>
-					</div>
-					<div class="col-sm-6 col-lg-2">
-						<table class="table table-sm mx-auto text-center"><tr><td class="table-warning p-0"><small><b>Service</b></small></td></tr><tr><td class="table-danger p-0"><small><b>Service w/warranty</b></small></td></tr><tr><td class="table-primary p-0"><small><b>Span Medical</b></small></td></tr><tr><td class="table-info p-0"><small><b>Builders</b></small></td></tr></table>
-					</div>
-					<div class="col-sm-6 col-lg-4 d-flex justify-content-start">
-						<div id="searchOrderBtn" class="col">
-						</div>
-						<div >					
-							<input id="openOrder" class="form-control" type="number" min="1" onkeyup="getOrderID(this.value)" placeholder="Open order by ID">					
-						</div>											
-					</div>
-					<div class="col-sm-6 col-lg-1 form-check d-flex flex-row-reverse pr-0">
-						<div>
-							<label class="form-check-label" for="lockStatus">
-								<svg width="1.5em" height="1.5em" viewBox="0 0 16 16" class="bi bi-lock text-primary" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-								  <path fill-rule="evenodd" d="M11.5 8h-7a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1zm-7-1a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-7zm0-3a3.5 3.5 0 1 1 7 0v3h-1V4a2.5 2.5 0 0 0-5 0v3h-1V4z"/>
-								</svg>
-							</label>
-						</div>
-						<div>
-							<input type="checkbox" class="form-check-input" id="lockStatus" checked>
-						</div>
-					</div>
-				</div>
+							echo "value=\"".$rowf['id']."\">".$rowf['CabinetLine']."</option>";
+						}
+						?>
+				    </optgroup>
+					<optgroup id="servFilter" class="font-weight-bold" label="Services">
+						<?php
+						if(count($srv_ar)==2){
+							echo "<option selected value=\"4\">Service</option> ";
+							echo "<option selected value=\"5\">Service/warranty</option> ";
+						}else{
+							foreach ($srv_ar as &$value2) {	
+								if($value2==4){
+									echo "<option selected value=\"4\">Service</option> ";
+									echo "<option value=\"5\">Service/warranty</option> ";
+								}elseif($value2==5){
+									echo "<option value=\"4\">Service</option> ";
+									echo "<option selected value=\"5\">Service/warranty</option> ";
+								}else{
+									echo "<option value=\"4\">Service</option> ";
+									echo "<option value=\"5\">Service/warranty</option> ";
+								}
+							}
+						}
+						?>
+				    </optgroup>							    
+				</select>
 			</div>
-			<hr style="height:1px;border-width:0;color:gray;background-color:gray">
-			<!--/div-->
+		</div>
+		<div class="col-sm-6 col-lg-3 d-flex justify-content-start">
+			<div id="searchOrderBtn" class="col">
+			</div>
+			<div >					
+				<input id="openOrder" class="form-control" type="number" min="1" onkeyup="getOrderID(this.value)" placeholder="Open order by ID">					
+			</div>											
+		</div>
+		<div class="col-sm-6 col-lg-1 form-check d-flex flex-row-reverse pr-0">
+			<div>
+				<label class="form-check-label" for="lockStatus">
+					<svg width="1.5em" height="1.5em" viewBox="0 0 16 16" class="bi bi-lock text-primary" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+					  <path fill-rule="evenodd" d="M11.5 8h-7a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1zm-7-1a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-7zm0-3a3.5 3.5 0 1 1 7 0v3h-1V4a2.5 2.5 0 0 0-5 0v3h-1V4z"/>
+					</svg>
+				</label>
+			</div>
+			<div>
+				<input type="checkbox" class="form-check-input" id="lockStatus" checked>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="col-sm-12 col-md-11 col-lg-11 mx-auto">
+	<div class="card card-signin my-1">
+		<div class="card-body pt-0">
 			<div class="table-responsive">
 				<table id="example" class="table table-hover">
 					<thead class="thead-light">
-						<tr>
-							
-						</tr>
 						<tr>
 							<th>OID</th>
 							<th>Company</th>
@@ -371,18 +431,14 @@ function getRequiredDate(oid){
 							echo "<td  data-toggle=\"tooltip\" title=\"Completition date\"><b><a href=\"http://".$_SERVER['SERVER_NAME'].$local."/Order.php?OID=" . $row['oid'] . "\">".$row['deliveryDate']."</b></td>";		
 							echo "</tr>";
 						}
+					}else{
+							echo "<tr>No data for that search criteria.</tr><tr>Please change your filter to see some records.</tr>";
+					}
 					?>
 					</tbody>
 				</table>
-				</div>
-			</div>
-				
-			<?php
-					}else{
-						//echo "<tr>No data for that search criteria.</tr><tr>Please change your filter to see some records.</tr>";
-					}
-			?>
-
+			</div>				
+			
 		</div>
 	</div>
 </div>
@@ -421,16 +477,24 @@ function getRequiredDate(oid){
 						</div>
 					</div>
 					<div id="modalContent" class="container">
-
 					</div>
 					<div class="modal-footer">
 						<!--button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button-->
 						<button type="submit" class="btn btn-primary">Save changes</button>
-				  </div>
+				  	</div>
 				</div>
 			</form>
 		</div>
 	</div> 
+</div> 
+<div id="popovercontent" hidden>
+	<table class="table table-sm mx-auto text-center py-2">
+		<tr><td class="table-warning p-0"><small><b>Service</b></small></td></tr>
+		<tr><td class="table-danger p-0"><small><b>Service w/warranty</b></small></td></tr>
+		<tr><td class="p-0"><small><b>Designers</b></small></td></tr>
+		<tr><td class="table-primary p-0"><small><b>Span Medical</b></small></td></tr>
+		<tr><td class="table-info p-0"><small><b>Builders</b></small></td></tr>
+	</table>
 </div> 
 <?php include '../includes/foot.php';?>  
 <script>
@@ -446,6 +510,24 @@ $(document).ready(function () {
 		buttonWidth: '350px',
 		maxHeight: 600,
 		dropRight: true
+	});
+
+	$('#orderTypeFilter').multiselect({
+		allSelectedText: 'All order types are selected',
+		buttonWidth: '350px',
+		maxHeight: 600,
+		dropRight: true,
+		onChange: function(options, checked) {
+				var id = options[0].parentNode['id'];//get option group id
+				var arr = $('#'+id+' option:selected').map(function(){return this.value;}).get();//get all the options selected for that option group
+				myData = { mode: "setFilter", id:id, value: arr}; 
+				$.post("EmployeeMenuSettings.php",
+						myData, 
+						   function(data, status, jqXHR) {
+								//console.log(jqXHR);
+								window.location.reload();
+							});
+        }
 	});
 	
 	$('#listRooms.nav-tabs').on('click', 'a', function() {
@@ -463,9 +545,9 @@ $(document).ready(function () {
 	  }
 	});
 	
-	//Department selection
+	//Department selection filter
 	$('#selDept').multiselect({
-		allSelectedText: 'All selected',
+		allSelectedText: 'All departments selected',
 		buttonWidth: '100%',
 		dropRight: true,
 		onChange: function(option, checked) {
@@ -477,6 +559,20 @@ $(document).ready(function () {
 			$.post("EmployeeMenuSettings.php",myData);
 		}
 	});
-	$('[data-toggle="popover"]').popover({ title: "What is this page for?" });
+
+	/*Tooltips and Popovers use a built-in sanitizer to sanitize options which accept HTML */
+	$.fn.popover.Constructor.Default.whiteList.table = [];
+    $.fn.popover.Constructor.Default.whiteList.tr = [];
+    $.fn.popover.Constructor.Default.whiteList.td = [];
+    $.fn.popover.Constructor.Default.whiteList.th = [];
+    $.fn.popover.Constructor.Default.whiteList.div = [];
+    $.fn.popover.Constructor.Default.whiteList.tbody = [];
+    $.fn.popover.Constructor.Default.whiteList.thead = [];
+	$("#popOrderType").popover({
+    	html: true, 
+		content: function() {
+        	return $('#popovercontent').html();
+        }
+	});
 });
 </script>

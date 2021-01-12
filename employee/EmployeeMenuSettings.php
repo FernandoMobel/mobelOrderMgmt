@@ -53,12 +53,23 @@ if($_POST['mode']=="getOrders"){
 }
 
 if($_POST['mode']=="setFilter"){
+	$arr = implode(', ', $_POST['value']);//getting all values from array
 	//Checking which filter is going to be updated
-	if($_POST['id']=="stateFilter"){
-		$arr = implode(', ', $_POST['value']);//getting all values from array
+	switch($_POST['id']){
+		case "stateFilter":
 		$sql = "update employeeSettings set mainMenuDefaultStateFilter = \"".$arr."\" where mosUser = " . $_SESSION["userid"];
-		opendb2($sql);
+		break;
+		case "clFilter":
+		$sql = "update employeeSettings set clFilter = \"".$arr."\" where mosUser = " . $_SESSION["userid"];
+		break;
+		case "servFilter":
+		$sql = "update employeeSettings set servFilter = \"".$arr."\" where mosUser = " . $_SESSION["userid"];
+		break;
+		default:
+		break;
 	}
+	echo $sql;
+	opendb2($sql);
 }
 
 if($_POST['mode']=="getOrderID"){

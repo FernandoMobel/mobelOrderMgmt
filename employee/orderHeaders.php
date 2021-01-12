@@ -1,12 +1,22 @@
-<?php $CLid = $_SESSION["defaultCLid"];?>
+<?php 
+$CLid = $_SESSION["defaultCLid"];
+?>
 <div class="container-fluid">
 	<div class="card card-signin my-3">
+		<!-- --------------------------------------------------------------------HEADER CABINET LINE SELECTION---------------------------------------------------------------------------- -->
 		<div class="card-header">
-			<div class="d-flex justify-content-center">
-				<select id="CLines">
-					<option value="1">Mobel Designers</option>
-					<!--option value="2">Mobel Builders</option>
-					<option value="3">Mobel Medical</option-->
+			<div class="col-4 d-flex justify-content-center mx-auto">
+				<select id="CLines" class="custom-select">
+					<!--option value="">Please select a cabinet line</option-->
+					<?php
+					$result = opendb2("select id, CabinetLine from cabinetLine");
+						while($row = $result->fetch_assoc()){
+							echo "<option ";
+							if($row['id']==$CLid)
+								echo "selected ";
+							echo "value=\"".$row['id']."\">".$row['CabinetLine']."</option>";
+						}
+					?>
 				</select>
 			</div>
 		</div>
@@ -23,10 +33,8 @@
 						$result = opendb($sql);
 						while ( $row = $result->fetch_assoc())  {
 							echo "<option ";
-							
 							if($row["visible"]==1)
 								echo "selected ";
-							
 							echo "value=\"".$row["id"]."\">".$row["name"]."</option>";
 						}
 						?>

@@ -1,0 +1,36 @@
+[Link]
+PCDate="2717896816-30827754"
+CreateBy="MOS"
+
+[Header]
+Version=1
+Unit=0
+Name="3116"
+Description="Tag name or description"
+PurchaseOrder=""
+Comment=""
+Customer="Customer Name"
+Contact=""
+Address1="Full address"
+City="City"
+State="State"
+Zip=""
+Phone=""
+EMail=""
+
+[Walls]
+-100.0000,-70.0000,0.0625,418.0625,96.0000,4.5000,1,2,"0",,,,"1","S"
+
+[Catalog]
+Name="2020 Catalog.cvc"
+
+[Parameters]
+Note="NOTE1","NOTE","text","FDB"
+Note="NOTE2","NOTE2","text",""
+Note="NOTE3","NOTE3","text","SEE SAMPLE-PAINT"
+Note="NOTE4","NOTE4","text","SEE SAMPLE-PAINT"
+Note="NOTE5","NOTE5","text","Standard"
+Note="NOTE6","NOTE6","text",""
+
+[Cabinets]
+1,"FDB24-R",24.0000,34.5000,23.7500,"*","N",1,"","1-F",0.0000,0.0000,0.0000,2,0,"1V|T","1","S"
