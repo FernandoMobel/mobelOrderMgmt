@@ -71,7 +71,7 @@ if($_POST['mode']=="getFileModal"){
     <table id="FileList" class="display nowrap ml-0" style="width:100%">
     <thead>
           <tr>
-            
+            <th></th>
             <th>File Name</th>
             <th>Room Name</th>
             <th>Item #</th>
@@ -81,7 +81,7 @@ if($_POST['mode']=="getFileModal"){
     </thead>
     <tfoot>
       <tr>
-        
+        <th></th>
         <th>File Name</th>
         <th>Room Name</th>
         <th>Item #</th>
@@ -122,6 +122,7 @@ if($_POST['mode']=="getFiles"){
         foreach ($GLOBALS['$result'] as $row) {
             echo "<tr>";
             //echo "<td>" . $row['oid'] . "</td>";
+            echo "<td><a href=\"#\" onclick=\"window.open('uploads/DealerFiles/".$row2['account']."/".$_POST["oid"]."/" . $row['id'] . "." . strtolower(pathinfo($row['name'],PATHINFO_EXTENSION))."', '_blank', 'fullscreen=yes'); return false;\">View</a></td>";
             echo "<td><b><form action=\"download.php\" method=\"post\"><input name=\"OGName\" type=\"hidden\" value=\"". $row['name'] . "\"></input><input name=\"DealerFile\" type=\"hidden\" value=\"". $row2["account"]."/".$_POST["oid"]."/" . $row['id'] . "." . strtolower(pathinfo($row['name'],PATHINFO_EXTENSION)). "\" ></input><input type=\"submit\" value=\"" . $row['name'] . "\"/></form></b></td>";
             echo "<td>" . "N/A" . "</td>";
             echo "<td>" . "N/A" . "</td>";
@@ -136,6 +137,7 @@ if($_POST['mode']=="getFiles"){
         foreach ($GLOBALS['$result'] as $row) {
             echo "<tr>";
             //echo "<td><b>" . $row['oid'] . "</b></td>";
+            echo "<td><a href=\"#\" onclick=\"window.open('uploads/DealerFiles/".$row2['account']."/".$_POST["oid"]."/" . $row['id'] . "." . strtolower(pathinfo($row['fileName'],PATHINFO_EXTENSION))."', '_blank', 'fullscreen=yes'); return false;\">View</a></td>";
             echo "<td><b><form action=\"download.php\" method=\"post\"><input name=\"OGName\" type=\"hidden\" value=\"". $row['fileName'] . "\"></input><input name=\"DealerFile\" type=\"hidden\" value=\"". $row2['account']."/".$_POST["oid"]."/" . $row['id'] . "." . strtolower(pathinfo($row['fileName'],PATHINFO_EXTENSION)). "\" ></input><input type=\"submit\" value=\"" . $row['fileName'] . "\"/></form></b></td>";
             echo "<td>" . $row['roomName'] . "</td>";
             echo "<td>" . "N/A" . "</td>";
