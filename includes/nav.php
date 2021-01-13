@@ -8,11 +8,13 @@ if(strcmp($_SERVER['SERVER_NAME'],"localhost")==0 || strcmp($_SERVER['SERVER_NAM
 /*Is authorized?*/
 if(isset($_SESSION["auth"])){
 	if(!$_SESSION["auth"] && $_SERVER['REQUEST_URI']!= $local."/index.php"){
-		header("Location: index.php");
+		header("Location: http://".$_SERVER['SERVER_NAME'].$local."/index.php");
+    //header("Location: index2.php");
 	}
 }else{
 	$_SESSION["auth"]=false;
-	header("Location: index.php");
+	//header("Location: index2.php");
+  header("Location: http://".$_SERVER['SERVER_NAME'].$local."/index.php");
 }
 ?>
 <!DOCTYPE html>

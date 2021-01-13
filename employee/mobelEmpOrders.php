@@ -432,7 +432,7 @@ if($GLOBALS['$result2']-> num_rows >0){
 							echo "</tr>";
 						}
 					}else{
-							echo "<tr>No data for that search criteria.</tr><tr>Please change your filter to see some records.</tr>";
+							//echo "<tr>No data for that search criteria. Please change your filter to see some records.</tr>";
 					}
 					?>
 					</tbody>
