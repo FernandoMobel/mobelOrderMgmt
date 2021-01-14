@@ -179,7 +179,7 @@ if($_POST['mode']=="getOrderRooms"){
 if($_POST['mode']=="updateRoomDetails"){ 
 	if(strcmp($_POST['col'],"deliveryDate")==0){
 		//Update delivery date (this is updated only when order status is sucessfully changed to "Detailed and Production Ready")
-		$sql = "update mosOrder set ".$_POST['col']." = '".$_POST['val']."' where oid = ".$_POST['oid'] ;
+		$sql = "update mosOrder set ".$_POST['col']." = '".$_POST['val']."',detailedBy = ".$_SESSION["userid"] ." where oid = ".$_POST['oid'] ;
 		opendb($sql);
 		//Calculate and Insert or update wrapping and finishing dates into schedule
 		$sql2 = "select (select count(1) from schedule ss where ss.rid = orr.rid) exist, (select id from material m where m.id = (select mid from species sp where sp.id = orr.species) ) material, (select finishType from frontFinish ff where ff.id = orr.frontFinish ) finishType, glaze, sheen, orr.rid, orr.name, orr.cc, orr.fronts, DATE(COALESCE(deliveryDate,dateRequired)) dateRequired, COALESCE(orr.pieces,(select count(1) from orderItem oi, item i where oi.iid = i.id and i.isCabinet = 0 and oi.rid = orr.rid))pieces from orderRoom orr, mosOrder mo where mo.oid = orr.oid and orr.oid = ".$_POST['oid']." order by orr.name asc";

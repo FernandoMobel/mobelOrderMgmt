@@ -127,13 +127,17 @@ function submitToMobel(){
 		alert(noChangeMsg);
 		return;
 	}
-	myData = { mode: "submitToMobel", oid: "<?php echo $_GET["OID"] ?>"};
-	$.post("save.php",
+	if(!$('#shipAddress').val()){
+		alert('Please select a delivery option');
+	}else{
+		myData = { mode: "submitToMobel", oid: "<?php echo $_GET["OID"] ?>"};
+		$.post("save.php",
 			myData, 
 		       function(data, status, jqXHR) {
 		    	   //console.log(jqXHR['responseText']);
 				   window.location.reload();
 		        });
+	}	
 }
 
 
@@ -1218,9 +1222,10 @@ function orderValidation(){
 		</div>
 		<div class="row print">
 			<?php
-			$sqlSh = "select (select a.busDBA from account a where a.id = mo.account)busName,shipAddress,(select concat(coalesce(unit,' '),' ',street,' ',city,' ',province,' ',country,' ',postalCode)  from accountAddress aA where aA.id =mo.shipAddress) shipTo from mosOrder mo where oid = ".$_GET["OID"];
+			$sqlSh = "select coalesce((select concat(mu.firstName,' ',mu.lastName) from mosUser mu where mu.id = mo.submittedBy),'No name')whoSubmit,(select a.busDBA from account a where a.id = mo.account)busName,shipAddress,(select concat(coalesce(unit,' '),' ',street,' ',city,' ',province,' ',country,' ',postalCode)  from accountAddress aA where aA.id =mo.shipAddress) shipTo from mosOrder mo where oid = ".$_GET["OID"];
 			$result = opendb($sqlSh);
 			$row = $result->fetch_assoc();
+			echo "<label>Submitted by: " .$row['whoSubmit']."</label></br>";
 			echo "<label>Customer: " .$row['busName']."</label></br>";
 			if(strlen($row['shipAddress'])>0){
 				echo "<label>Ship to: " .$row['shipTo']."</label>";
@@ -2503,11 +2508,11 @@ function orderValidation(){
                     foreach ($GLOBALS['$result'] as $row) {
                         $OrderNote = $row['note'];
                         if(is_null($row['shipAddress'])||$row['shipAddress']==""){
-                            echo "<option ". "selected" ." value=\"" . $row['id'] . "\">" . "Please choose a ship location" . "</option>";
+                            echo "<option value=\"\">" . "Please choose a ship location" . "</option>";
                         }
 
                 		foreach ($GLOBALS['$result'] as $row) {
-                		    if($row['shipAddress']==$row[id]){
+                		    if($row['shipAddress']==$row['id']){
                                 echo "<option ". "selected" ." value=\"" . $row['id'] . "\">" . $row['contactName']. " " . $row['contactEmail']. " " . $row['contactPhone']. " " . $row['unit']. " " . $row['street'].  ", " .$row['city']. ", " . $row['province']. " " . $row['postalCode'].  "</option>";
                 		    }else{
                 		        echo "<option value=\"" . $row['id'] . "\">" . $row['contactName']. " " . $row['contactEmail']. " " . $row['contactPhone']. " " . $row['unit']. " " . $row['street'].  ", " .$row['city']. ", " . $row['province']. " " . $row['postalCode'].  "</option>";

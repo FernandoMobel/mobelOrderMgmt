@@ -138,7 +138,7 @@ if($_POST['mode'] == "setCurrentLeadtime"){
 
 if($_POST['mode'] == "submitToMobel"){
     $CLid = 1;
-    $sql = "update mosOrder set dateSubmitted = now(), state = '2', leadTime = (select currentLeadtime from settings) where oid = '" . $_POST['oid'] . "' and state = 1";
+    $sql = "update mosOrder set dateSubmitted = now(), submittedBy=".$_SESSION["userid"].", state = '2', leadTime = (select currentLeadtime from settings) where oid = '" . $_POST['oid'] . "' and state = 1";
     opendb($sql);
     //$sql = "select * from mosOrder o, accountAddress aA, account a, mosUser mu where o.mosUser = mu.id and o.account = a.id and o.shipAddress = aA.id and o.oid = '" . $_POST['oid'] . "'";
 	$sql = "select * ,(select concat(unit,' ',street,' ',city,' ',province,' ',country,' ',postalCode)  from accountAddress aA where aA.id =o.shipAddress) shipTo from mosOrder o, mosUser mu, account a where o.mosUser = mu.id and o.account = a.id and o.oid = '" . $_POST['oid'] . "'";
