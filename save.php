@@ -455,7 +455,7 @@ function testNewEmailLayout(){
                         }
                         $isParent = 0;
                         $si = $si + 1;
-                        $i = $i - 1;
+                        //$i = $i - 1;
                     }
                     $hinging = "";
                     if($row2['hingeLeft']==1){

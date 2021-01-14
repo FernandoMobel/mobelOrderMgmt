@@ -849,9 +849,13 @@ function fixDate(){
 
 function printPrice(){
 	if(printChk.checked == true){
+		$('#roomTotal').removeClass('d-print-none');
+		$('#roomTotal').addClass('d-print-block');
 		$('#itemListingTable .priceCol').removeClass('d-print-none');
 		$('#itemListingTable .priceCol').addClass('d-print-block');
 	}else {
+		$('#roomTotal').removeClass('d-print-block');
+		$('#roomTotal').addClass('d-print-none');
 		$('#itemListingTable .priceCol').removeClass('d-print-block');
 		$('#itemListingTable .priceCol').addClass('d-print-none');
 	}
