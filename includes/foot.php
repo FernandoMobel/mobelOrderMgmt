@@ -7,10 +7,10 @@ if(strcmp($_SERVER['SERVER_NAME'],"localhost")==0 || strcmp($_SERVER['SERVER_NAM
 
 echo "<script type=\"text/javascript\" src=\"http://".$_SERVER['SERVER_NAME'].$local."/js/jquery340.js\"></script>";
 echo "<script type=\"text/javascript\" src=\"http://".$_SERVER['SERVER_NAME'].$local."/js/jqueryui112/jquery-ui.min.js\"></script>";
+echo "<script type=\"text/javascript\" src=\"http://".$_SERVER['SERVER_NAME'].$local."/js/MDB/js/popper.min.js\"></script>";
 echo "<script type=\"text/javascript\" src=\"http://".$_SERVER['SERVER_NAME'].$local."/js/bootstrap431/js/bootstrap.bundle.min.js\"></script>";
 echo "<script type=\"text/javascript\" src=\"http://".$_SERVER['SERVER_NAME'].$local."/js/bootstrap431/js/bootstrap.min.js\"></script>";
 echo "<script type=\"text/javascript\" src=\"http://".$_SERVER['SERVER_NAME'].$local."/js/MDB/js/addons/datatables.min.js\"></script>";
-echo "<script type=\"text/javascript\" src=\"http://".$_SERVER['SERVER_NAME'].$local."/js/MDB/js/popper.min.js\"></script>";
 echo "<script type=\"text/javascript\" src=\"http://".$_SERVER['SERVER_NAME'].$local."/js/bootstrapselect1139/dist/js/bootstrap-select.min.js\"></script>";
 echo "<script type=\"text/javascript\" src=\"http://".$_SERVER['SERVER_NAME'].$local."/js/bootstrap-select/dist/js/bootstrap-multiselect.min.js\"></script>";
 echo "<script type=\"text/javascript\" src=\"http://".$_SERVER['SERVER_NAME'].$local."/js/MDB/js/mdb.min.js\"></script>";
