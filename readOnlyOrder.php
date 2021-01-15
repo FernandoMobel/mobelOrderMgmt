@@ -1,9 +1,14 @@
 <?php
 include 'includes/nav.php';
 include_once 'includes/db.php';
-
+echo "<style>
+	.print {display:none!important;}
+	@media print {
+	  .print {display:block!important;}	  
+	}
+	</style>";
 //$_POST['oid'] = 179;
-$sql = "select * ,(select concat(unit,' ',street,' ',city,' ',province,' ',country,' ',postalCode)  from accountAddress aA where aA.id =mo.shipAddress) shipTo, isPriority, isWarranty, CLid from mosOrder mo, mosUser mu, account a, cabinetLine cl where mo.mosUser = mu.id and mo.account = a.id and mo.CLid = cl.id and mo.oid = '" . $_POST['oid'] . "'";
+$sql = "select * ,coalesce((select concat(unit,' ',street,' ',city,' ',province,' ',country,' ',postalCode)  from accountAddress aA where aA.id =mo.shipAddress),'No address selected') shipTo, coalesce((select concat(mu.firstName,' ',mu.lastName) from mosUser mu where mu.id = mo.submittedBy),'No name')whoSubmit, (select a.busDBA from account a where a.id = mo.account)busName,isPriority, isWarranty, CLid from mosOrder mo, mosUser mu, account a, cabinetLine cl where mo.mosUser = mu.id and mo.account = a.id and mo.CLid = cl.id and mo.oid = '" . $_POST['oid'] . "'";
 $result = opendb($sql);
 $row = $result->fetch_assoc();
 $accountName = $row['busDBA'];
@@ -21,15 +26,36 @@ if($row['isWarranty']==1)
 $msg = "
 <body>
 	<div class=\"bg-light container-fluid\">
-		<table class=\"table my-0\">
-			<tr class=\"text-center py-1 ".$orderType."\">
-				<td class=\"py-1\"><h5>Order ID: ".$mailOID."</h5></td>
-				<td class=\"py-1\"><h5>Date Submitted: ". substr($row['dateSubmitted'],0,10) ."</h5></td>
-			</tr>
-		</table>
-		<div style=\"height: 7px\" class=\"bg-dark\">&nbsp</div>";				
+		<div class=\"row\">
+			<div class=\"print col-3 d-flex align-items-center justify-content-center\">
+				<img id=\"logo\" alt=\"logo\" src=\"https://mobel.ca/wp-content/uploads/2019/01/Logo.png\"/>
+			</div>
+			<div class=\"col-9\">
+				<table class=\"table table-sm my-auto mx-5\">
+					<tr>
+						<td class=\"border-0\"><h5>Order ID:</h5></td>
+						<td class=\"border-0\"><h5>".$mailOID."</h5></td>
+						<td class=\"border-0\"><b>Customer:</b></td>
+						<td class=\"border-0\">". $row['busName']."</td>
+					</tr>
+					<tr>
+						<td class=\"border-0\"><b>Submitted by:</b></td>
+						<td class=\"border-0\">". $row['whoSubmit'] ."</td>
+						<td class=\"border-0\"><b>Date Submitted:</b></td>
+						<td class=\"border-0\">". substr($row['dateSubmitted'],0,10) ."</td>
+					</tr>
+					<tr>
+						<td class=\"border-0\"><b>Ship to:</b></td>
+						<td class=\"border-0\">". $row['shipTo'] ."</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		<div style=\"height: 7px\" class=\"bg-dark\">&nbsp</div>";
+		if(isset($row['note']))
+			$msg .= "<h5>Order notes: ".$row['note']."</h5>";
 		//Rooms start here
-		$sql = "select orr.rid,orr.name rname,sp.name spname,irf.name irfname,dd.name ddname,ff.name ffname,db.name dbname,gl.name glname,sdf.name sdfname,sh.name shname,ldf.name ldfname,h.name hname,dg.name dgname, fe.name fename
+		$sql = "select orr.rid,orr.note,orr.name rname,sp.name spname,irf.name irfname,dd.name ddname,ff.name ffname,db.name dbname,gl.name glname,sdf.name sdfname,sh.name shname,ldf.name ldfname,h.name hname,dg.name dgname, fe.name fename
 		from orderRoom orr,species sp,interiorFinish irf,door dd,frontFinish ff,drawerBox db,glaze gl,smallDrawerFront sdf,sheen sh,largeDrawerFront ldf,hinge h,drawerGlides dg,finishedEnd fe where orr.oid=".$mailOID." and orr.species=sp.id and orr.door=dd.id and orr.frontFinish=ff.id and orr.glaze=gl.id and orr.glaze=gl.id and orr.sheen=sh.id and orr.hinge=h.id and orr.smallDrawerFront=sdf.id and orr.largeDrawerFront=ldf.id and orr.drawerGlides=dg.id and orr.drawerBox=db.id and orr.interiorFinish=irf.id and orr.finishedEnd=fe.id order by orr.name";
 		$result = opendb($sql);
 		$totalOrder = 0;
@@ -37,7 +63,8 @@ $msg = "
     		$roomTotal = 0;
 	    	$msg .="<table class=\"table table-sm mt-1 mb-0 border border-dark\">
 				<tr class=\"table-secondary\">
-					<td class=\"text-start py-0\" colspan=\"4\"><h5><b>".$row['rname']."</b></h5></td>
+					<td class=\"text-start py-1 my-auto\"><h5><b>Room: ".$row['rname']."</b></h5></td>
+					<td class=\"text-start py-1 my-auto\" colspan=\"3\"><b>Room notes: ".$row['note']."</b></td>
 				</tr>
 				<tr>
 					<td class=\"text-right py-0 font-weight-bold\">Species:</td>
