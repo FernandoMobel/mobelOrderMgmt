@@ -990,6 +990,7 @@ function copyItems(){
 		alert(noChangeMsg);
 		return;
 	}
+	/*get a list for all the items checked*/
 	let items = [];
 	$('#copyItemList input.item:checked').each(function(){ 
 		items.push(this.id);
@@ -2604,7 +2605,6 @@ $(document).ready(function(){
 	$('.datepicker').datepicker({ 
 		startDate: new Date()
 	});
-	$('[data-toggle="tooltip"]').tooltip();
 	$('#CLid').on('focusin', function(){
 		$(this).data('val', $(this).val());
 	});
