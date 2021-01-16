@@ -819,6 +819,12 @@ if($_POST['mode']=="getImage"){
     
 }
 
+if($_POST['mode']=="updateFromOrder"){
+    $sql = "update mosOrder set fromOrder='".$_POST['foid']."' where oid=".$_POST['curoid'];
+    opendb($sql);
+    echo $sql;
+}
+
 //copy items including mods to specific room
 function copyItemsToRoom($items,$rid){
 	$text = "";

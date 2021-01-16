@@ -870,9 +870,17 @@ function printPrice(){
 ***********************************************************************************************************************************************/
 function getYourOrderItems(oid){
 	//If order options modal is displayed, this should be closed and the copy items modal is displayed instead
-	var modal1 = "";
+	//var modal1 = "";
 	if(($("#orderOptions").data('bs.modal') || {})._isShown){
-		//modal1 = "2";
+		//Update "order from", on mosOrder
+		myData = { mode: "updateFromOrder", foid:oid, curoid:<?php echo $_GET["OID"]?> };
+		$.post("OrderItem.php",
+				myData, 
+				function(data, status, jqXHR) {
+					//console.log(jqXHR['responseText']);
+				});
+		
+		$('#selCopyOrd').val(oid);
 		$('#orderOptions').modal('hide');
 		$('#copyItemsModal').modal('show');
 		$('#btnGetItems').prop('disabled',false);	
@@ -2187,7 +2195,7 @@ function orderValidation(){
 								<h5 class="modal-title">Copy Items</h5>
 							</div>
 							<div class="col">
-								<select onchange="getYourOrderItems(this.value)" class="custom-select">
+								<select id="selCopyOrd" onchange="getYourOrderItems(this.value)" class="custom-select">
 									<option value="">Please select an order</option>
 									<?php
 									$admin = "";
@@ -2458,7 +2466,11 @@ function orderValidation(){
 							$sql = "select m.oid,m.tagName from mosOrder m, mosUser u where m.mosUser = u.id and (u.email = '" . $_SESSION["username"] . "' ". $admin ."  )";
 							$result = opendb($sql);
 							while($row=$result->fetch_assoc()){
-								echo "<option value=\"".$row['oid']."\">".$row['oid']." - ".$row['tagName']."</option>";
+								echo "<option ";
+								if($row['oid']==$fromOrder)
+									echo "selected ";
+								echo "value=\"".$row['oid']."\">".$row['oid']." - ".$row['tagName']."</option>";
+								//echo "<option value=\"".$row['oid']."\">".$row['oid']." - ".$row['tagName']."</option>";
 							}
 							?>
 						</select>						
