@@ -11,8 +11,10 @@ if(strlen($_SESSION["firstName"])==1 && $_SESSION["account"]==2){
 		   window.location.reload(1);
 		}, 60000);";
 }else{
-	echo "const department =1;";
-	echo "const dateType =3;";
+	/*echo "const department =1;";
+	echo "const dateType =3;";*/
+	echo "var department =1;";
+	echo "var dateType =3;";
 }
 ?>
 
@@ -21,19 +23,22 @@ function loadSchWeek(date, dept){
 		date = 0;//localStorage.setItem('date',getMondayCurWeek());
 	}*/
 	//What schedule are using
-	/*switch (department){
+	switch (dept){
 		case '3'://Shipping
-			department = 1;			
+			department = 1;		
+			dateType = 3;	
 		break;
 		case '2'://Wrapping
 			department = 2;
+			dateType = 2;
 		break;
 		case '1'://Sanding
 			department = 8;
+			dateType = 1;
 		break;
 	  default:
 		// code block
-	}*/
+	}
 
 	console.log('Date:'+localStorage.getItem('date')+' dateType:'+dateType+' Department:'+department+' Filter:'+localStorage.getItem('onlyReady')+' see complete: '+localStorage.getItem('displayComp'));
 	myData = { mode: "loadSchWeek", date: date/*localStorage.getItem('date')*/, dateType: dateType, mydid:department, filter:localStorage.getItem('onlyReady'), displayComp:localStorage.getItem('displayComp')};
@@ -48,8 +53,10 @@ function loadSchWeek(date, dept){
 			$('#scheduleWeek').append(data);
 			if(date==0){
 				$('#fromDate').text('All Jobs');
+				$('#fromDatePrint').text('All Jobs');
 			}else{
-				$('#fromDate').text(localStorage.getItem('date'));
+				$('#fromDate').text('Week of '+localStorage.getItem('date'));
+				$('#fromDatePrint').text('Week of '+localStorage.getItem('date'));
 			}
 			loadFilters();
 	  })
@@ -169,6 +176,11 @@ function loadFilters(){
 	}else{
 		cols.push('fns');
 	}
+	if(localStorage.getItem('sht')=='false'){
+		$('.sht').hide();
+	}else{
+		cols.push('sht');
+	}
 	//set visible cols 
 	if(cols.length>0){
 		$("#columns").val(cols);
@@ -241,36 +253,45 @@ function getWithExpiry(key) {
 </style>
 
 <div class="card card-signin my-3 mx-0">
-	<!--div class="card-header">
+	<?php
+	$superUser = array(11,30,32);
+	if(in_array($_SESSION["userid"],$superUser)){
+	?>
+	<div class="card-header d-print-none">
 		<div class="d-flex flex-row">
 			<div class="p-2">
 				<div class="custom-control custom-radio">
-					<input onchange="loadSchWeek(this.value,1)" type="radio" class="custom-control-input" id="chk3" value="3" name="defaultExampleRadios" checked>
-					<label class="custom-control-label" for="chk3">SHIPPING</label>
+					<input onchange="loadSchWeek(0,this.value)" type="radio" class="custom-control-input" id="chk3" value="3" name="defaultExampleRadios" checked>
+					<label class="custom-control-label" for="chk3">COMPLETITION</label>
 				</div>
 			</div>
 			<div class="p-2">
 				<div class="custom-control custom-radio">
-					<input onchange="loadSchWeek(this.value,2)" type="radio" class="custom-control-input" id="chk2" value="2" name="defaultExampleRadios">
+					<input onchange="loadSchWeek(0,this.value)" type="radio" class="custom-control-input" id="chk2" value="2" name="defaultExampleRadios">
 					<label class="custom-control-label" for="chk2">WRAPPING</label>
 				</div>
 			</div>
 			<div class="p-2">
 				<div class="custom-control custom-radio">
-					<input onchange="loadSchWeek(this.value,8)" type="radio" class="custom-control-input" id="chk1" value="1" name="defaultExampleRadios">
+					<input onchange="loadSchWeek(0,this.value)" type="radio" class="custom-control-input" id="chk1" value="1" name="defaultExampleRadios">
 					<label class="custom-control-label" for="chk1">SANDING</label>
 				</div>
 			</div>
-			<div class="p-2">
+			<!--div class="p-2">
 				<div class="custom-control custom-radio">
-					<input onchange="loadSchWeek(this.value,9)" type="radio" class="custom-control-input" id="chk0" value="1" name="defaultExampleRadios">
+					<input onchange="loadSchWeek(0,this.value)" type="radio" class="custom-control-input" id="chk0" value="1" name="defaultExampleRadios">
 					<label class="custom-control-label" for="chk0">CNC</label>
 				</div>
-			</div>
+			</div-->
 		</div>
-	</div-->
-			
-	<div class="card-body px-3">			
+	</div>
+	<?php
+	}
+	?>	
+	<div class="card-body px-3 pt-1">
+		<div class="row text-center d-print-block py-3" hidden>
+			<h5 id="fromDatePrint"></h5>
+		</div>
 		<div class="row d-print-none">
 			<div class="d-flex justify-content-start col-sm-6 col-lg-4 mx-auto">
 				<div class="p-2">
@@ -282,6 +303,7 @@ function getWithExpiry(key) {
 						<option selected value="mat" id="chkMT">MATERIAL</option>
 						<option selected value="drs" id="chkDS">DOOR STYLE</option>
 						<option selected value="fns" id="chkFS">FINISH</option>
+						<option selected value="sht" id="chkST">SHIPPING TO</option>
 					</select>
 				</div>
 			</div>
@@ -331,6 +353,7 @@ function getWithExpiry(key) {
 						<th class="mat">MATERIAL</th>
 						<th class="drs">DOOR STYLE</th>
 						<th class="fns">FINISH</th>
+						<th class="sht">SHIPPING TO</th>
 						<th>DONE</th>
 					</tr>
 				</thead>
@@ -358,6 +381,7 @@ $(document).ready(function () {
 		onChange: function(option, checked) {
 			$("."+$(option).val()).toggle('display');
 			localStorage.setItem($(option).val(), checked);//store cookie for column filter
+			console.log(localStorage);
 		}
 	});
 });
