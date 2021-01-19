@@ -62,12 +62,11 @@ function saveOrder(objectID){
 			$("#"+objectID.replace(".","\\.")).val(0);
 		}
 	}
-	
 	myData = { mode: "updateOrder", id: objectID, value: $("#"+objectID.replace(".","\\.")).val().replace("'","''"), oid: "<?php echo $_GET["OID"] ?>", isPriority: $("#isPriority").val()};
 	$.post("OrderItem.php",
 		myData,
-	       function(data, status, jqXHR){
-        		if(data == "success"){
+	       function(data, status, jqXHR){	       	
+	       		if(data == "success"){
         	    	$("#"+objectID).css("border-color", "#00b828");
 					if(objectID=="CLid"){//reload page when updating Cabinet Line
 						resetOrderDefault("<?php echo $_GET["OID"] ?>",$("#"+objectID).data('val'),$("#"+objectID).val());
@@ -2537,9 +2536,9 @@ function orderValidation(){
                 		    echo "<option value=\"" . $row['id'] . "\">" . "Custom Site Delivery (additional charge may apply)" . "</option>";
                 		}
                 		if($row['shipAddress']=='1'){
-                		    echo "<option ". "selected" ." value=\"" . $row['id'] . "\">" . "Pick up at Mobel" . "</option>";
+                		    echo "<option ". "selected" ." value=\"1\">" . "Pick up at Mobel" . "</option>";
                 		}else{
-                		    echo "<option value=\"" . $row['id'] . "\">" . "Pick up at Mobel" . "</option>";
+                		    echo "<option value=\"1\">" . "Pick up at Mobel" . "</option>";
                 		}
                     }
                 }
