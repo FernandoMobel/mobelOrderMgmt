@@ -46,7 +46,8 @@
 	var jsonJobs = $("#jsonJobs").text();
 	
     var calendar = new FullCalendar.Calendar(calendarEl, {	
-		//schedulerLicenseKey: 'CC-Attribution-NonCommercial-NoDerivatives',	
+		//schedulerLicenseKey: 'CC-Attribution-NonCommercial-NoDerivatives',
+		schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
 		//weekends: false,
 		themeSystem: 'bootstrap',
 		views: {
@@ -87,7 +88,6 @@
 				url: 'calendarActions.php',
 				method: 'POST',
 				extraParams: {mode: 'wrappingSch'},
-				//extraParams: {mode: 'getScheduleMain'},
 				failure: function() {
 				  document.getElementById('script-warning').style.display = 'block';
 				}
@@ -97,7 +97,6 @@
 			return stillEvent.display!='background';
 		},
 		eventDrop: function(info) {
-			//alert(info.event.id + "  was dropped on " + info.event.start.toISOString());
 			date = new Date(info.event.start.toISOString());
 			oldDate = new Date(info.oldEvent.start.toISOString());
 			if (confirm("Are you sure about this change?")) {

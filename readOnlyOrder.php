@@ -5,6 +5,9 @@ echo "<style>
 	.print {display:none!important;}
 	@media print {
 	  .print {display:block!important;}	  
+	  body {font-size: 1.3em !important;}
+	  table td {overflow:hidden !important;font-size: .8em !important;overflow: visible !important;}
+	  table th {font-size: .8em !important;overflow: visible !important;}
 	}
 	</style>";
 //$_POST['oid'] = 179;
@@ -106,14 +109,14 @@ $msg = "
 			<table class=\"table table-sm border border-dark mb-3\">
 				<thead>
 					 <tr>
-	                	<th class=\"font-weight-bold border border-dark\">Item</th>
+	                	<th class=\"font-weight-bold border text-center border-dark\">Item</th>
 		                <th class=\"font-weight-bold border border-dark\">Description</th>
-		                <th class=\"font-weight-bold border border-dark\">W</th>
-		                <th class=\"font-weight-bold border border-dark\">H</th>
-		                <th class=\"font-weight-bold border border-dark\">D</th>
-		                <th class=\"font-weight-bold border border-dark\">Qty</th>
-		                <th class=\"font-weight-bold border border-dark\">Hinged</th>
-		                <th class=\"font-weight-bold border border-dark\">F.E.</th>
+		                <th class=\"font-weight-bold border text-center border-dark\">W</th>
+		                <th class=\"font-weight-bold border text-center border-dark\">H</th>
+		                <th class=\"font-weight-bold border text-center border-dark\">D</th>
+		                <th class=\"font-weight-bold border text-center border-dark\">Qty</th>
+		                <th class=\"font-weight-bold border text-center border-dark\">Hinged</th>
+		                <th class=\"font-weight-bold border text-center border-dark\">F.E.</th>
 		                <th class=\"font-weight-bold border border-dark\">Note</th>
 	                	<!--th class=\"font-weight-bold border border-dark\">Price</th-->
 	              	</tr>
@@ -188,14 +191,14 @@ $msg = "
                 }
                 $roomTotal += $aPrice;
 			    $msg .="<tr>
-						<td class=\"border border-dark\">".$b.$i.".".$si.$be."</td>
+						<td class=\"border text-center border-dark\">".$b.$i.".".$si.$be."</td>
 						<td class=\"border border-dark\">".$b.$row2['name']." - ".$row2['description'].$be."</td>
-						<td class=\"border border-dark\">".$b.(float)$row2['W'].$be."</td>
-						<td class=\"border border-dark\">".$b.(float)$row2['H'].$be."</td>
-						<td class=\"border border-dark\">".$b.(float)$row2['D'].$be."</td>
-						<td class=\"border border-dark\">".$b.(float)$row2['qty'].$be."</td>
-						<td class=\"border border-dark\">".$b.$hinging.$be."</td>
-						<td class=\"border border-dark\">".$b.$finishedEnds.$be."</td>
+						<td class=\"border text-center border-dark\">".$b.(float)$row2['W'].$be."</td>
+						<td class=\"border text-center border-dark\">".$b.(float)$row2['H'].$be."</td>
+						<td class=\"border text-center border-dark\">".$b.(float)$row2['D'].$be."</td>
+						<td class=\"border text-center border-dark\">".$b.(float)$row2['qty'].$be."</td>
+						<td class=\"border text-center border-dark\">".$b.$hinging.$be."</td>
+						<td class=\"border text-center border-dark\">".$b.$finishedEnds.$be."</td>
 						<td class=\"border border-dark\" style=\"max-width: 450px;\">".$row2['note']."</td>
 						<!--td><span title = \"" . getPrice($row2['qty'],$row2['price'],$row2['sizePrice'],$parentPrice,$row2['parentPercent'],$row2['DFactor'],$row2['IFactor'],$row2['FFactor'],$row2['GFactor'],$row2['SFactor'],$row2['EFactor'],$row2['drawerCharge'],$row2['smallDrawerCharge'],$row2['largeDrawerCharge'], $mixDoorSpeciesFactor,$row2['IApplies'],$row2['FApplies'],$row2['GApplies'],$row2['SApplies'],$row2['drawers'],$row2['smallDrawerFronts'],$row2['largeDrawerFronts'],$row2['finishLeft']+$row2['finishRight'], $row2['H'],$row2['W'],$row2['D'],$row2['minSize'],$row2['methodID'],$row2['FUpcharge'],$CLfactor,1) . "\">".$b. number_format($aPrice,2,'.','').$be."</span></td-->
 					</tr>";
