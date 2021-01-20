@@ -10,12 +10,63 @@ session_start();
 if($_POST['mode']=="getOrders"){
 	$result = opendb("select mainMenuDefaultStateFilter as state, clFilter, servFilter from employeeSettings where mosUser = " .$_SESSION["userid"]);
 	$row = $result -> fetch_assoc();
+	if($GLOBALS['$result']-> num_rows >0){	
+		foreach ($GLOBALS['$result'] as $row) {
+			$state = $row['state'];
+			$state_ar = explode(', ', $state);//convert string to array to create control dinamically
+			if($row['clFilter']==""){
+				$clfilter = '1,2,3';
+			}else{
+				$clfilter = $row['clFilter'];			
+			}
+			if($row['servFilter']==""){
+				$servfilter = "0";
+			}else{
+				$servfilter = $row['servFilter'];			
+			}
+			$cl_ar = explode(', ', $clfilter);//convert string to array to create control dinamically
+			$srv_ar = explode(',', $servfilter);//convert string to array to create control dinamically
+			$sqlS ="";
+			$sqlW = "";
+			foreach ($srv_ar as &$value2) {	
+				switch($value2){
+					case 4:
+						$sqlS = " and isPriority = 1 ";
+					break;
+					case 5:
+						$sqlW = " and isWarranty = 1 ";
+					break;
+				}
+			}
+			$sql ="select m.oid,a.busName as 'company', m.tagName, m.po, concat(mu.firstName,' ',mu.lastName) as 'designer', email, s.name as 'status', DATE(m.dateSubmitted) dateSubmitted, m.state, isPriority, isWarranty, CLid, m.deliveryDate from mosOrder m, state s, account a, mosUser mu where s.id = m.state and m.account = a.id and m.mosUser = mu.id and m.state in (".$state.") and CLid in(".$clfilter.")".$sqlS.$sqlW." order by m.dateSubmitted asc";
+			//echo $sql;
+			opendb($sql);
+		}
+	}else{
+		opendb("INSERT INTO employeeSettings (mosUser) VALUES ( ".$_SESSION["userid"] .")");//new user
+		opendb("select m.oid,a.busName as 'company', m.tagName, m.po, concat(mu.firstName,' ',mu.lastName) as 'designer', email, s.name as 'status', DATE(m.dateSubmitted) dateSubmitted, m.state, isPriority, isWarranty, CLid, m.deliveryDate from mosOrder m, state s, account a, mosUser mu where s.id = m.state and m.account = a.id and m.mosUser = mu.id and m.state > 1 and m.state <> 10 order by m.dateSubmitted asc");
+	}
+
+
 	//$arr = implode(', ', $_POST['value']);//getting all values from array
-	$sql = "select m.oid,a.busName as 'company', m.tagName, m.po, concat(mu.firstName,' ',mu.lastName) as 'designer', email, s.name as 'status', DATE(m.dateSubmitted) dateSubmitted, m.state from mosOrder m, state s, account a, mosUser mu where s.id = m.state and m.account = a.id and m.mosUser = mu.id and m.state in (".$row['state'].") order by m.state desc";
+	//$sql = "select m.oid,a.busName as 'company', m.tagName, m.po, concat(mu.firstName,' ',mu.lastName) as 'designer', email, s.name as 'status', DATE(m.dateSubmitted) dateSubmitted, m.state from mosOrder m, state s, account a, mosUser mu where s.id = m.state and m.account = a.id and m.mosUser = mu.id and m.state in (".$row['state'].") order by m.state desc";
 	$result = opendb($sql);
 	$dbdata = array();
 	while ( $row = $result->fetch_assoc())  {
-		$dbdata[]=$row;
+		$data['oid'] = $row['oid'];
+		$data['company'] = $row['company'];
+		$data['tagName'] = $row['tagName'];
+		$data['po'] = $row['po'];
+		$data['designer'] = $row['designer'];
+		$data['email'] = $row['email'];
+		$data['status'] = array($row['status'],$row['state']);
+		$data['dateSubmitted'] = $row['dateSubmitted'];
+		$data['isPriority'] = $row['isPriority'];
+		$data['isWarranty'] = $row['isWarranty'];
+		$data['CLid'] = $row['CLid'];
+		$data['deliveryDate'] = $row['deliveryDate'];
+		//$dbdata[]=$row;
+		array_push($dbdata, $data);
 	}
 	//this returns a json with the data
 	echo json_encode($dbdata);

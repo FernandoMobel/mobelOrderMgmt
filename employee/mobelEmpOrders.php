@@ -1,10 +1,21 @@
+<?php
+//getting status from DB
+$result = opendb("select id,name from state");
+while($row = $result->fetch_assoc()) {
+	$states[] = $row;
+}
+$states = json_encode($states);
+//echo $states;
+?>
 <script>
+<?php echo "const states = ".$states.";"?>
 function init() {
     var tf = setFilterGrid("table1");
 	var ccUpd = false;
 	var frontsUpd = false;
 	var deliveryDateUpd = false;
 	var prevState;
+	var states = <?php echo $states?>;
   }
   
 function saveUser(objectID){
@@ -167,21 +178,145 @@ function saveEmployeeSettings(objectID){
 			   function(data, status, jqXHR) {
 					//$('#orders').empty();
 					//console.log(jqXHR);
-					window.location.reload();
+					//window.location.reload();					
+					//table.destroy();					
 				});
-	//loadOrders(arr);
+	table.destroy();
+	loadOrders();
 }
 
-function loadOrders(objectID){
-	myData = { mode: "getOrders", id: objectID, value: objectID }; 
+function loadOrders(){
+	var dataSet;
+	var rowClass = "";
+	var order;
+	var state;
+	myData = { mode: "getOrders" }; 
 	$.ajax({
 	    url: 'EmployeeMenuSettings.php',
 	    type: 'POST',
 	    data: myData,
 	    success: function(data, status, jqXHR) {						
-    		        
+    		        dataSet =  JSON.parse(jqXHR['responseText']);
+					//console.log(dataSet);
+					table = $('#example').DataTable({
+						order: [[ 7, "asc" ]],
+						lengthMenu: [30, 50, 100],
+						stateSave: true,
+						retrieve: true,
+						data: dataSet,
+						columns : [
+							{
+								className: "font-weight-normal",
+								data : "oid",
+								render: function(data, type) {
+									order = data;
+									return "<a class=\"onlyhover\" href=\"#\" onclick=\"viewOrder("+order+")\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" fill=\"currentColor\" class=\"bi bi-eye text-primary\" viewBox=\"0 0 16 16\"><path d=\"M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z\"/><path d=\"M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z\"/></svg></a>&nbsp<a class=\"onlyhover\" onclick=\"getOrdFiles("+order+");\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" fill=\"currentColor\" class=\"bi bi-folder2-open text-primary\" viewBox=\"0 0 16 16\"><path d=\"M1 3.5A1.5 1.5 0 0 1 2.5 2h2.764c.958 0 1.76.56 2.311 1.184C7.985 3.648 8.48 4 9 4h4.5A1.5 1.5 0 0 1 15 5.5v.64c.57.265.94.876.856 1.546l-.64 5.124A2.5 2.5 0 0 1 12.733 15H3.266a2.5 2.5 0 0 1-2.481-2.19l-.64-5.124A1.5 1.5 0 0 1 1 6.14V3.5zM2 6h12v-.5a.5.5 0 0 0-.5-.5H9c-.964 0-1.71-.629-2.174-1.154C6.374 3.334 5.82 3 5.264 3H2.5a.5.5 0 0 0-.5.5V6zm-.367 1a.5.5 0 0 0-.496.562l.64 5.124A1.5 1.5 0 0 0 3.266 14h9.468a1.5 1.5 0 0 0 1.489-1.314l.64-5.124A.5.5 0 0 0 14.367 7H1.633z\"/></svg></a>&nbsp<a href=\"../Order.php?OID="+order+"\">"+data+"</a>";
+								}
+							},
+							{
+								className: "font-weight-normal",
+								data : "company",
+								render: function(data, type) {
+									if(data){
+										return "<a href=\"../Order.php?OID="+order+"\">"+data+"</a>";
+									}else{
+										return data;
+									}
+								}
+							},
+							{
+								data : "tagName",
+								render: function(data, type) {
+									if(data){
+										return "<a href=\"../Order.php?OID="+order+"\">"+data+"</a>";
+									}else{
+										return data;
+									}
+								}
+							},
+							{
+								data : "po",
+								render: function(data, type) {
+									if(data){
+										return "<a href=\"../Order.php?OID="+order+"\">"+data+"</a>";
+									}else{
+										return data;
+									}
+								}
+							},
+							{
+								className: "font-weight-normal",
+								data : "designer",
+								render: function(data, type) {
+									if(data){
+										return "<a href=\"../Order.php?OID="+order+"\">"+data+"</a>";
+									}else{
+										return data;
+									}
+								}
+							},
+							{
+								className: "font-weight-normal",
+								data : "email",
+								render: function(data, type) {
+									if(data){
+										return "<a href=\"../Order.php?OID="+order+"\">"+data+"</a>";
+									}else{
+										return data;
+									}
+								}
+							},
+							{								
+								data : "status",
+								render: function(data, type ) {
+									var select='<select disabled onchange="saveOrder(\'state\','+order+');" id="state'+order+'" onfocus="setPrevious(this.value)">';
+									states.forEach(function(obj){
+											select += '<option ';
+											if(obj.id == data[1])
+												select += 'selected ';
+											select += 'value="'+obj.id+'">'+obj.name+'</option>';
+										}
+									)
+									select += '</select>';
+									return select;									
+								}
+							},							
+							{
+								data : "dateSubmitted",
+								render: function(data, type) {
+									if(data){
+										return "<a href=\"../Order.php?OID="+order+"\">"+data+"</a>";
+									}else{
+										return data;
+									}
+								}
+							},							
+							{
+								data : "deliveryDate",
+								render: function(data, type) {
+									if(data){
+										return "<a href=\"../Order.php?OID="+order+"\">"+data+"</a>";
+									}else{
+										return data;
+									}
+								}
+							},
+						],
+						rowCallback: function( row, data ) {						    
+							//Set color code for every row
+							if(data['CLid']==3)
+								$(row).addClass('table-primary');
+							if(data['CLid']==2)
+								$(row).addClass('table-info');
+							if(data['isPriority']==1)
+								$(row).addClass('table-warning');
+							if(data['isWarranty']==1)
+								$(row).addClass('table-danger');
+						}
+					});
     		    }
-	});	
+	});
+	//$('#example').DataTable().ajax.reload();
 }
 
 function setPrevious(prev){
@@ -224,7 +359,7 @@ function getOrdFiles(oid){
 	    type: 'POST',
 	    data: myData,
 	    success: function(data, status, jqXHR) {
-	    	  	console.log(jqXHR['responseText']);
+	    	  	//console.log(jqXHR['responseText']);
 	    	  	$('#filesList').append(jqXHR['responseText']);
 	    	  	$('#fileModal').modal('toggle');
     	}
@@ -392,7 +527,7 @@ if($GLOBALS['$result2']-> num_rows >0){
 	<div class="card card-signin my-1">
 		<div class="card-body pt-0">
 			<div class="table-responsive">
-				<table id="example" class="table table-hover">
+				<table id="example" class="table table-hover">	
 					<thead class="thead-light">
 						<tr>
 							<th>OID</th>
@@ -416,63 +551,12 @@ if($GLOBALS['$result2']-> num_rows >0){
 							<th>UserName</th>
 							<th>Status</th>
 							<th data-toggle="tooltip" title="YYYY-MM-DD">Submitted Date</th>
-							<th data-toggle="tooltip" title="YYYY-MM-DD">Scheduled Date</th>
+							<th data-toggle="tooltip" title="Completition date">Scheduled Date</th>
 						</tr>
-					</tfoot>
-					<tbody id="orders">
-					<?php
-					if($GLOBALS['$result']->num_rows > 0){
-						foreach ($GLOBALS['$result'] as $row) {
-							$orderType="";
-							if($row['isPriority']==1)
-								$orderType="table-warning";
-							if($row['isWarranty']==1)
-								$orderType="table-danger";
-							if($row['CLid']==3)
-								$orderType="table-primary";
-							if($row['CLid']==2)
-								$orderType="table-info";
-							echo "<tr class=\"$orderType\">";
-							echo "<td>
-									<a class=\"onlyhover\" href=\"#\" onclick=\"viewOrder(".$row['oid'].")\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" fill=\"currentColor\" class=\"bi bi-eye text-primary\" viewBox=\"0 0 16 16\">
-  										<path d=\"M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z\"/>
-  										<path d=\"M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z\"/>
-									</svg></a>
-									<a class=\"onlyhover\" onclick=\"getOrdFiles(".$row['oid'].");\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" fill=\"currentColor\" class=\"bi bi-folder2-open text-primary\" viewBox=\"0 0 16 16\">
-									  <path d=\"M1 3.5A1.5 1.5 0 0 1 2.5 2h2.764c.958 0 1.76.56 2.311 1.184C7.985 3.648 8.48 4 9 4h4.5A1.5 1.5 0 0 1 15 5.5v.64c.57.265.94.876.856 1.546l-.64 5.124A2.5 2.5 0 0 1 12.733 15H3.266a2.5 2.5 0 0 1-2.481-2.19l-.64-5.124A1.5 1.5 0 0 1 1 6.14V3.5zM2 6h12v-.5a.5.5 0 0 0-.5-.5H9c-.964 0-1.71-.629-2.174-1.154C6.374 3.334 5.82 3 5.264 3H2.5a.5.5 0 0 0-.5.5V6zm-.367 1a.5.5 0 0 0-.496.562l.64 5.124A1.5 1.5 0 0 0 3.266 14h9.468a1.5 1.5 0 0 0 1.489-1.314l.64-5.124A.5.5 0 0 0 14.367 7H1.633z\"/>
-									</svg></a>
-									<b><a href=\"http://".$_SERVER['SERVER_NAME'].$local."/Order.php?OID=" . $row['oid'] . "\">".$row['oid']."</b></td>";
-							echo "<td><b><a href=\"http://".$_SERVER['SERVER_NAME'].$local."/Order.php?OID=" . $row['oid'] . "\">".$row['company']."</b></td>";
-							echo "<td><a href=\"http://".$_SERVER['SERVER_NAME'].$local."/Order.php?OID=" . $row['oid'] . "\">" . $row['tagName'] . "</td>";
-							echo "<td><a href=\"http://".$_SERVER['SERVER_NAME'].$local."/Order.php?OID=" . $row['oid'] . "\">" . $row['po'] . "</td>";	
-							echo "<td><b><a href=\"http://".$_SERVER['SERVER_NAME'].$local."/Order.php?OID=" . $row['oid'] . "\">".$row['designer']."</b></td>";
-							echo "<td><b><a href=\"http://".$_SERVER['SERVER_NAME'].$local."/Order.php?OID=" . $row['oid'] . "\">".$row['email']."</b></td>";
-							echo "<td>";
-							echo "<select disabled onchange=\"saveOrder('state','" . $row['oid'] . "');\" id=\"state".$row['oid']."\" onfocus=\"setPrevious(this.value)\">";
-							opendb2("select * from state order by position asc");
-							if($GLOBALS['$result2']->num_rows > 0){
-								if(is_null($row['status'])){
-									echo "<option ". "selected" ." value=\"\">" . "Error, no valid state!" . "</option>";
-								}
-								foreach ($GLOBALS['$result2'] as $row2) {
-									if($row2['id']==$row['state']){
-										echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-									}else{
-										echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-									}
-								}
-							}
-							echo "</select>";
-							echo  "</td>";	
-							echo "<td  data-toggle=\"tooltip\" title=\"Submitted date\"><b><a href=\"http://".$_SERVER['SERVER_NAME'].$local."/Order.php?OID=" . $row['oid'] . "\">".$row['dateSubmitted']."</b></td>";	
-							echo "<td  data-toggle=\"tooltip\" title=\"Completition date\"><b><a href=\"http://".$_SERVER['SERVER_NAME'].$local."/Order.php?OID=" . $row['oid'] . "\">".$row['deliveryDate']."</b></td>";		
-							echo "</tr>";
-						}
-					}else{
-							//echo "<tr>No data for that search criteria. Please change your filter to see some records.</tr>";
-					}
-					?>
-					</tbody>
+					</tfoot>	
+					<tbody id='orders'>
+						
+					</tbody>			
 				</table>
 			</div>				
 			
@@ -581,18 +665,15 @@ if($GLOBALS['$result2']-> num_rows >0){
 </form>
 <?php include '../includes/foot.php';?>  
 <script>
-$(document).ready(function () {
-	table = $('#example').DataTable({
-		"order": [[ 7, "asc" ]],
-		"lengthMenu": [30, 50, 100],
-		"stateSave": true
-	});
+$(document).ready(function () {	
+	loadOrders();
 	
 	//Filter options
 	$('#stateFilter').multiselect({
 		buttonWidth: '350px',
 		maxHeight: 600,
-		dropRight: true
+		dropRight: true,
+		includeSelectAllOption: true
 	});
 
 	$('#orderTypeFilter').multiselect({
@@ -608,8 +689,10 @@ $(document).ready(function () {
 						myData, 
 						   function(data, status, jqXHR) {
 								//console.log(jqXHR);
-								window.location.reload();
+								//window.location.reload();
 							});
+				table.destroy();
+				loadOrders();
         }
 	});
 	
