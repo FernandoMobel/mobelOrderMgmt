@@ -23,7 +23,8 @@ if($_POST['mode']=="getAllJobs"){
 }
 
 if($_POST['mode']=="wrappingSch"){
-	$sql = "select distinct orr.oid id, concat('Order:',orr.oid,' - Boxes: ',(select sum(cc) from orderRoom orr2 where orr2.oid = orr.oid)) title, wrapping start, 'true' allDay, if(updateDate=curdate(),'red', 'blue') color from schedule s, orderRoom orr, mosOrder mo where mo.oid = orr.oid and orr.rid = s.rid and state=5";
+	//$sql = "select distinct orr.oid id, concat('Order:',orr.oid,' - Boxes: ',(select sum(cc) from orderRoom orr2 where orr2.oid = orr.oid)) title, wrapping start, 'true' allDay, if(updateDate=curdate(),'red', 'blue') color from schedule s, orderRoom orr, mosOrder mo where mo.oid = orr.oid and orr.rid = s.rid and state=5";
+	$sql ="select distinct orr.oid id, concat('OID: ',orr.oid,' - ',mo.tagName) title, wrapping start, 'true' allDay, CASE WHEN updateDate=curdate() THEN '#f5bf42' WHEN CLid=1 THEN '#dee2e6' WHEN CLid=2 THEN '#86cfda' WHEN CLid=3 THEN '#7abaff' ELSE '' END as color, 'black' textColor from schedule s, orderRoom orr, mosOrder mo where mo.oid = orr.oid and orr.rid = s.rid and state=5";
 	$result = opendb($sql);
 	$dbdata = array();
 	while ( $row = $result->fetch_assoc())  {
@@ -73,10 +74,12 @@ if($_POST['mode']=="updateDate"){
 }
 
 if($_POST['mode']=="getTotalDay"){
-	$sql = "select coalesce(sum(cc),0) boxCurQty from orderRoom orr, schedule s where s.rid = orr.rid and s.wrapping='".$_POST['date']."'";
+	$sql = "select coalesce(sum(cc),0) cc,coalesce(sum(fronts),0) fronts, coalesce(sum(pieces),0) pieces from orderRoom orr, schedule s where s.rid = orr.rid and s.wrapping='".$_POST['date']."'";
 	$result = opendb($sql);
 	$row = $result->fetch_assoc();
-	echo $row['boxCurQty'];
+	$totals = array();
+	$totals = $row;
+	echo json_encode($totals);
 }
 
 if ($_POST['mode']=="getScheduleMain"){
@@ -87,7 +90,7 @@ if ($_POST['mode']=="getScheduleMain"){
 	//$pivotRow = "";
 	$oid = 0;//order id
 	//--------------------------------------------------
-	$sql = "SELECT mo.oid, (select wrapping from schedule s where s.oid = orr.oid) wrapping, (select sum(cc) from orderRoom orr2 where orr2.oid = orr.oid) as totalorder, (select name from species s where s.id = orr.species) material, (select name from door d where d.id = orr.door) doorStyle, (select name from frontFinish f where f.id = orr.frontFinish) finish, orr.name roomName, cc, fronts, (select count(1) from orderItem oi where oi.rid = orr.rid) as items, deliveryDate FROM mosOrder mo, orderRoom orr where mo.oid = orr.oid and deliveryDate is not null order by deliveryDate desc, oid";
+	$sql = "select mo.oid, (select wrapping from schedule s where s.oid = orr.oid) wrapping, (select sum(cc) from orderRoom orr2 where orr2.oid = orr.oid) as totalorder, (select name from species s where s.id = orr.species) material, (select name from door d where d.id = orr.door) doorStyle, (select name from frontFinish f where f.id = orr.frontFinish) finish, orr.name roomName, cc, fronts, (select count(1) from orderItem oi where oi.rid = orr.rid) as items, deliveryDate FROM mosOrder mo, orderRoom orr where mo.oid = orr.oid and deliveryDate is not null order by deliveryDate desc, oid";
 	$query = opendb($sql);
 	$order = array();
 	$extendedProps = array();
@@ -116,5 +119,25 @@ if ($_POST['mode']=="getScheduleMain"){
 		}
 	}
 	echo json_encode($order);
+}
+
+if($_POST['mode']=="getOrderRooms"){ 
+	$sql = "select orr.rid, orr.name, orr.cc, COALESCE(orr.fronts,0) fronts, DATE(COALESCE(deliveryDate,dateRequired)) dateRequired, pieces from orderRoom orr, mosOrder mo where mo.oid = orr.oid and orr.oid = ".$_POST["oid"]." order by orr.name asc";
+	$query = opendb($sql);
+	$order = array();
+	while($row = $query->fetch_assoc()){ 
+		$order[] = $row;
+	}
+	echo json_encode($order);
+}
+
+if($_POST['mode']=="getDateOrdDetails"){ 
+	$sql = "select orr.oid id, concat('OID: ',orr.oid,' - ',mo.tagName) title, wrapping start, 'true' allDay, CLid, sum(cc) cc, sum(fronts) fronts, sum(pieces) pieces from schedule s, orderRoom orr, mosOrder mo where mo.oid = orr.oid and orr.rid = s.rid and state=5 and wrapping = '".$_POST['date']."' group by orr.oid, title, start, allDay, CLid";
+	$query = opendb($sql);
+	$orders = array();
+	while($row = $query->fetch_assoc()){ 
+		$orders[] = $row;
+	}
+	echo json_encode($orders);
 }
 ?>

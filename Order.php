@@ -112,6 +112,8 @@ function saveStyle(col,objectID){
 			}
 	    }
 	});
+	if( (col=='drawerBox' && $("#"+objectID).val()=='3')||($('#drawerBox'+$("a.nav-link.roomtab.active").attr("value")).val()==3))
+		alert('Notice: Dovetail drawers available only for cabinets 10”wide or greater');
 }
 
 function setMinDate(){

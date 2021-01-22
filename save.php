@@ -136,7 +136,7 @@ if($_POST['mode'] == "setCurrentLeadtime"){
 	echo $newDate;
 }
 
-if($_POST['mode'] == "submitToMobel"){
+if($_POST['mode'] == "submitToMobelold"){
     $CLid = 1;
     $sql = "update mosOrder set dateSubmitted = now(), submittedBy=".$_SESSION["userid"].", state = '2', leadTime = (select currentLeadtime from settings) where oid = '" . $_POST['oid'] . "' and state = 1";
     opendb($sql);
@@ -292,12 +292,12 @@ if($_POST['mode'] == "submitToMobel"){
     }
     
     $msg .= "</p><p>Thanks,</p><p>Mobel</p></body></html>";
-    testNewEmailLayout();
+    //testNewEmailLayout();
 	//sendmail("fernando@mobel.ca; orders@mobel.ca", "Order ".$mailOID." Submitted - ".$accountName, $msg);
 	//echo $msg;
 }
 
-function testNewEmailLayout(){
+if($_POST['mode'] == "submitToMobel"){
     $sql = "select * ,(select concat(unit,' ',street,' ',city,' ',province,' ',country,' ',postalCode)  from accountAddress aA where aA.id =mo.shipAddress) shipTo from mosOrder mo, mosUser mu, account a, cabinetLine cl where mo.mosUser = mu.id and mo.account = a.id and mo.CLid = cl.id and mo.oid = '" . $_POST['oid'] . "'";
     $result = opendb($sql);
     $row = $result->fetch_assoc();
@@ -422,9 +422,12 @@ function testNewEmailLayout(){
                             <th>Qty</th>
                             <th>Hinged</th>
                             <th>F.E.</th>
-                            <th>Note</th>
-                            <th>Price</th>
-                        </tr>
+                            <th>Note</th>";
+                if($_SESSION["userType"]>1){
+                    $msg .="<th>Price</th>";
+                }
+                            
+                $msg .="</tr>
                     </thead>
                     <tbody>";
 
@@ -504,24 +507,30 @@ function testNewEmailLayout(){
                             <td>".$b.(float)$row2['qty'].$be."</td>
                             <td>".$b.$hinging.$be."</td>
                             <td>".$b.$finishedEnds.$be."</td>
-                            <td style=\"max-width: 450px;\">".$row2['note']."</td>
-                            <td><span title = \"" . getPrice($row2['qty'],$row2['price'],$row2['sizePrice'],$parentPrice,$row2['parentPercent'],$row2['DFactor'],$row2['IFactor'],$row2['FFactor'],$row2['GFactor'],$row2['SFactor'],$row2['EFactor'],$row2['drawerCharge'],$row2['smallDrawerCharge'],$row2['largeDrawerCharge'], $mixDoorSpeciesFactor,$row2['IApplies'],$row2['FApplies'],$row2['GApplies'],$row2['SApplies'],$row2['drawers'],$row2['smallDrawerFronts'],$row2['largeDrawerFronts'],$row2['finishLeft']+$row2['finishRight'], $row2['H'],$row2['W'],$row2['D'],$row2['minSize'],$row2['methodID'],$row2['FUpcharge'],$CLfactor,1) . "\">".$b. number_format($aPrice,2,'.','').$be."</span></td>
-                        </tr>";
+                            <td style=\"max-width: 450px;\">".$row2['note']."</td>";
+                    if($_SESSION["userType"]>1){
+                            $msg .= "<td><span title = \"" . getPrice($row2['qty'],$row2['price'],$row2['sizePrice'],$parentPrice,$row2['parentPercent'],$row2['DFactor'],$row2['IFactor'],$row2['FFactor'],$row2['GFactor'],$row2['SFactor'],$row2['EFactor'],$row2['drawerCharge'],$row2['smallDrawerCharge'],$row2['largeDrawerCharge'], $mixDoorSpeciesFactor,$row2['IApplies'],$row2['FApplies'],$row2['GApplies'],$row2['SApplies'],$row2['drawers'],$row2['smallDrawerFronts'],$row2['largeDrawerFronts'],$row2['finishLeft']+$row2['finishRight'], $row2['H'],$row2['W'],$row2['D'],$row2['minSize'],$row2['methodID'],$row2['FUpcharge'],$CLfactor,1) . "\">".$b. number_format($aPrice,2,'.','').$be."</span></td>";
+                    }
+                    $msg .= "</tr>";
                 }
-                $msg .= "<tr class=\"border-top border-dark\">
-                            <td class=\"text-end\" colspan=\"9\"><h5>Room Total:</h5></td>
-                            <td class=\"text-center\"><h5>$".$roomTotal."</h5></td>
-                        </tr>";
+                if($_SESSION["userType"]>1){
+                    $msg .= "<tr class=\"border-top border-dark\">
+                                <td class=\"text-end\" colspan=\"9\"><h5>Room Total:</h5></td>
+                                <td class=\"text-center\"><h5>$".$roomTotal."</h5></td>
+                            </tr>";
+                }
                 $msg .="</tbody></table>";
                 $totalOrder += $roomTotal+$roomFinishUpcharge;
             }
-        $msg .= "<div><h4 class=\"text-center\">Order Total: $$totalOrder pre HST & pre delivery</h4></div>";
-        $msg .="</div>
+            if($_SESSION["userType"]>1){
+                $msg .= "<div><h4 class=\"text-center\">Order Total: $$totalOrder pre HST & pre delivery</h4></div>";
+            }
+                $msg .="</div>
         <script src=\"https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js\" integrity=\"sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW\" crossorigin=\"anonymous\"></script>
     </body>
     </html>";
-    //echo $msg;
-    sendmail("fernando@mobel.ca; orders@mobel.ca", "Order ".$mailOID." - ".$accountName, $msg);
+    echo $msg;
+    sendmail("fernando@mobel.ca; orders@mobel.ca; ".$_SESSION['email'], "Order ".$mailOID." Submitted - ".$accountName, $msg);
 }
 
 function roomTable($species,$interiorFinish,$door,$frontFinish,$drawerBox,$glaze,$smallDrawerFront,$sheen,$largeDrawerFront,$hinge,$drawerGlides,$finishedEnd){
