@@ -167,8 +167,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			  startTime: '08:00', // a start time
 			  endTime: '16:30', // an end time
 		},
-		//events: {
-		resources: {
+		events: {
+		//resources: {
 				url: 'calendarActions.php',
 				method: 'POST',
 				extraParams: {mode: 'wrappingSch'},
