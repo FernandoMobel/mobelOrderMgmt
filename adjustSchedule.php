@@ -181,9 +181,43 @@ document.addEventListener('DOMContentLoaded', function() {
 			return stillEvent.display!='background';
 		},
 		eventDrop: function(info) {
+			//Getting current and new dates
 			date = new Date(info.event.start.toISOString());
 			oldDate = new Date(info.oldEvent.start.toISOString());
-			if (confirm("Are you sure about this change?")) {
+			var deliveryDate;
+			//Getting delivery date
+			myData = {mode: 'getDeliveryDate',oid:info.event.id}
+			$.ajax({
+					url: 'calendarActions.php',
+					type: 'POST',
+					data: myData, 
+					success: function(data, status, jqXHR) {
+							deliveryDate= new Date(jqXHR['responseText']);
+							if(date > deliveryDate){
+								//console.log('New date: '+date+' Delivery: '+deliveryDate);
+								alert("New date can't be scheduled beyond the completition date");
+								info.revert();
+								return;
+							}else{
+								if (confirm("Are you sure about this change?")) {
+									myData = { mode: "updateDate",  date: date.getFullYear()+'-' + (date.getMonth()+1) + '-'+date.getDate(), oid:info.event.id, oldDate:oldDate.getFullYear()+'-' + (oldDate.getMonth()+1) + '-'+oldDate.getDate()};
+									$.ajax({
+										url: 'calendarActions.php',
+										type: 'POST',
+										data: myData, 
+										success: function(data, status, jqXHR) {
+												//console.log(jqXHR['responseText']);
+										}	
+									});
+									
+								}else{
+										info.revert();
+								}
+							}
+					}
+			});	
+			
+			/*if (confirm("Are you sure about this change?")) {
 				myData = { mode: "updateDate",  date: date.getFullYear()+'-' + (date.getMonth()+1) + '-'+date.getDate(), oid:info.event.id, oldDate:oldDate.getFullYear()+'-' + (oldDate.getMonth()+1) + '-'+oldDate.getDate()};
 				$.ajax({
 					url: 'calendarActions.php',
@@ -196,7 +230,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				
 			}else{
 					info.revert();
-			}
+			}*/
 		},
 		eventClick: function(info) {
 			myData = { mode: "getOrderRooms",  oid: info.event.id};
