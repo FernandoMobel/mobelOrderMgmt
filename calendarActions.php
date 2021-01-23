@@ -39,6 +39,15 @@ if($_POST['mode']=="wrappingSch"){
 	echo json_encode($dbdata);
 }
 
+if($_POST['mode']=="hollidaySch"){
+	$sql = "select calendarDay start, 'background' display, 'pink' color from calendar where workDayInd = 0";
+	$result = opendb($sql);
+	while ( $row = $result->fetch_assoc())  {
+		$dbdata[]=$row;
+	}
+	echo json_encode($dbdata);
+}
+
 if($_POST['mode']=="completitionSch"){
 	$sql ="select distinct orr.oid id, concat('OID: ',orr.oid,' - ',mo.tagName) title, deliveryDate start, 'true' allDay, CASE WHEN updateDate=curdate() THEN '#f5bf42' WHEN CLid=1 THEN '#dee2e6' WHEN CLid=2 THEN '#86cfda' WHEN CLid=3 THEN '#7abaff' ELSE '' END as color, 'black' textColor from schedule s, orderRoom orr, mosOrder mo where mo.oid = orr.oid and orr.rid = s.rid and state=5";
 	$result = opendb($sql);
@@ -161,13 +170,15 @@ if ($_POST['mode']=="getScheduleMain"){
 }
 
 if($_POST['mode']=="getOrderRooms"){ 
-	$sql = "select orr.rid, orr.name, orr.cc, COALESCE(orr.fronts,0) fronts, DATE(deliveryDate) dateRequired, pieces from orderRoom orr, mosOrder mo where mo.oid = orr.oid and orr.oid = ".$_POST["oid"]." order by orr.name asc";
-	$query = opendb($sql);
-	$order = array();
-	while($row = $query->fetch_assoc()){ 
-		$order[] = $row;
-	}
-	echo json_encode($order);
+	if($_POST["oid"]){
+		$sql = "select orr.rid, orr.name, orr.cc, COALESCE(orr.fronts,0) fronts, DATE(deliveryDate) dateRequired, pieces from orderRoom orr, mosOrder mo where mo.oid = orr.oid and orr.oid = ".$_POST["oid"]." order by orr.name asc";
+		$query = opendb($sql);
+		$order = array();
+		while($row = $query->fetch_assoc()){ 
+			$order[] = $row;
+		}
+		echo json_encode($order);	
+	}	
 }
 
 if($_POST['mode']=="getDateOrdDetails"){ 

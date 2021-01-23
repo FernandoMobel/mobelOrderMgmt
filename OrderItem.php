@@ -264,6 +264,24 @@ if($_POST['mode']=="updateOrder"){
     
     $sql = "update mosOrder set ".$fixPost." = '" . $_POST['value'] . "' where oid = " . $_POST['oid'];
     opendb($sql);
+    if($fixPost=='state'){
+        //If there is an update to the state, date is saved
+        switch($_POST['value']){
+            case 4:
+                $sql = "update mosOrder set dateConfirmed = NOW() where oid=" . $_POST['oid'];
+            break;
+            case 5:
+                $sql = "update mosOrder set dateDetailed = NOW() where oid=" . $_POST['oid'];
+            break;
+            case 7:
+                $sql = "update mosOrder set dateShipped = NOW() where oid=" . $_POST['oid'];
+            break;
+            case 8:
+                $sql = "update mosOrder set dateInvoiced = NOW() where oid=" . $_POST['oid'];
+            break;
+        }
+        opendb($sql);
+    }
     $sql = "insert into trackSingleChange (id, uid, tableName, fieldName, notes) values (". $_POST['oid'] . "," . $_SESSION["userid"] . ", 'mosOrder','" .$fixPost."','" . $_POST['value'] . "')";
     opendb($sql);
     //http_response_code(200);

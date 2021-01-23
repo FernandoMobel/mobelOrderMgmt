@@ -14,104 +14,52 @@ function switchQuote(oid) {
             	    }
 		        });
 }
+
+/*Navigation tabs and views functionality*/
+function navtab(object){
+	//console.log(object);
+	/*Active tabs functionality*/
+	$('.nav-tabs').on('click', 'a', function() {
+		$('.nav-tabs a.active').removeClass('active');
+		$(this).addClass('active');
+	});	
+	/*Display view*/
+	switch(object) {
+	  case "orderView":
+		document.getElementById("orderTab").style.display = "block";
+		document.getElementById("itemTab").style.display = "none";
+		break;
+	  case "itemView":
+		document.getElementById("itemTab").style.display = "block";
+		document.getElementById("orderTab").style.display = "none";
+		break;
+	  default:
+		// code block
+	}		
+}
 </script>
-<div class="container-fluid">
-	<div class="row">
-		<div class="col-sm-12 col-md-11 col-lg-9 mx-auto">
-			<div class="card card-signin my-5">
-				<div class="card-header">
-					<h5 id="ordersub">Orders</h5>
-				</div>
-				<div class="card-body py-0">
-				<?php
-				$admin = "";
-				if($_SESSION["userType"]==2){
-					$admin = "or m.account = " . $_SESSION["account"];
-				}
-				opendb("select m.*,s.name as 'status',u.email from mosOrder m, state s, mosUser u where s.id = m.state and m.mosUser = u.id and (u.email = '" . $_SESSION["username"] . "' ". $admin ."  )");
-				echo "<br/><div class=\"container\">";
-				//echo  "select m.*,s.name as 'status',u.email from mosOrder m, state s, mosUser u where s.id = m.state and m.mosUser = u.id and (u.email = '" . $_SESSION["username"] . "'  )". $admin .")";
-				if($GLOBALS['$result']->num_rows > 0){
-					?>
-					<table id="example" class="display nowrap" style="width:100%">
-					<thead>
-						  <tr>
-							<th>OID</th>
-							<th>Tag Name</th>
-							<th>Status</th>
-							<th>PO</th>
-							<?php
-							if($_SESSION["userType"]==2)
-							echo "<th>Assigned</th>";
-							?>
-						  </tr>
-						</thead>
-						<tfoot>
-						  <tr>
-							<th>OID</th>
-							<th>Tag Name</th>
-							<th>Status</th>
-							<th>PO</th>
-							<?php
-							if($_SESSION["userType"]==2)
-							echo "<th>Assigned</th>";
-							?>
-						  </tr>
-						</tfoot><tbody>
-						  <?php
-					
-					foreach ($GLOBALS['$result'] as $row) {
-						echo "<tr>";
-						echo "<td><b><a title=\"".$row['email']."\" href=\"Order.php?OID=" . $row['oid'] . "\">".$row['oid']."</b></td>";
-						echo "<td><a href=\"Order.php?OID=" . $row['oid'] . "\">". $row['tagName'] . "</td>";
-						echo "<td>" . $row['status'] . "</td>";
-						echo "<td>" . $row['po'] . "</td>";						
-						if($_SESSION["userType"]==2){
-							echo "<td><select ";
-							if(strcmp($row['status'],"Quoting")!=0)
-								echo "disabled ";
-							echo "onchange=\"switchQuote('" . $row['oid'] . "');\" id=\"assignedU".$row['oid']."\">";
-							$sql2 = "select id, email from mosUser m where m.account = ".$_SESSION["account"];
-							$result2 = opendb2($sql2);
-							while ( $row2 = $result2->fetch_assoc())  {	
-								if($row2["id"] == $row['mosUser']){
-									echo "<option selected value=\"" . $row['mosUser'] . "\">" . $row['email'] . "</option>";
-								}else{
-									echo "<option value=\"" . $row2['id'] . "\">" . $row2['email'] . "</option>";
-								}
-							}
-							echo "</select></td>";
-						}
-						echo "</tr>";
-					}
-					?>
-					</table>
-					<?php
-				}else{
-					echo "<h3>No orders yet.</h3><br/><h3>Please create a new order using the \"New\" menu option.</h3>";
-				}
-				?>
-				</div>
-				</div>
-			</div>
-		</div>  
-		<!--div class="col-sm-12 col-md-11 col-lg-6 mx-auto">
-			<div class="card card-signin my-5">
-				<div class="card-header">
-					<h5 id="order">Your Team Orders</h5>
-				</div>
-				<div class="card-body">
-				</div>     
-			</div>     
-		</div-->     
-	</div>     
-</div>     
-      
-<?php include 'includes/foot.php';?>
-<script>
-$(document).ready(function () {
-	table = $('#example').DataTable({
-			"order": [[ 0, "asc" ]]
-	});
-});
-</script>
+<!-- Navigation tabs-->
+<div class="container-fluid" hidden>
+	<ul id="empTabs" class="nav nav-tabs">
+	  <li class="nav-item">
+		<a class="nav-link active" id="orderView" onclick="navtab(this.id)"><b>Orders</b></a>
+	  </li>
+	  <li class="nav-item">
+		<a class="nav-link" id="itemView" onclick="navtab(this.id)"><b>Item Request</b></a>
+	  </li>
+	  <!--li class="nav-item">
+		<a class="nav-link" href="#">Requests</a>
+	  </li-->
+	</ul>
+</div>
+
+<?php 
+echo "<div id=\"orderTab\">";
+include 'accountOrders.php';
+echo "</div>";
+
+echo "<div id=\"itemTab\" style = \"display:none\">";
+include 'item/itemRequest.php';
+echo "</div>";
+
+?>

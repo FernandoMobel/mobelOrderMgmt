@@ -52,6 +52,7 @@ function saveOrder(objectID,OID){
 		getOrderRooms(OID);
 		getRequiredDate(OID);					
 	}else{
+		//console.log(objectID);
 		myData = { mode: "updateOrder", id: objectID, value: $("#"+objectID+OID).val(), oid: OID};
 		$.post("../OrderItem.php",
 				myData, 

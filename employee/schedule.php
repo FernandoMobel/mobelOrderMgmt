@@ -296,14 +296,14 @@ function getWithExpiry(key) {
 			<div class="d-flex justify-content-start col-sm-6 col-lg-4 mx-auto">
 				<div class="p-2">
 					<select id="columns" multiple="multiple">
+						<option selected value="sht" id="chkST">DELIVERY</option>
 						<option selected value="rmnm" id="chkRN">ROOM NAME</option>
 						<option selected value="box" id="chkB">BOXES</option>
 						<option selected value="frt" id="chkFT">FRONTS</option>
 						<option selected value="itm" id="chkIT">ITEMS</option>
 						<option selected value="mat" id="chkMT">MATERIAL</option>
 						<option selected value="drs" id="chkDS">DOOR STYLE</option>
-						<option selected value="fns" id="chkFS">FINISH</option>
-						<option selected value="sht" id="chkST">SHIPPING TO</option>
+						<option selected value="fns" id="chkFS">FINISH</option>						
 					</select>
 				</div>
 			</div>
@@ -346,6 +346,7 @@ function getWithExpiry(key) {
 					<tr>
 						<th>DUE DATE</th>
 						<th>OID</th>
+						<th class="sht">DELIVERY</th>
 						<th class="rmnm">ROOM NAME</th>
 						<th class="box">BOXES</th>			
 						<th class="frt">FRONTS</th>
@@ -353,7 +354,6 @@ function getWithExpiry(key) {
 						<th class="mat">MATERIAL</th>
 						<th class="drs">DOOR STYLE</th>
 						<th class="fns">FINISH</th>
-						<th class="sht">SHIPPING TO</th>
 						<th>DONE</th>
 					</tr>
 				</thead>
