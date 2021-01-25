@@ -90,36 +90,45 @@ if($_POST['mode']=="getDeliveryDate"){
 }
 
 if($_POST['mode']=="updateDate"){
-	//update schedule
-	$sql = "update schedule set wrapping ='".$_POST['date']."', updateDate=curdate() where rid in(select orr.rid from orderRoom orr where orr.oid =".$_POST['oid'].")";
-	opendb($sql);
-	
-	//Calculate Finishing date
-	$sql2 = "select rid,(select id from material m where m.id = (select mid from species sp where sp.id = orr.species)) material, (select finishType from frontFinish ff where ff.id = orr.frontFinish ) finishType, glaze, sheen from orderRoom orr where orr.oid =".$_POST['oid']." order by material asc";
-	$result = opendb($sql2);
-	$finishing = "null";
-	$daysF = 0;
-	$daysF2 = 3;
-	while($row = $result->fetch_assoc()){ 		
-		if(strcmp($row['material'],'1')!=0){//not Laminates
-			if(strcmp($row['finishType'],'2')==0){
-				$daysF = 3;//stain
-			}else{
-				$daysF = 4;//Paint or handwiped
+	switch($_POST['schID']){
+		case '1': //Finishing
+			$sql = "update schedule set finishing ='".$_POST['date']."', updateDate=curdate() where rid in(select orr.rid from orderRoom orr where orr.oid =".$_POST['oid'].")";
+			opendb($sql);
+		break;
+		case '2': //Wrapping
+			$sql = "update schedule set wrapping ='".$_POST['date']."', updateDate=curdate() where rid in(select orr.rid from orderRoom orr where orr.oid =".$_POST['oid'].")";
+			opendb($sql);
+			
+			//Calculate Finishing date
+			$sql2 = "select rid,(select id from material m where m.id = (select mid from species sp where sp.id = orr.species)) material, (select finishType from frontFinish ff where ff.id = orr.frontFinish ) finishType, glaze, sheen from orderRoom orr where orr.oid =".$_POST['oid']." order by material asc";
+			$result = opendb($sql2);
+			$finishing = "null";
+			$daysF = 0;
+			$daysF2 = 3;
+			while($row = $result->fetch_assoc()){ 		
+				if(strcmp($row['material'],'1')!=0){//not Laminates
+					if(strcmp($row['finishType'],'2')==0){
+						$daysF = 3;//stain
+					}else{
+						$daysF = 4;//Paint or handwiped
+					}
+					if(strcmp($row['glaze'],'13')!=0){//if glaze
+						$daysF += 1;
+					}
+					if(strcmp($row['sheen'],'3')==0){//if high gloss
+						$daysF += 2;
+					}
+				}			
+				if($daysF>$daysF2){
+					$daysF2 = $daysF;
+				}	
+				$finishing = scheduleFn($_POST['date'],$daysF2);
+				$sql2 = "update schedule set finishing ='".$finishing."' where rid =".$row['rid'];
+				opendb2($sql2);
 			}
-			if(strcmp($row['glaze'],'13')!=0){//if glaze
-				$daysF += 1;
-			}
-			if(strcmp($row['sheen'],'3')==0){//if high gloss
-				$daysF += 2;
-			}
-		}			
-		if($daysF>$daysF2){
-			$daysF2 = $daysF;
-		}	
-		$finishing = scheduleFn($_POST['date'],$daysF2);
-		$sql2 = "update schedule set finishing ='".$finishing."' where rid =".$row['rid'];
-		opendb2($sql2);
+		break;
+		default:
+		break;
 	}
 }
 
