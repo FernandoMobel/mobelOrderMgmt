@@ -27,10 +27,10 @@
 							if($_SESSION["userType"]==2)
 								echo "<th>Assigned</th>";
 							?>
-							<th>Submitted</th>
-							<th>Requested</th>
-							<th>Scheduled</th>
-							<th>Delivered</th>
+							<th>Submitted Date</th>
+							<th>Required Date</th>
+							<th>Scheduled Date</th>
+							<th>Delivered Date</th>
 						  </tr>
 						</thead>
 						<tfoot class="thead-light">
@@ -44,7 +44,7 @@
 							echo "<th>Assigned</th>";
 							?>
 							<th>Submitted Date</th>
-							<th>Requested Date</th>
+							<th>Required Date</th>
 							<th>Scheduled Date</th>
 							<th>Delivered Date</th>
 						  </tr>
