@@ -1,5 +1,7 @@
-<?php include 'includes/nav.php';?>
-<?php include 'includes/db.php';?>
+<?php 
+include 'includes/nav.php';
+include 'includes/db.php';
+?>
 <?php
 /*$sql = "SELECT orderCode as title, schedComplDt as start, CASE WHEN orderCode like 'SKB%' THEN \"red\" WHEN orderCode like 'DIY%' THEN \"green\" ELSE \"blue\" END as color FROM mobelSch2020 where completedDt is null and schedComplDt is not null order by receivedDt desc";
  $result = opendb($sql);
@@ -41,11 +43,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     /* initialize the calendar
     -----------------------------------------------------------------*/
-    var schedule;
+    var schedule = 0;
     var calendarEl = document.getElementById('calendar');
-	//var jsonJobs = $("#jsonJobs").text();
 	
-    var calendar = new FullCalendar.Calendar(calendarEl, {	
+	var calendar = new FullCalendar.Calendar(calendarEl, {	
 		//schedulerLicenseKey: 'CC-Attribution-NonCommercial-NoDerivatives',
 		schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
 		//weekends: false,
@@ -55,27 +56,31 @@ document.addEventListener('DOMContentLoaded', function() {
 		  },
 		customButtons: {
 		    completition: {
-		      text: 'Completition',
-		      click: function() {
-		      	schedule = 3;
-		        //alert('Completition Schedule');
-		        //calendar.refetchResources();
-		        calendar.destroy();
-		      }
+		      	text: 'Completition',
+		      	click: function(arg, a) {
+		      		schedule = 3;
+		        	$(arg['path'][1]['childNodes']).removeClass('active');
+		        	$(a).addClass('active');
+		        	calendar.refetchEvents();
+		      	}
 		    },
 		    wrapping: {
-		      text: 'Wrapping',
-		      click: function() {
-		      	schedule = 2;
-		        alert('Wrapping Schedule');
-		      }
+		      	text: 'Wrapping',
+		      	click: function(arg, a) {
+		      		schedule = 2;
+		        	$(arg['path'][1]['childNodes']).removeClass('active');
+		        	$(a).addClass('active');
+		        	calendar.refetchEvents();		        
+		      	}
 		    },
 		    finishing: {
-		      text: 'Finishing',
-		      click: function() {
-		      	schedule = 1;
-		        alert('Finishing Schedule');
-		      }
+		      	text: 'Finishing',
+		      	click: function(arg,a) {
+		      		schedule = 1;		        
+		        	$(arg['path'][1]['childNodes']).removeClass('active');
+		        	$(a).addClass('active');
+		        	calendar.refetchEvents();
+		      	}
 		    }
 		},
 		headerToolbar: {
@@ -93,6 +98,10 @@ document.addEventListener('DOMContentLoaded', function() {
 			//}
 		},
 		dateClick: function(info) {
+			if(!schedule){
+				alert('Please select a schedule first');
+				return;
+			}
 			//Boxes information
 			myData = { mode: "getTotalDay", date: info.dateStr};
 			$.post("calendarActions.php",
@@ -167,14 +176,26 @@ document.addEventListener('DOMContentLoaded', function() {
 			  startTime: '08:00', // a start time
 			  endTime: '16:30', // an end time
 		},
-		events: {
-		//resources: {
+		/*events: {
 				url: 'calendarActions.php',
 				method: 'POST',
-				extraParams: {mode: 'wrappingSch'},
+				//extraParams: {mode: 'wrappingSch'},
+				extraParams: {mode: 'hollidaySch'},
 				failure: function() {
 				  document.getElementById('script-warning').style.display = 'block';
 				}
+		},*/
+		events: function(fetchInfo, successCallback, failureCallback) {
+			myData = { mode: "getSchedule", schID: schedule};
+			console.log(myData);
+		    $.post("calendarActions.php",
+			myData, 
+		       function(data, status, jqXHR) {
+            		if(status == "success"){
+            	    	var orders = JSON.parse(jqXHR['responseText']);
+            		   	successCallback(orders);
+            	    }
+		    });
 		},
 		eventOverlap: function(stillEvent, movingEvent) {
 			
@@ -217,20 +238,6 @@ document.addEventListener('DOMContentLoaded', function() {
 					}
 			});	
 			
-			/*if (confirm("Are you sure about this change?")) {
-				myData = { mode: "updateDate",  date: date.getFullYear()+'-' + (date.getMonth()+1) + '-'+date.getDate(), oid:info.event.id, oldDate:oldDate.getFullYear()+'-' + (oldDate.getMonth()+1) + '-'+oldDate.getDate()};
-				$.ajax({
-					url: 'calendarActions.php',
-					type: 'POST',
-					data: myData, 
-					success: function(data, status, jqXHR) {
-							//console.log(jqXHR['responseText']);
-					}	
-				});
-				
-			}else{
-					info.revert();
-			}*/
 		},
 		eventClick: function(info) {
 			myData = { mode: "getOrderRooms",  oid: info.event.id};
@@ -393,7 +400,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				    	
 				    	<div class="dropdown-divider mb-3"></div>
 				    	<h6 id="lblDesc" class="card-subtitle mb-2 text-muted"></h6>
-				    	<p id="txtInfo" class="card-text">Select some day or job in the Calendar to see a detailed explanation about what is happening.</p>
+				    	<p id="txtInfo" class="card-text">First select a Schedule. </br></br>Once jobs are visible, choose some date or job in the calendar to see a detailed explanation about what is happening.</p>
 				    	<div class="container" id="divDayDetails">
 				    		<div class="row">
 				    			<div class="col-4">
