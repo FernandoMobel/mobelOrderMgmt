@@ -103,19 +103,22 @@ document.addEventListener('DOMContentLoaded', function() {
 				return;
 			}
 			//Boxes information
-			myData = { mode: "getTotalDay", date: info.dateStr};
+			myData = { mode: "getTotalDay", date: info.dateStr, schID: schedule };
+			console.log(myData);
 			$.post("calendarActions.php",
 				myData, 
 				   function(data, status, jqXHR) {
 					   	$('#lblTitle').html('Date: '+info.dateStr);
 					   	$('#lblDesc').html('Date totals:');
 					   	var totals = JSON.parse(jqXHR['responseText']);
+					   	
+					   	console.log(totals);
 					   	$('#iBoxes').val(totals.cc);
 					   	$('#iFronts').val(totals.fronts);
 					   	$('#iItems').val(totals.pieces);
 					});		
 			//Orders data
-			myData = { mode: "getDateOrdDetails", date: info.dateStr};
+			myData = { mode: "getDateOrdDetails", date: info.dateStr, schID: schedule};
 			$.post("calendarActions.php",
 				myData, 
 				   function(data, status, jqXHR) {
@@ -187,8 +190,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		},*/
 		events: function(fetchInfo, successCallback, failureCallback) {
 			myData = { mode: "getSchedule", schID: schedule};
-			console.log(myData);
-		    $.post("calendarActions.php",
+			$.post("calendarActions.php",
 			myData, 
 		       function(data, status, jqXHR) {
             		if(status == "success"){

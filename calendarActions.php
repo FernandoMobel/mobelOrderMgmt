@@ -33,7 +33,7 @@ if($_POST['mode']=="getSchedule"){
 			echo json_encode($dbdata);
 		break;
 		case '1':
-			$sql ="select distinct orr.oid id, concat('OID: ',orr.oid,' - ',mo.tagName) title, wrapping start, 'true' allDay, CASE WHEN updateDate=curdate() THEN '#f5bf42' WHEN CLid=1 THEN '#dee2e6' WHEN CLid=2 THEN '#86cfda' WHEN CLid=3 THEN '#7abaff' ELSE '' END as color, 'black' textColor from schedule s, orderRoom orr, mosOrder mo where mo.oid = orr.oid and orr.rid = s.rid and state=5";
+			$sql ="select distinct orr.oid id, concat('OID: ',orr.oid,' - ',mo.tagName) title, finishing start, 'true' allDay, CASE WHEN updateDate=curdate() THEN '#f5bf42' WHEN CLid=1 THEN '#dee2e6' WHEN CLid=2 THEN '#86cfda' WHEN CLid=3 THEN '#7abaff' ELSE '' END as color, 'black' textColor from schedule s, orderRoom orr, mosOrder mo where mo.oid = orr.oid and orr.rid = s.rid and state=5";
 			$result = opendb($sql);
 			$dbdata = array();
 			while ( $row = $result->fetch_assoc())  {
@@ -48,7 +48,7 @@ if($_POST['mode']=="getSchedule"){
 			echo json_encode($dbdata);
 		break;
 		case '2':
-			$sql ="select distinct orr.oid id, concat('OID: ',orr.oid,' - ',mo.tagName) title, finishing start, 'true' allDay, CASE WHEN updateDate=curdate() THEN '#f5bf42' WHEN CLid=1 THEN '#dee2e6' WHEN CLid=2 THEN '#86cfda' WHEN CLid=3 THEN '#7abaff' ELSE '' END as color, 'black' textColor from schedule s, orderRoom orr, mosOrder mo where mo.oid = orr.oid and orr.rid = s.rid and state=5";
+			$sql ="select distinct orr.oid id, concat('OID: ',orr.oid,' - ',mo.tagName) title, wrapping start, 'true' allDay, CASE WHEN updateDate=curdate() THEN '#f5bf42' WHEN CLid=1 THEN '#dee2e6' WHEN CLid=2 THEN '#86cfda' WHEN CLid=3 THEN '#7abaff' ELSE '' END as color, 'black' textColor from schedule s, orderRoom orr, mosOrder mo where mo.oid = orr.oid and orr.rid = s.rid and state=5";
 			$result = opendb($sql);
 			$dbdata = array();
 			while ( $row = $result->fetch_assoc())  {
@@ -80,63 +80,7 @@ if($_POST['mode']=="getSchedule"){
 	}
 }
 
-if($_POST['mode']=="wrappingSch"){
-	//$sql = "select distinct orr.oid id, concat('Order:',orr.oid,' - Boxes: ',(select sum(cc) from orderRoom orr2 where orr2.oid = orr.oid)) title, wrapping start, 'true' allDay, if(updateDate=curdate(),'red', 'blue') color from schedule s, orderRoom orr, mosOrder mo where mo.oid = orr.oid and orr.rid = s.rid and state=5";
-	$sql ="select distinct orr.oid id, concat('OID: ',orr.oid,' - ',mo.tagName) title, wrapping start, 'true' allDay, CASE WHEN updateDate=curdate() THEN '#f5bf42' WHEN CLid=1 THEN '#dee2e6' WHEN CLid=2 THEN '#86cfda' WHEN CLid=3 THEN '#7abaff' ELSE '' END as color, 'black' textColor from schedule s, orderRoom orr, mosOrder mo where mo.oid = orr.oid and orr.rid = s.rid and state=5";
-	$result = opendb($sql);
-	$dbdata = array();
-	while ( $row = $result->fetch_assoc())  {
-		$dbdata[]=$row;
-	}
-	//---getting hollidays
-	$sql = "select calendarDay start, 'background' display, 'pink' color from calendar where workDayInd = 0";
-	$result = opendb($sql);
-	while ( $row = $result->fetch_assoc())  {
-		$dbdata[]=$row;
-	}
-	echo json_encode($dbdata);
-}
 
-if($_POST['mode']=="hollidaySch"){
-	$sql = "select calendarDay start, 'background' display, 'pink' color from calendar where workDayInd = 0";
-	$result = opendb($sql);
-	while ( $row = $result->fetch_assoc())  {
-		$dbdata[]=$row;
-	}
-	echo json_encode($dbdata);
-}
-
-if($_POST['mode']=="completitionSch"){
-	$sql ="select distinct orr.oid id, concat('OID: ',orr.oid,' - ',mo.tagName) title, deliveryDate start, 'true' allDay, CASE WHEN updateDate=curdate() THEN '#f5bf42' WHEN CLid=1 THEN '#dee2e6' WHEN CLid=2 THEN '#86cfda' WHEN CLid=3 THEN '#7abaff' ELSE '' END as color, 'black' textColor from schedule s, orderRoom orr, mosOrder mo where mo.oid = orr.oid and orr.rid = s.rid and state=5";
-	$result = opendb($sql);
-	$dbdata = array();
-	while ( $row = $result->fetch_assoc())  {
-		$dbdata[]=$row;
-	}
-	//---getting hollidays
-	$sql = "select calendarDay start, 'background' display, 'pink' color from calendar where workDayInd = 0";
-	$result = opendb($sql);
-	while ( $row = $result->fetch_assoc())  {
-		$dbdata[]=$row;
-	}
-	echo json_encode($dbdata);
-}
-
-if($_POST['mode']=="finishingSch"){
-	$sql ="select distinct orr.oid id, concat('OID: ',orr.oid,' - ',mo.tagName) title, finishing start, 'true' allDay, CASE WHEN updateDate=curdate() THEN '#f5bf42' WHEN CLid=1 THEN '#dee2e6' WHEN CLid=2 THEN '#86cfda' WHEN CLid=3 THEN '#7abaff' ELSE '' END as color, 'black' textColor from schedule s, orderRoom orr, mosOrder mo where mo.oid = orr.oid and orr.rid = s.rid and state=5";
-	$result = opendb($sql);
-	$dbdata = array();
-	while ( $row = $result->fetch_assoc())  {
-		$dbdata[]=$row;
-	}
-	//---getting hollidays
-	$sql = "select calendarDay start, 'background' display, 'pink' color from calendar where workDayInd = 0";
-	$result = opendb($sql);
-	while ( $row = $result->fetch_assoc())  {
-		$dbdata[]=$row;
-	}
-	echo json_encode($dbdata);
-}
 
 if($_POST['mode']=="getDeliveryDate"){
 	$sql = "select deliveryDate from mosOrder where oid =".$_POST['oid'];
@@ -180,7 +124,18 @@ if($_POST['mode']=="updateDate"){
 }
 
 if($_POST['mode']=="getTotalDay"){
-	$sql = "select coalesce(sum(cc),0) cc,coalesce(sum(fronts),0) fronts, coalesce(sum(pieces),0) pieces from orderRoom orr, schedule s where s.rid = orr.rid and s.wrapping='".$_POST['date']."'";
+	switch($_POST['schID']){
+		case '1':
+			$sql = "select coalesce(sum(cc),0) cc,coalesce(sum(fronts),0) fronts, coalesce(sum(pieces),0) pieces from orderRoom orr, schedule s, mosOrder mo where s.rid = orr.rid and mo.oid = orr.oid and state = 5 and s.finishing='".$_POST['date']."'";
+		break;
+		case '2':
+			$sql = "select coalesce(sum(cc),0) cc,coalesce(sum(fronts),0) fronts, coalesce(sum(pieces),0) pieces from orderRoom orr, schedule s, mosOrder mo where s.rid = orr.rid and mo.oid = orr.oid and state = 5 and s.wrapping='".$_POST['date']."'";
+		break;
+		case '3':
+			$sql = "select coalesce(sum(cc),0) cc,coalesce(sum(fronts),0) fronts, coalesce(sum(pieces),0) pieces from orderRoom orr, mosOrder mo where mo.oid = orr.oid and state = 5 and mo.deliveryDate='".$_POST['date']."'";
+		break;
+	}
+	
 	$result = opendb($sql);
 	$row = $result->fetch_assoc();
 	$totals = array();
@@ -240,7 +195,18 @@ if($_POST['mode']=="getOrderRooms"){
 }
 
 if($_POST['mode']=="getDateOrdDetails"){ 
-	$sql = "select orr.oid id, concat('OID: ',orr.oid,' - ',mo.tagName) title, wrapping start, 'true' allDay, CLid, sum(cc) cc, sum(fronts) fronts, sum(pieces) pieces from schedule s, orderRoom orr, mosOrder mo where mo.oid = orr.oid and orr.rid = s.rid and state=5 and wrapping = '".$_POST['date']."' group by orr.oid, title, start, allDay, CLid";
+	switch($_POST['schID']){
+		case '1':
+			$sql = "select orr.oid id, concat('OID: ',orr.oid,' - ',mo.tagName) title, finishing start, 'true' allDay, CLid, sum(cc) cc, sum(fronts) fronts, sum(pieces) pieces from schedule s, orderRoom orr, mosOrder mo where mo.oid = orr.oid and orr.rid = s.rid and state=5 and finishing = '".$_POST['date']."' group by orr.oid, title, start, allDay, CLid";
+		break;
+		case '2':
+			$sql = "select orr.oid id, concat('OID: ',orr.oid,' - ',mo.tagName) title, wrapping start, 'true' allDay, CLid, sum(cc) cc, sum(fronts) fronts, sum(pieces) pieces from schedule s, orderRoom orr, mosOrder mo where mo.oid = orr.oid and orr.rid = s.rid and state=5 and wrapping = '".$_POST['date']."' group by orr.oid, title, start, allDay, CLid";
+		break;
+		case '3':
+			$sql = "select orr.oid id, concat('OID: ',orr.oid,' - ',mo.tagName) title, deliveryDate start, 'true' allDay, CLid, sum(cc) cc, sum(fronts) fronts, sum(pieces) pieces from schedule s, orderRoom orr, mosOrder mo where mo.oid = orr.oid and orr.rid = s.rid and state=5 and deliveryDate = '".$_POST['date']."' group by orr.oid, title, start, allDay, CLid";
+		break;
+	}
+
 	$query = opendb($sql);
 	$orders = array();
 	while($row = $query->fetch_assoc()){ 
