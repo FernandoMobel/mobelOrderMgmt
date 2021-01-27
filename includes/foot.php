@@ -27,12 +27,12 @@ echo "<script type=\"text/javascript\" src=\"http://".$_SERVER['SERVER_NAME'].$l
 </script>
 
 <script defer>
-$(document).ready(function () {
-	$('.dataTables_length').addClass('bs-select');
-	$('[data-toggle="tooltip"]').tooltip();
-});
+	$(document).ready(function () {
+		$('.dataTables_length').addClass('bs-select');
+		$('[data-toggle="tooltip"]').tooltip();
+	});
 
-$('.datepicker').on('click', function(e) {
+	$('.datepicker').on('click', function(e) {
 	   e.preventDefault();
 	   $(this).attr("autocomplete", "off");
 	});

@@ -12,7 +12,7 @@
 					$admin = "or m.account = " . $_SESSION["account"];
 				}
 				opendb("select m.oid,m.mosUser, m.po, m.tagName, DATE(dateSubmitted) as dateSubmitted, DATE(dateRequired) as dateRequired, DATE(deliveryDate) as deliveryDate, DATE(dateShipped) as dateShipped, s.name as status,u.email from mosOrder m, state s, mosUser u where s.id = m.state and m.mosUser = u.id and (u.email = '" . $_SESSION["username"] . "' ". $admin ."  )");
-				echo "<br/><div class=\"container\">";
+				echo "<br/><div class=\"container-fluid table-responsive\">";
 				//echo  "select m.*,s.name as 'status',u.email from mosOrder m, state s, mosUser u where s.id = m.state and m.mosUser = u.id and (u.email = '" . $_SESSION["username"] . "'  )". $admin .")";
 				if($GLOBALS['$result']->num_rows > 0){
 					?>
@@ -73,8 +73,12 @@
 							}
 							echo "</select></td>";
 						}
-						echo "<td><a href=\"Order.php?OID=" . $row['oid'] . "\">" . $row['dateSubmitted'] . "</td>";	
-						echo "<td><a href=\"Order.php?OID=" . $row['oid'] . "\">" . $row['dateRequired'] . "</td>";	
+						echo "<td><a href=\"Order.php?OID=" . $row['oid'] . "\">" . $row['dateSubmitted'] . "</td>";
+						//if(strcmp($row['status'],"Quoting")!=0){
+							echo "<td><a href=\"Order.php?OID=" . $row['oid'] . "\">" . $row['dateRequired'] . "</td>";	
+						/*}else{
+							echo "<td style='min-width:120px'><input id=\"dateReq".$row['oid']."\" style='max-width:130px' title=\"Some factors may increase your lead time. We will inform you as soon as possible once your quote is submitted.\" type=\"text\" maxlength=\"10\" data-provide=\"datepicker\" data-date-format=\"yyyy-mm-dd\" onchange=\"updateReqDate(this);\" class=\"form-control datepicker\"  value=\"". substr($row['dateRequired'],0,10) ."\"></td>";
+						}*/						
 						echo "<td><a href=\"Order.php?OID=" . $row['oid'] . "\">" . $row['deliveryDate'] . "</td>";	
 						echo "<td><a href=\"Order.php?OID=" . $row['oid'] . "\">" . $row['dateShipped'] . "</td>";	
 						echo "</tr>";
@@ -100,6 +104,10 @@ $(document).ready(function () {
 		"order": [[ 0, "asc" ]],
 		lengthMenu: [20, 30, 50],
 		stateSave: true
+	});
+
+	$('.datepicker').datepicker({
+    	startDate: new Date()
 	});
 });
 </script>

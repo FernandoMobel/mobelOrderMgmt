@@ -19,9 +19,9 @@ if(strlen($_SESSION["firstName"])==1 && $_SESSION["account"]==2){
 ?>
 
 function loadSchWeek(date, dept){	
-	/*if(date.length==1){
-		date = 0;//localStorage.setItem('date',getMondayCurWeek());
-	}*/
+	if(date=='0'){
+		localStorage.setItem('date','0');
+	}
 	//What schedule are using
 	switch (dept){
 		case '3'://Shipping
@@ -181,6 +181,11 @@ function loadFilters(){
 	}else{
 		cols.push('sht');
 	}
+	if(localStorage.getItem('tag')=='false'){
+		$('.tag').hide();
+	}else{
+		cols.push('tag');
+	}
 	//set visible cols 
 	if(cols.length>0){
 		$("#columns").val(cols);
@@ -296,6 +301,7 @@ function getWithExpiry(key) {
 			<div class="d-flex justify-content-start col-sm-6 col-lg-4 mx-auto">
 				<div class="p-2">
 					<select id="columns" multiple="multiple">
+						<option selected value="tag" id="chkTAG">TAG NAME - PO</option>
 						<option selected value="sht" id="chkST">DELIVERY</option>
 						<option selected value="rmnm" id="chkRN">ROOM NAME</option>
 						<option selected value="box" id="chkB">BOXES</option>
@@ -346,6 +352,7 @@ function getWithExpiry(key) {
 					<tr>
 						<th>DUE DATE</th>
 						<th>OID</th>
+						<th class="tag">TAG NAME - PO</th>
 						<th class="sht">DELIVERY</th>
 						<th class="rmnm">ROOM NAME</th>
 						<th class="box">BOXES</th>			

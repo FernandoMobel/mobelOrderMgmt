@@ -390,7 +390,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <div class="container-fluid">	
 	<div class="row">
 		<!--div id='wrap'-->
-			<div class="col-4">
+			<div class="col-4 d-print-none">
 				<div class="card sticky-top">
 				  	<div class="card-body">
 				  		<div class="row">
