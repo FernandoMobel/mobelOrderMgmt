@@ -163,6 +163,7 @@ function addRoom(roomQty){
 }
 
 function loadItems(rid){
+	//empty item list
 	$("#items").empty();
 	if(typeof rid !== 'undefined'){
 		myData = { mode: "getItems", oid: "<?php echo $_GET["OID"] ?>", rid: rid };
@@ -198,7 +199,9 @@ function loadItems(rid){
 						alert('One or more items are not compatible, please remove them');
 					}else{
 						$("#roomTotal").html("<b>Room Total: $" + $('#TotalPrice').val() + "</br>pre HST & pre delivery ");
-					}					
+					}	
+					//set printing properties
+					printPrice();				
 				}else{//One or more headers aren't selected, prices and item list will not be displayed
 					$('#items').append("<h5 class=\"mx-auto\">Please ensure all the above options (Species, Finish, etc) are selected</h5>");
 					$(".borderless").css('border-top','0px');

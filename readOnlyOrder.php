@@ -36,8 +36,8 @@ $msg = "
 			<div class=\"col-9\">
 				<table class=\"table table-sm my-auto mx-5\">
 					<tr>
-						<td class=\"border-0\"><h5>Order ID:</h5></td>
-						<td class=\"border-0\"><h5>".$mailOID."</h5></td>
+						<td class=\"border-0\"><h4>Order ID:</h4></td>
+						<td class=\"border-0\"><h3><b>".$mailOID."</b></h3></td>
 						<td class=\"border-0\"><b>Customer:</b></td>
 						<td class=\"border-0\">". $row['busName']."</td>
 					</tr>
@@ -50,6 +50,8 @@ $msg = "
 					<tr>
 						<td class=\"border-0\"><b>Ship to:</b></td>
 						<td class=\"border-0\">". $row['shipTo'] ."</td>
+						<td class=\"border-0\"><b>Tag Name / PO</b></td>
+						<td class=\"border-0\">".$row['tagName']." - ". $row['po'] ."</td>
 					</tr>
 				</table>
 			</div>
