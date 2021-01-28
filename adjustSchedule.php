@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		  },
 		customButtons: {
 		    completition: {
-		      	text: 'Completition',
+		      	text: 'Comp',
 		      	click: function(arg, a) {
 		      		schedule = 3;
 		        	$(arg['path'][1]['childNodes']).removeClass('active');
@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		      	}
 		    },
 		    wrapping: {
-		      	text: 'Wrapping',
+		      	text: 'Wrap',
 		      	click: function(arg, a) {
 		      		schedule = 2;
 		        	$(arg['path'][1]['childNodes']).removeClass('active');
@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		      	}
 		    },
 		    finishing: {
-		      	text: 'Finishing',
+		      	text: 'Finish',
 		      	click: function(arg,a) {
 		      		schedule = 1;		        
 		        	$(arg['path'][1]['childNodes']).removeClass('active');
@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		headerToolbar: {
 			left: 'prev,next completition,wrapping,finishing',
 			center: 'title',
-			right: 'dayGridMonth,timeGridWeek listWeek'//,timeGridDay
+			right: 'listWeek'//,timeGridDay,dayGridMonth,timeGridWeek 
 		  },
 		editable: true, //Calendar events can me moved or not
 		droppable: true, // this allows things to be dropped onto the calendar
@@ -394,12 +394,15 @@ document.addEventListener('DOMContentLoaded', function() {
 				<div class="card sticky-top">
 				  	<div class="card-body">
 				  		<div class="row">
-				  			<div class="col-9">
+				  			<div class="col-lg-11">
 					  			<h5 id="lblTitle" class="card-title">Details</h5>						    	
 							</div>
-							<div class="col-3">
-								<a id="popOrderType" tabindex="0" role="button" data-toggle="popover" data-placement="bottom" data-trigger="focus" data-container="body" data-html="true">
-									<label class="input-group-text bg-primary text-white" for="stateFilter">Order Types</label>
+							<div class="col-lg-1">
+								<a title="Order Types" id="popOrderType" tabindex="0" role="button" data-toggle="popover" data-placement="bottom" data-trigger="focus" data-container="body" data-html="true">
+									<svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-palette" viewBox="0 0 16 16">
+									  <path d="M8 5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm4 3a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM5.5 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm.5 6a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/>
+									  <path d="M16 8c0 3.15-1.866 2.585-3.567 2.07C11.42 9.763 10.465 9.473 10 10c-.603.683-.475 1.819-.351 2.92C9.826 14.495 9.996 16 8 16a8 8 0 1 1 8-8zm-8 7c.611 0 .654-.171.655-.176.078-.146.124-.464.07-1.119-.014-.168-.037-.37-.061-.591-.052-.464-.112-1.005-.118-1.462-.01-.707.083-1.61.704-2.314.369-.417.845-.578 1.272-.618.404-.038.812.026 1.16.104.343.077.702.186 1.025.284l.028.008c.346.105.658.199.953.266.653.148.904.083.991.024C14.717 9.38 15 9.161 15 8a7 7 0 1 0-7 7z"/>
+									</svg>
 								</a>
 							</div>
 				  		</div>
@@ -409,7 +412,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				    	<p id="txtInfo" class="card-text">First select a Schedule. </br></br>Once jobs are visible, choose some date or job in the calendar to see a detailed explanation about what is happening.</p>
 				    	<div class="container" id="divDayDetails">
 				    		<div class="row">
-				    			<div class="col-4">
+				    			<div class="col-12">
 								    <div class="input-group mb-3">
 									  	<div class="input-group-prepend">
 									    	<span class="input-group-text" id="boxes">Boxes</span>
@@ -417,7 +420,7 @@ document.addEventListener('DOMContentLoaded', function() {
 									  	<input id="iBoxes" type="text" class="form-control" disabled>
 									</div>
 								</div>
-								<div class="col-4">
+								<div class="col-12">
 								    <div class="input-group mb-3">
 									  	<div class="input-group-prepend">
 									    	<span class="input-group-text" id="fronts">Fronts</span>
@@ -425,7 +428,7 @@ document.addEventListener('DOMContentLoaded', function() {
 									  	<input id="iFronts" type="text" class="form-control" disabled>
 									</div>
 								</div>
-								<div class="col-4">
+								<div class="col-12">
 								    <div class="input-group mb-3">
 									  	<div class="input-group-prepend">
 									    	<span class="input-group-text" id="items">Items</span>
