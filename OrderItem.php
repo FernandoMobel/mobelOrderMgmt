@@ -271,7 +271,10 @@ if($_POST['mode']=="updateOrder"){
                 $sql = "update mosOrder set dateConfirmed = NOW() where oid=" . $_POST['oid'];
             break;
             case 5:
-                $sql = "update mosOrder set dateDetailed = NOW() where oid=" . $_POST['oid'];
+                $sql = "update mosOrder set dateDetailed = NOW(), detailedBy=".$_SESSION["userid"]." where oid=" . $_POST['oid'];
+            break;
+            case 6:
+                $sql = "update mosOrder set dateCompleted = NOW(), completedBy=".$_SESSION["userid"]." where oid=" . $_POST['oid'];
             break;
             case 7:
                 $sql = "update mosOrder set dateShipped = NOW() where oid=" . $_POST['oid'];

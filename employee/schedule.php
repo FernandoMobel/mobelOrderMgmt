@@ -9,7 +9,7 @@ if(strlen($_SESSION["firstName"])==1 && $_SESSION["account"]==2){
 	echo "const dateType =".$row['dateType'].";";
 	echo "setTimeout(function(){
 		   window.location.reload(1);
-		}, 60000);";
+		}, 600000);";
 }else{
 	/*echo "const department =1;";
 	echo "const dateType =3;";*/
@@ -120,8 +120,15 @@ function completeRoom(rid){
 			myData, 
 			   function(data, status, jqXHR) {	
 					setWithExpiry("completed"+rid, $('#chkDone'+rid).prop('checked'), 50000);//50 seconds to change your mind
-					if(department==1)//this means Shipping department has finished therefore order status will be updated as Shipped
-						updateOrderStatus(rid, $action);
+					//Some departments are able to update the status (Shipping = Shipped, Wrapping = Quality Checked and Completed)
+					switch (department){
+						case 1:
+						case 2: //Shipping and Wrapping
+							updateOrderStatus(rid, $action);
+						break;
+					}
+					/*if(department==1)//this means Shipping department has finished therefore order status will be updated as Shipped
+						updateOrderStatus(rid, $action);*/
 				});	
 	}else{
 		$('#chkDone'+rid).prop('disabled',true);
@@ -347,7 +354,7 @@ function getWithExpiry(key) {
 			</div>
 		</div>
 		<div class="table-responsive">
-			<table id="tbSchedule" class="table text-center align-middle table-bordered" style="width:100%" >
+			<table id="tbSchedule" class="table text-center align-middle table-bordered">
 				<thead class="thead-light">
 					<tr>
 						<th>DUE DATE</th>

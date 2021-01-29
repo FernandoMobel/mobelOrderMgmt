@@ -226,6 +226,7 @@ function loadOrders(){
 								}
 							},
 							{
+								className: "w-25",
 								data : "tagName",
 								render: function(data, type) {
 									if(data){
@@ -302,6 +303,16 @@ function loadOrders(){
 									}
 								}
 							},
+							{
+								data : "dateShipped",
+								render: function(data, type) {
+									if(data){
+										return "<a href=\"../Order.php?OID="+order+"\">"+data+"</a>";
+									}else{
+										return data;
+									}
+								}
+							}
 						],
 						rowCallback: function( row, data ) {						    
 							//Set color code for every row
@@ -539,7 +550,8 @@ if($GLOBALS['$result2']-> num_rows >0){
 							<th>UserName</th>
 							<th>Status</th>
 							<th data-toggle="tooltip" title="YYYY-MM-DD">Submitted Date</th>
-							<th data-toggle="tooltip" title="Completition date">Scheduled Date</th>
+							<th data-toggle="tooltip" title="YYYY-MM-DD">Scheduled Date</th>
+							<th data-toggle="tooltip" title="YYYY-MM-DD">Shipping Date</th>
 						</tr>
 					</thead>
 					<tfoot class="thead-light">
@@ -552,7 +564,8 @@ if($GLOBALS['$result2']-> num_rows >0){
 							<th>UserName</th>
 							<th>Status</th>
 							<th data-toggle="tooltip" title="YYYY-MM-DD">Submitted Date</th>
-							<th data-toggle="tooltip" title="Completition date">Scheduled Date</th>
+							<th data-toggle="tooltip" title="YYYY-MM-DD">Scheduled Date</th>
+							<th data-toggle="tooltip" title="YYYY-MM-DD">Shipping Date</th>
 						</tr>
 					</tfoot>	
 					<tbody id='orders'>
