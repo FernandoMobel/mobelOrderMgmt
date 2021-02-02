@@ -48,9 +48,9 @@ function saveSettings(){
 function saveOrder(objectID,OID){
 	$("#"+objectID+OID).css("border-color", "#ba0000");
 	if($("#"+objectID+OID).val()==5){
-		countBoxes(OID);
 		getOrderRooms(OID);
-		getRequiredDate(OID);					
+		getRequiredDate(OID);
+		$('#detailsModal').modal('toggle');					
 	}else{
 		//console.log(objectID);
 		myData = { mode: "updateOrder", id: objectID, value: $("#"+objectID+OID).val(), oid: OID};
@@ -78,7 +78,7 @@ function countBoxes(OID){
 	myData = { mode: "countBoxes",  oid: OID};
 	$.post("EmployeeMenuSettings.php",
 			myData, 
-		       function(data, status, jqXHR) {         
+		       function(data, status, jqXHR) {     
 			   }
 	);
 }
@@ -95,7 +95,6 @@ function getOrderRooms(OID){
 					$('#modalContent').append(jqXHR["responseText"]);
 					$('#orderID').attr('value',OID);
 					$('#detailsModalLabel').html("Details for Order: "+OID);
-					$('#detailsModal').modal('toggle');
 		        });
 	//Stations
 	$('#selDept').multiselect({
@@ -271,7 +270,7 @@ function loadOrders(){
 							{								
 								data : "status",
 								render: function(data, type ) {
-									var select='<select disabled onchange="saveOrder(\'state\','+order+');" id="state'+order+'" onfocus="setPrevious(this.value)">';
+									var select='<select disabled onchange="saveOrder(\'state\','+order+');" id="state'+order+'" onfocus="setPrevious(this.value);" onclick="countBoxes('+order+');">';
 									states.forEach(function(obj){
 											select += '<option ';
 											if(obj.id == data[1])
@@ -358,7 +357,7 @@ function getRequiredDate(oid){
 	    type: 'POST',
 	    data: myData,
 	    success: function(data, status, jqXHR) {
-	    	$('#deliveryDate').val(jqXHR['responseText']);  
+	    	$('#deliveryDate').val(jqXHR['responseText']); 
     	}
 	});	
 }
