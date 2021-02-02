@@ -10,7 +10,10 @@ if(isset($_SESSION["username"])){
     header("Location: index.php");
 }
 ?>
-<?php include_once 'includes/db.php';?>
+<?php 
+include_once 'includes/db.php';
+include 'orderXMLCV.php';
+?>
 <?php
 if($_POST['mode'] == "setStyle"){
     $sql = "update orderRoom set ". $_POST['column'] . " = '" .$_POST['id'] . "' where oid = '" . $_POST['oid'] . "' and rid = '". $_POST['rid'] . "'";
@@ -301,9 +304,9 @@ if($_POST['mode'] == "submitToMobel"){
     $CLid = 1;
     //Update status
     $sql = "update mosOrder set dateSubmitted = now(), submittedBy=".$_SESSION["userid"].", state = '2', leadTime = (select currentLeadtime from settings) where oid = '" . $_POST['oid'] . "' and state = 1";
-    opendb($sql);
+    //opendb($sql);
     //Getting address
-    $sql = "select * ,(select concat(unit,' ',street,' ',city,' ',province,' ',country,' ',postalCode)  from accountAddress aA where aA.id =mo.shipAddress) shipTo from mosOrder mo, mosUser mu, account a, cabinetLine cl where mo.mosUser = mu.id and mo.account = a.id and mo.CLid = cl.id and mo.oid = '" . $_POST['oid'] . "'";
+    $sql = "select * ,(select concat(coalesce(unit,' '),' ',street,' ',city,' ',province,' ',country,' ',postalCode)  from accountAddress aA where aA.id =mo.shipAddress) shipTo from mosOrder mo, mosUser mu, account a, cabinetLine cl where mo.mosUser = mu.id and mo.account = a.id and mo.CLid = cl.id and mo.oid = '" . $_POST['oid'] . "'";
     $result = opendb($sql);
     $row = $result->fetch_assoc();
     $accountName = $row['busDBA'];
@@ -534,8 +537,9 @@ if($_POST['mode'] == "submitToMobel"){
         <script src=\"https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js\" integrity=\"sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW\" crossorigin=\"anonymous\"></script>
     </body>
     </html>";
-    echo $msg;
+    //echo $msg;
     sendmail("fernando@mobel.ca; orders@mobel.ca; ".$_SESSION['email'], "Order ".$mailOID." Submitted - ".$accountName, $msg);
+    //createORDX($_POST['oid']);//Call function to create ordx file
 }
 
 function roomTable($species,$interiorFinish,$door,$frontFinish,$drawerBox,$glaze,$smallDrawerFront,$sheen,$largeDrawerFront,$hinge,$drawerGlides,$finishedEnd){
