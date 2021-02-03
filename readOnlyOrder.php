@@ -30,14 +30,15 @@ $msg = "
 <body>
 	<div class=\"bg-light container-fluid\">
 		<div class=\"row\">
-			<div class=\"print col-3 d-flex align-items-center justify-content-center\">
+			<div class=\"print col-3 d-flex align-items-center justify-content-center my-auto\">
 				<img id=\"logo\" alt=\"logo\" src=\"https://mobel.ca/wp-content/uploads/2019/01/Logo.png\"/>
+				<div class=\"d-flex justify-content-center mt-3\"><h3>Order ID: <b>".$mailOID."</b></h3></div>
 			</div>
 			<div class=\"col-9\">
 				<table class=\"table table-sm my-auto mx-5\">
 					<tr>
-						<td class=\"border-0\"><h4>Order ID:</h4></td>
-						<td class=\"border-0\"><h3><b>".$mailOID."</b></h3></td>
+						<td class=\"border-0 d-print-none\"><h4>Order ID:</h4></td>
+						<td class=\"border-0 d-print-none\"><h3><b>".$mailOID."</b></h3></td>
 						<td class=\"border-0\"><b>Customer:</b></td>
 						<td class=\"border-0\">". $row['busName']."</td>
 					</tr>

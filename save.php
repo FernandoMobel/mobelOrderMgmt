@@ -304,7 +304,7 @@ if($_POST['mode'] == "submitToMobel"){
     $CLid = 1;
     //Update status
     $sql = "update mosOrder set dateSubmitted = now(), submittedBy=".$_SESSION["userid"].", state = '2', leadTime = (select currentLeadtime from settings) where oid = '" . $_POST['oid'] . "' and state = 1";
-    //opendb($sql);
+    opendb($sql);
     //Getting address
     $sql = "select * ,(select concat(coalesce(unit,' '),' ',street,' ',city,' ',province,' ',country,' ',postalCode)  from accountAddress aA where aA.id =mo.shipAddress) shipTo from mosOrder mo, mosUser mu, account a, cabinetLine cl where mo.mosUser = mu.id and mo.account = a.id and mo.CLid = cl.id and mo.oid = '" . $_POST['oid'] . "'";
     $result = opendb($sql);
