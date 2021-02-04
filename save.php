@@ -341,7 +341,8 @@ if($_POST['mode'] == "submitToMobel"){
                     <h4>Hello, ". $row['firstName'] . " " . $row['lastName'] ."</h4></br>
                 </div>  
                 <div class=\"col-12 d-flex justify-content-center\">        
-                    <h4>We have recieved your order and will be sending back a confirmation shortly.</h4>
+                    <h4>We have recieved your order.</h4>
+                    <h5> You can keep looking for updates about this order on <a href=\"https://mos.mobel.ca/viewOrder.php\">MOS</a></h5>
                 </div>
             </div>
             <table class=\"table my-0\">

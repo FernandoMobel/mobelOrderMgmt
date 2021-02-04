@@ -28,7 +28,7 @@ if($row['isWarranty']==1)
 	$orderType="table-danger";
 $msg = "
 <body>
-	<div class=\"bg-light container-fluid\">
+	<div class=\"bg-white container-fluid\">
 		<div class=\"row\">
 			<div class=\"print col-3 d-flex align-items-center justify-content-center my-auto\">
 				<img id=\"logo\" alt=\"logo\" src=\"https://mobel.ca/wp-content/uploads/2019/01/Logo.png\"/>
