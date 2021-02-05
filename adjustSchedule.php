@@ -213,7 +213,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			var deliveryDate;
 			if(schedule!='3'){
 				//Getting delivery date
-				myData = {mode: 'getDeliveryDate',oid:info.event.id}
+				myData = {mode: 'getLimitDate', schID:schedule, oid:info.event.id}
 				$.ajax({
 						url: 'calendarActions.php',
 						type: 'POST',
@@ -222,7 +222,7 @@ document.addEventListener('DOMContentLoaded', function() {
 								deliveryDate= new Date(jqXHR['responseText']);
 								if(date > deliveryDate){
 									//console.log('New date: '+date+' Delivery: '+deliveryDate);
-									alert("New date can't be scheduled beyond the completition date");
+									alert("New date can't be scheduled beyond the next stage deadline. \nPlease verify the schedule for the next stage.");
 									info.revert();
 									return;
 								}else{

@@ -97,11 +97,21 @@ if($_POST['mode']=="getSchedule"){
 
 
 
-if($_POST['mode']=="getDeliveryDate"){
-	$sql = "select deliveryDate from mosOrder where oid =".$_POST['oid'];
+if($_POST['mode']=="getLimitDate"){
+	switch($_POST['schID']){
+		case '2': //Getting completition date as limit
+			$sql = "select deliveryDate as limitD from mosOrder where oid =".$_POST['oid'];
+		break;
+		case '1': //Getting wrapping date as limit
+			$sql = "select max(wrapping) as limitD from schedule s, orderRoom orr where orr.rid = s.rid and orr.oid =".$_POST['oid'];
+		break;
+		case '0': //Getting finishing date as limit
+			$sql = "select max(finishing) as limitD from schedule s, orderRoom orr where orr.rid = s.rid and orr.oid =".$_POST['oid'];
+		break;
+	}
 	$result = opendb($sql);
 	$row = $result->fetch_assoc();
-	echo $row['deliveryDate'];
+	echo $row['limitD'];
 }
 
 if($_POST['mode']=="updateDate"){
@@ -111,7 +121,8 @@ if($_POST['mode']=="updateDate"){
 			opendb($sql);
 		break;
 		case '1': //Finishing
-			$sql = "update schedule set finishing ='".$_POST['date']."', updateDate=curdate() where rid in(select orr.rid from orderRoom orr where orr.oid =".$_POST['oid'].")";
+			$cutting = scheduleFn($_POST['date'],5);
+			$sql = "update schedule set finishing ='".$_POST['date']."', cutting='".$cutting."', updateDate=curdate() where rid in(select orr.rid from orderRoom orr where orr.oid =".$_POST['oid'].")";
 			opendb($sql);
 		break;
 		case '2': //Wrapping
@@ -143,7 +154,7 @@ if($_POST['mode']=="updateDate"){
 					$daysF2 = $daysF;
 				}	
 				$finishing = scheduleFn($_POST['date'],$daysF2);
-				$cutting = scheduleFn($_POST['date'],5);
+				$cutting = scheduleFn($finishing,5);
 				$sql2 = "update schedule set finishing ='".$finishing."', cutting='".$cutting."' where rid =".$row['rid'];
 				opendb2($sql2);
 			}
@@ -151,6 +162,7 @@ if($_POST['mode']=="updateDate"){
 		default:
 		break;
 	}
+	//echo $sql;
 }
 
 if($_POST['mode']=="getTotalDay"){
