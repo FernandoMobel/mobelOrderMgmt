@@ -106,6 +106,10 @@ if($_POST['mode']=="getDeliveryDate"){
 
 if($_POST['mode']=="updateDate"){
 	switch($_POST['schID']){
+		case '0': //Cutting
+			$sql = "update schedule set cutting ='".$_POST['date']."', updateDate=curdate() where rid in(select orr.rid from orderRoom orr where orr.oid =".$_POST['oid'].")";
+			opendb($sql);
+		break;
 		case '1': //Finishing
 			$sql = "update schedule set finishing ='".$_POST['date']."', updateDate=curdate() where rid in(select orr.rid from orderRoom orr where orr.oid =".$_POST['oid'].")";
 			opendb($sql);
@@ -118,6 +122,7 @@ if($_POST['mode']=="updateDate"){
 			$sql2 = "select rid,(select id from material m where m.id = (select mid from species sp where sp.id = orr.species)) material, (select finishType from frontFinish ff where ff.id = orr.frontFinish ) finishType, glaze, sheen from orderRoom orr where orr.oid =".$_POST['oid']." order by material asc";
 			$result = opendb($sql2);
 			$finishing = "null";
+			$cutting = "null";
 			$daysF = 0;
 			$daysF2 = 3;
 			while($row = $result->fetch_assoc()){ 		
@@ -138,7 +143,8 @@ if($_POST['mode']=="updateDate"){
 					$daysF2 = $daysF;
 				}	
 				$finishing = scheduleFn($_POST['date'],$daysF2);
-				$sql2 = "update schedule set finishing ='".$finishing."' where rid =".$row['rid'];
+				$cutting = scheduleFn($_POST['date'],5);
+				$sql2 = "update schedule set finishing ='".$finishing."', cutting='".$cutting."' where rid =".$row['rid'];
 				opendb2($sql2);
 			}
 		break;
