@@ -36,6 +36,10 @@ function loadSchWeek(date, dept){
 			department = 8;
 			dateType = 1;
 		break;
+		case '0'://Doors
+			department = 9;
+			dateType = 0;
+		break;
 	  default:
 		// code block
 	}
@@ -274,27 +278,27 @@ function getWithExpiry(key) {
 			<div class="p-2">
 				<div class="custom-control custom-radio">
 					<input onchange="loadSchWeek(0,this.value)" type="radio" class="custom-control-input" id="chk3" value="3" name="defaultExampleRadios" checked>
-					<label class="custom-control-label" for="chk3">COMPLETITION</label>
+					<label class="custom-control-label" for="chk3">Completition</label>
 				</div>
 			</div>
 			<div class="p-2">
 				<div class="custom-control custom-radio">
 					<input onchange="loadSchWeek(0,this.value)" type="radio" class="custom-control-input" id="chk2" value="2" name="defaultExampleRadios">
-					<label class="custom-control-label" for="chk2">WRAPPING</label>
+					<label class="custom-control-label" for="chk2">Wrapping</label>
 				</div>
 			</div>
 			<div class="p-2">
 				<div class="custom-control custom-radio">
 					<input onchange="loadSchWeek(0,this.value)" type="radio" class="custom-control-input" id="chk1" value="1" name="defaultExampleRadios">
-					<label class="custom-control-label" for="chk1">SANDING</label>
+					<label class="custom-control-label" for="chk1">Finishing</label>
 				</div>
 			</div>
-			<!--div class="p-2">
+			<div class="p-2">
 				<div class="custom-control custom-radio">
-					<input onchange="loadSchWeek(0,this.value)" type="radio" class="custom-control-input" id="chk0" value="1" name="defaultExampleRadios">
-					<label class="custom-control-label" for="chk0">CNC</label>
+					<input onchange="loadSchWeek(0,this.value)" type="radio" class="custom-control-input" id="chk0" value="0" name="defaultExampleRadios">
+					<label class="custom-control-label" for="chk0">Cutting</label>
 				</div>
-			</div-->
+			</div>
 		</div>
 	</div>
 	<?php

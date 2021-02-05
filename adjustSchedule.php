@@ -1,16 +1,9 @@
 <?php 
 include 'includes/nav.php';
 include 'includes/db.php';
+opendb("update schedule set cutting=DATE_ADD(finishing, INTERVAL -7 DAY) where cutting is null");
 ?>
 <?php
-/*$sql = "SELECT orderCode as title, schedComplDt as start, CASE WHEN orderCode like 'SKB%' THEN \"red\" WHEN orderCode like 'DIY%' THEN \"green\" ELSE \"blue\" END as color FROM mobelSch2020 where completedDt is null and schedComplDt is not null order by receivedDt desc";
- $result = opendb($sql);
- $dbdata = array();
- while ( $row = $result->fetch_assoc())  {
-	$dbdata[]=$row;
-  }
- $jobs = json_encode($dbdata);
- echo "<p id=\"jsonJobs\" hidden>".$jobs."</p>";*/
 ?>
 <script>
 
@@ -43,8 +36,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     /* initialize the calendar
     -----------------------------------------------------------------*/
-    var schedule = 0;
+    var schedule = 4;//4 means holidays
     var calendarEl = document.getElementById('calendar');
+    var calendarJ = document.getElementById('calendarJob');
 	
 	var calendar = new FullCalendar.Calendar(calendarEl, {	
 		//schedulerLicenseKey: 'CC-Attribution-NonCommercial-NoDerivatives',
@@ -56,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		  },
 		customButtons: {
 		    completition: {
-		      	text: 'Comp',
+		      	text: 'X',
 		      	click: function(arg, a) {
 		      		schedule = 3;
 		        	$(arg['path'][1]['childNodes']).removeClass('active');
@@ -65,7 +59,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		      	}
 		    },
 		    wrapping: {
-		      	text: 'Wrap',
+		      	text: 'X-1',
 		      	click: function(arg, a) {
 		      		schedule = 2;
 		        	$(arg['path'][1]['childNodes']).removeClass('active');
@@ -74,9 +68,18 @@ document.addEventListener('DOMContentLoaded', function() {
 		      	}
 		    },
 		    finishing: {
-		      	text: 'Finish',
+		      	text: 'X-2',
 		      	click: function(arg,a) {
 		      		schedule = 1;		        
+		        	$(arg['path'][1]['childNodes']).removeClass('active');
+		        	$(a).addClass('active');
+		        	calendar.refetchEvents();
+		      	}
+		    },
+		    cutting: {
+		      	text: 'X-3',
+		      	click: function(arg,a) {
+		      		schedule = 0;		        
 		        	$(arg['path'][1]['childNodes']).removeClass('active');
 		        	$(a).addClass('active');
 		        	calendar.refetchEvents();
@@ -84,12 +87,12 @@ document.addEventListener('DOMContentLoaded', function() {
 		    }
 		},
 		headerToolbar: {
-			left: 'prev,next completition,wrapping,finishing',
+			left: 'prev,next completition,wrapping,finishing,cutting',
 			center: 'title',
 			right: 'listWeek'//,timeGridDay,dayGridMonth,timeGridWeek 
 		  },
-		editable: true, //Calendar events can me moved or not
-		droppable: true, // this allows things to be dropped onto the calendar
+		editable: true, //Calendar events can be moved or not
+		droppable: false, // this allows things to be dropped onto the calendar
 		drop: function(arg) {
 			// is the "remove after drop" checkbox checked?
 			//if (document.getElementById('drop-remove').checked) {
@@ -257,8 +260,39 @@ document.addEventListener('DOMContentLoaded', function() {
 		       		$('#txtInfo').hide();
 		       		//Body
 		       		var jsonOrder = JSON.parse(jqXHR['responseText']);
-		       		//console.log(jsonOrder);
+		       		console.log(jsonOrder);
 					$('#ordContent').empty();
+					if(calendar2)
+						calendar2.destroy();
+		       		//calendar job
+		       		
+		       		var calendar2 = new FullCalendar.Calendar(calendarJ, {	
+						schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
+						views: { weekday: 'short' },
+						themeSystem: 'bootstrap',
+						titleFormat:{month: 'long'},
+						headerToolbar: {
+							left: 'prev,next',
+							center: '',
+							right: 'title'//,timeGridDay,dayGridMonth,timeGridWeek 
+						  },
+						editable: false, //Calendar events can be moved or not
+						droppable: false,
+						events:function(fetchInfo, successCallback, failureCallback) {
+							myData = { mode: "getJobFullSch", oid: info.event.id};
+							$.post("calendarActions.php",
+							myData, 
+						       function(data, status, jqXHR) {
+				            		if(status == "success"){
+				            	    	var roomStages = JSON.parse(jqXHR['responseText']);
+				            	    	console.log(roomStages);
+				            		   	successCallback(roomStages);
+				            	    }
+						    });
+						}
+					})
+		       		calendar2.render();
+		       		
 					var flag = true;
 					var html = '';
 					var tcc=0; 
@@ -268,7 +302,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						if(flag){
 							$('#completitionDate').val(obj.dateRequired);
 							flag = false;
-							html = 	'<table class="table table-sm text-center">'+
+							html = 	'<table class="table table-sm text-center m-0">'+
 									'<thead>'+
 										'<tr>'+
 											'<th></th><th>Boxes</th><th>Fronts</th><th>Items</th>'+
@@ -370,6 +404,22 @@ document.addEventListener('DOMContentLoaded', function() {
   	border-color: #dee2e6;
   }
 
+  .bg-stage1{
+	background-color: #00c434;
+  }
+
+  .bg-stage2{
+	background-color: #e6ed18;
+  }
+
+  .bg-stage3{
+	background-color: #edb90c;
+  }
+
+  .bg-stage4{
+	background-color: #ed260c;
+  }
+
   #divOrdDetails {
   	display: none;
   }
@@ -390,9 +440,9 @@ document.addEventListener('DOMContentLoaded', function() {
 <div class="container-fluid">	
 	<div class="row">
 		<!--div id='wrap'-->
-			<div class="col-4 d-print-none">
+			<div class="col-4 d-print-none px-0">				
 				<div class="card sticky-top">
-				  	<div class="card-body">
+				  	<div class="card-body p-1">
 				  		<div class="row">
 				  			<div class="col-lg-11">
 					  			<h5 id="lblTitle" class="card-title">Details</h5>						    	
@@ -442,8 +492,8 @@ document.addEventListener('DOMContentLoaded', function() {
 							</div>
 						</div>
 						<div class="container" id="divOrdDetails">
-							<div class="modal-body pt-0">
-								<div class="row">
+							<div>	
+								<!--div class="row">
 									<div class="col">
 										<div class="form-group">
 											<div class="input-group mb-3">					
@@ -454,18 +504,18 @@ document.addEventListener('DOMContentLoaded', function() {
 											</div>		
 										</div>								
 									</div>									
-								</div>
+								</div-->
 								<div id="ordContent" class="container"></div>
-								<!--div class="modal-footer">
-									<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-									<button type="submit" class="btn btn-primary">Save changes</button>
-							  	</div-->
 							</div>
 						</div>
-					    <!--a href="#" class="card-link">Card link</a>
-					    <a href="#" class="card-link">Another link</a-->
 				  	</div>
 				</div>
+			  	<div class="card">
+				  	<div class="card-body">
+				  		<div id='calendarJob' class="bg-white"></div>
+				  	</div>
+				</div>
+				
 				<div id='external-events1' hidden>
 					<h4>Jobs</h4>
 					<div id='external-events-list'>
@@ -506,12 +556,20 @@ document.addEventListener('DOMContentLoaded', function() {
 						<label for='drop-remove'>remove after drop</label>
 					</p>
 				</div>
+				<div class="container">
+					<div class="row">
+						<div class="col bg-stage1">STAGE 1</div>
+						<div class="col bg-stage2">STAGE 2</div>
+						<div class="col bg-stage3">STAGE 3</div>
+						<div class="col bg-stage4">STAGE 4</div>
+					</div>
+				</div>
 			</div>
-			<div class="col-8">
+			<div class="col-8 pr-0">
 				<div id='loading'>loading...</div>
 
 				<div id='calendar' class="bg-white"></div>
-
+				
 			</div>		
 		<!--/div-->		
 	</div>

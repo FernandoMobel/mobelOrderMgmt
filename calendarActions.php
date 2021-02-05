@@ -24,7 +24,22 @@ if($_POST['mode']=="getAllJobs"){
 
 if($_POST['mode']=="getSchedule"){
 	switch($_POST['schID']){
+		case '4':
+			$sql = "select calendarDay start, 'background' display, 'pink' color from calendar where workDayInd = 0";
+			$result = opendb($sql);
+			while ( $row = $result->fetch_assoc())  {
+				$dbdata[]=$row;
+			}
+			echo json_encode($dbdata);
+		break;
 		case '0':
+			$sql ="select distinct orr.oid id, concat('OID: ',orr.oid,' - ',mo.tagName) title, cutting start, 'true' allDay, CASE WHEN updateDate=curdate() THEN '#f5bf42' WHEN CLid=1 THEN '#dee2e6' WHEN CLid=2 THEN '#86cfda' WHEN CLid=3 THEN '#7abaff' ELSE '' END as color, 'black' textColor from schedule s, orderRoom orr, mosOrder mo where mo.oid = orr.oid and orr.rid = s.rid and state=5";
+			$result = opendb($sql);
+			$dbdata = array();
+			while ( $row = $result->fetch_assoc())  {
+				$dbdata[]=$row;
+			}
+			//---getting hollidays
 			$sql = "select calendarDay start, 'background' display, 'pink' color from calendar where workDayInd = 0";
 			$result = opendb($sql);
 			while ( $row = $result->fetch_assoc())  {
@@ -200,6 +215,37 @@ if($_POST['mode']=="getOrderRooms"){
 			$order[] = $row;
 		}
 		echo json_encode($order);	
+	}	
+}
+
+if($_POST['mode']=="getJobFullSch"){ 
+	if($_POST["oid"]){
+		$orderFullSch = array();
+		//Stage1
+		$sql = "select orr.rid as id, orr.name title, DATE(DATE_ADD(dateDetailed, INTERVAL 1 DAY)) start, DATE(cutting) end, '#00c434' color  from orderRoom orr, mosOrder mo, schedule s where mo.oid = orr.oid and orr.rid = s.rid and orr.rid = s.rid and orr.oid = ".$_POST["oid"];
+		$query = opendb($sql);
+		while($row = $query->fetch_assoc()){ 
+			$orderFullSch[] = $row;
+		}
+		//Stage2
+		$sql = "select orr.rid as id, orr.name title, DATE(cutting) start, DATE(finishing) end, '#e6ed18' color  from orderRoom orr, mosOrder mo, schedule s where mo.oid = orr.oid and orr.rid = s.rid and orr.rid = s.rid and orr.oid = ".$_POST["oid"];
+		$query = opendb($sql);
+		while($row = $query->fetch_assoc()){ 
+			$orderFullSch[] = $row;
+		}
+		//Stage3
+		$sql = "select orr.rid as id, orr.name title, DATE(finishing) start, DATE(wrapping) end, '#edb90c' color  from orderRoom orr, mosOrder mo, schedule s where mo.oid = orr.oid and orr.rid = s.rid and orr.rid = s.rid and orr.oid = ".$_POST["oid"];
+		$query = opendb($sql);
+		while($row = $query->fetch_assoc()){ 
+			$orderFullSch[] = $row;
+		}
+		//FinalStage
+		$sql = "select orr.rid as id, orr.name title, DATE(wrapping) start, DATE(deliveryDate) end, '#ed260c' color  from orderRoom orr, mosOrder mo, schedule s where mo.oid = orr.oid and orr.rid = s.rid and orr.rid = s.rid and orr.oid = ".$_POST["oid"];
+		$query = opendb($sql);
+		while($row = $query->fetch_assoc()){ 
+			$orderFullSch[] = $row;
+		}
+		echo json_encode($orderFullSch);	
 	}	
 }
 
