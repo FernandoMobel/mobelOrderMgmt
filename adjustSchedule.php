@@ -101,13 +101,14 @@ document.addEventListener('DOMContentLoaded', function() {
 			//}
 		},
 		dateClick: function(info) {
-			if(!schedule){
+			//console.log(schedule);
+			if(schedule==4){
 				alert('Please select a schedule first');
 				return;
 			}
 			//Boxes information
 			myData = { mode: "getTotalDay", date: info.dateStr, schID: schedule };
-			console.log(myData);
+			//console.log(myData);
 			$.post("calendarActions.php",
 				myData, 
 				   function(data, status, jqXHR) {
@@ -115,7 +116,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					   	$('#lblDesc').html('Date totals:');
 					   	var totals = JSON.parse(jqXHR['responseText']);
 					   	
-					   	console.log(totals);
+					   	//console.log(totals);
 					   	$('#iBoxes').val(totals.cc);
 					   	$('#iFronts').val(totals.fronts);
 					   	$('#iItems').val(totals.pieces);
@@ -260,7 +261,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		       		$('#txtInfo').hide();
 		       		//Body
 		       		var jsonOrder = JSON.parse(jqXHR['responseText']);
-		       		console.log(jsonOrder);
+		       		//console.log(jsonOrder);
 					$('#ordContent').empty();
 					if(calendar2)
 						calendar2.destroy();
@@ -285,7 +286,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						       function(data, status, jqXHR) {
 				            		if(status == "success"){
 				            	    	var roomStages = JSON.parse(jqXHR['responseText']);
-				            	    	console.log(roomStages);
+				            	    	//console.log(roomStages);
 				            		   	successCallback(roomStages);
 				            	    }
 						    });

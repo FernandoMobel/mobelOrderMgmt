@@ -167,6 +167,9 @@ if($_POST['mode']=="updateDate"){
 
 if($_POST['mode']=="getTotalDay"){
 	switch($_POST['schID']){
+		case '0':
+			$sql = "select coalesce(sum(cc),0) cc,coalesce(sum(fronts),0) fronts, coalesce(sum(pieces),0) pieces from orderRoom orr, schedule s, mosOrder mo where s.rid = orr.rid and mo.oid = orr.oid and state = 5 and s.cutting='".$_POST['date']."'";
+		break;
 		case '1':
 			$sql = "select coalesce(sum(cc),0) cc,coalesce(sum(fronts),0) fronts, coalesce(sum(pieces),0) pieces from orderRoom orr, schedule s, mosOrder mo where s.rid = orr.rid and mo.oid = orr.oid and state = 5 and s.finishing='".$_POST['date']."'";
 		break;
@@ -269,14 +272,17 @@ if($_POST['mode']=="getJobFullSch"){
 
 if($_POST['mode']=="getDateOrdDetails"){ 
 	switch($_POST['schID']){
+		case '0':
+			$sql = "select orr.oid id, concat('OID: ',orr.oid,' - ',mo.tagName) title, finishing start, 'true' allDay, CLid, sum(cc) cc, coalesce(sum(fronts),0) fronts, sum(pieces) pieces from schedule s, orderRoom orr, mosOrder mo where mo.oid = orr.oid and orr.rid = s.rid and state=5 and cutting = '".$_POST['date']."' group by orr.oid, title, start, allDay, CLid";
+		break;
 		case '1':
-			$sql = "select orr.oid id, concat('OID: ',orr.oid,' - ',mo.tagName) title, finishing start, 'true' allDay, CLid, sum(cc) cc, sum(fronts) fronts, sum(pieces) pieces from schedule s, orderRoom orr, mosOrder mo where mo.oid = orr.oid and orr.rid = s.rid and state=5 and finishing = '".$_POST['date']."' group by orr.oid, title, start, allDay, CLid";
+			$sql = "select orr.oid id, concat('OID: ',orr.oid,' - ',mo.tagName) title, finishing start, 'true' allDay, CLid, sum(cc) cc, coalesce(sum(fronts),0) fronts, sum(pieces) pieces from schedule s, orderRoom orr, mosOrder mo where mo.oid = orr.oid and orr.rid = s.rid and state=5 and finishing = '".$_POST['date']."' group by orr.oid, title, start, allDay, CLid";
 		break;
 		case '2':
-			$sql = "select orr.oid id, concat('OID: ',orr.oid,' - ',mo.tagName) title, wrapping start, 'true' allDay, CLid, sum(cc) cc, sum(fronts) fronts, sum(pieces) pieces from schedule s, orderRoom orr, mosOrder mo where mo.oid = orr.oid and orr.rid = s.rid and state=5 and wrapping = '".$_POST['date']."' group by orr.oid, title, start, allDay, CLid";
+			$sql = "select orr.oid id, concat('OID: ',orr.oid,' - ',mo.tagName) title, wrapping start, 'true' allDay, CLid, sum(cc) cc, coalesce(sum(fronts),0) fronts, sum(pieces) pieces from schedule s, orderRoom orr, mosOrder mo where mo.oid = orr.oid and orr.rid = s.rid and state=5 and wrapping = '".$_POST['date']."' group by orr.oid, title, start, allDay, CLid";
 		break;
 		case '3':
-			$sql = "select orr.oid id, concat('OID: ',orr.oid,' - ',mo.tagName) title, deliveryDate start, 'true' allDay, CLid, sum(cc) cc, sum(fronts) fronts, sum(pieces) pieces from schedule s, orderRoom orr, mosOrder mo where mo.oid = orr.oid and orr.rid = s.rid and state=5 and deliveryDate = '".$_POST['date']."' group by orr.oid, title, start, allDay, CLid";
+			$sql = "select orr.oid id, concat('OID: ',orr.oid,' - ',mo.tagName) title, deliveryDate start, 'true' allDay, CLid, sum(cc) cc, coalesce(sum(fronts),0) fronts, sum(pieces) pieces from schedule s, orderRoom orr, mosOrder mo where mo.oid = orr.oid and orr.rid = s.rid and state=5 and deliveryDate = '".$_POST['date']."' group by orr.oid, title, start, allDay, CLid";
 		break;
 	}
 
