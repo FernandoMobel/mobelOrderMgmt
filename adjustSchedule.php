@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		  },
 		customButtons: {
 		    completition: {
-		      	text: 'X',
+		      	text: 'Completition',
 		      	click: function(arg, a) {
 		      		schedule = 3;
 		        	$(arg['path'][1]['childNodes']).removeClass('active');
@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		      	}
 		    },
 		    wrapping: {
-		      	text: 'X-1',
+		      	text: 'Wrapping',
 		      	click: function(arg, a) {
 		      		schedule = 2;
 		        	$(arg['path'][1]['childNodes']).removeClass('active');
@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		      	}
 		    },
 		    finishing: {
-		      	text: 'X-2',
+		      	text: 'Finishing',
 		      	click: function(arg,a) {
 		      		schedule = 1;		        
 		        	$(arg['path'][1]['childNodes']).removeClass('active');
@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		      	}
 		    },
 		    cutting: {
-		      	text: 'X-3',
+		      	text: 'Cutting',
 		      	click: function(arg,a) {
 		      		schedule = 0;		        
 		        	$(arg['path'][1]['childNodes']).removeClass('active');
@@ -256,7 +256,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		       	function(data, status, jqXHR) {      
 		       		//Header
 		       		$('#divDayDetails').hide();
-		       		$('#lblTitle').html(info.event.title);
+		       		$('#lblTitle').html('<a target="_blank" href="Order.php?OID='+info.event.id+'">'+info.event.title+'</a>');
 		       		$('#lblDesc').html('');
 		       		$('#txtInfo').hide();
 		       		//Body
@@ -559,10 +559,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				</div>
 				<div class="container">
 					<div class="row">
-						<div class="col bg-stage1">STAGE 1</div>
-						<div class="col bg-stage2">STAGE 2</div>
-						<div class="col bg-stage3">STAGE 3</div>
-						<div class="col bg-stage4">STAGE 4</div>
+						<div class="col bg-stage1">CUTTING</div>
+						<div class="col bg-stage2">FINISHING</div>
+						<div class="col bg-stage3">WRAPPING</div>
+						<div class="col bg-stage4">COMPLETITION</div>
 					</div>
 				</div>
 			</div>

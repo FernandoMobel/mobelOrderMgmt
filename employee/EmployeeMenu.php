@@ -9,6 +9,8 @@ function navtab(object){
 		$('.nav-tabs a.active').removeClass('active');
 		$(this).addClass('active');
 	});	
+
+	console.log($('.nav-tabs'));
 	
 	/*Display view*/	
 	switch(object) {
@@ -18,6 +20,7 @@ function navtab(object){
 		document.getElementById("headersTab").style.display = "none";
 		document.getElementById("calendarTab").style.display = "none";
 		document.getElementById("scheduleTab").style.display = "none";
+		document.getElementById("reportTab").style.display = "none";
 		break;
 	  case "itemView":
 		document.getElementById("orderTab").style.display = "none";
@@ -25,6 +28,7 @@ function navtab(object){
 		document.getElementById("headersTab").style.display = "none";
 		document.getElementById("calendarTab").style.display = "none";
 		document.getElementById("scheduleTab").style.display = "none";
+		document.getElementById("reportTab").style.display = "none";
 		break;
 	  case "headersView":
 		document.getElementById("orderTab").style.display = "none";
@@ -32,6 +36,7 @@ function navtab(object){
 		document.getElementById("headersTab").style.display = "block";
 		document.getElementById("calendarTab").style.display = "none";
 		document.getElementById("scheduleTab").style.display = "none";
+		document.getElementById("reportTab").style.display = "none";
 		break;
 	  case "calendarView":
 		document.getElementById("orderTab").style.display = "none";
@@ -39,6 +44,7 @@ function navtab(object){
 		document.getElementById("headersTab").style.display = "none";
 		document.getElementById("calendarTab").style.display = "block";
 		document.getElementById("scheduleTab").style.display = "none";
+		document.getElementById("reportTab").style.display = "none";
 		break;
 	  case "scheduleView":
 		document.getElementById("orderTab").style.display = "none";
@@ -46,9 +52,18 @@ function navtab(object){
 		document.getElementById("headersTab").style.display = "none";
 		document.getElementById("calendarTab").style.display = "none";
 		document.getElementById("scheduleTab").style.display = "block";
+		document.getElementById("reportTab").style.display = "none";
 		break;
 	  case "adjustScheduleView":
 		location.href = "../adjustSchedule.php";
+		break;
+	  case "reportView":
+		document.getElementById("orderTab").style.display = "none";
+		document.getElementById("itemTab").style.display = "none";
+		document.getElementById("headersTab").style.display = "none";
+		document.getElementById("calendarTab").style.display = "none";
+		document.getElementById("scheduleTab").style.display = "none";
+		document.getElementById("reportTab").style.display = "block";
 		break;
 	  default:
 		// code block
@@ -112,7 +127,7 @@ input::-webkit-inner-spin-button {
 					</a>
 				  </li>
 				  <?php 
-				  if($_SESSION["userid"]==11){
+				  if(in_array($_SESSION["userid"],[11,30,32])){
 				  ?>
 				  <li class="nav-item border rounded-top">
 					<a class="nav-link" id="adjustScheduleView" onclick="navtab(this.id)">
@@ -126,6 +141,19 @@ input::-webkit-inner-spin-button {
 				  </li>
 				  <?php 
 				  }
+				  if(in_array($_SESSION["userid"],[11])){
+				  ?>
+				   <li class="nav-item border rounded-top">
+					<a class="nav-link" id="reportView" onclick="navtab(this.id)">
+						<b>Reports</b>
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-kanban" viewBox="0 0 16 16">
+						  <path d="M13.5 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h11zm-11-1a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2h-11z"/>
+						  <path d="M6.5 3a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1V3zm-4 0a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1V3zm8 0a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1V3z"/>
+						</svg>
+					</a>
+				  </li>
+				   <?php 
+				  }				  
 				  ?>
 			</ul>			
 		</div>
@@ -154,6 +182,10 @@ if(strlen($_SESSION["firstName"])==1 && $_SESSION["account"]==2){
 
 	echo "<div id=\"scheduleTab\" style=\"display:none\">";
 	include 'schedule.php';
+	echo "</div>";
+
+	echo "<div id=\"reportTab\" style=\"display:none\">";
+	include 'report.php';
 	echo "</div>";
 }
 ?>
