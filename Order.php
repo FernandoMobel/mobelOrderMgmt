@@ -362,6 +362,7 @@ function cleanEdit(rqst){
 	$('#D2').hide();
 	//Hide delete button when new item
 	if(rqst == "add"){
+		$('#editItemTitle').text('Edit/Delete Item')
 		$('#deleteItemButton').hide();
 		$("#Position").empty();
 		for(i=1; i<=$('#items tr.font-weight-bold').length+1; i++){
