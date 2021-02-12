@@ -18,14 +18,23 @@ $accountName = $row['busDBA'];
 $mailOID = $row['oid'];
 $CLfactor = $row['factor'];
 $orderType="";
-if($row['CLid']==3)
+$orderTypeDesc="";
+if($row['CLid']==3){
 	$orderType="table-primary";
-if($row['CLid']==2)
+	$orderTypeDesc = "Span Medical";
+}
+if($row['CLid']==2){
 	$orderType="table-info";
-if($row['isPriority']==1)
+	$orderTypeDesc = "Builder";
+}
+if($row['isPriority']==1){
 	$orderType="table-warning";
-if($row['isWarranty']==1)
+	$orderTypeDesc = "Service";
+}
+if($row['isWarranty']==1){
 	$orderType="table-danger";
+	$orderTypeDesc = "Service w/warranty";
+}
 $msg = "
 <body>
 	<div class=\"bg-white container-fluid\">
@@ -40,8 +49,12 @@ $msg = "
 						<td class=\"border-0 d-print-none\"><h4>Order ID:</h4></td>
 						<td class=\"border-0 d-print-none\"><h3><b>".$mailOID."</b></h3></td>
 						<td class=\"border-0\"><b>Customer:</b></td>
-						<td class=\"border-0\">". $row['busName']."</td>
-					</tr>
+						<td class=\"border-0\">". $row['busName']."</td>";
+						if($orderTypeDesc){
+							$msg .= "<td class=\"border-0\"><b>Order Type:</b></td>
+									<td class=\"border-0\">". $orderTypeDesc ."</td>";
+						}
+			$msg .= "</tr>
 					<tr>
 						<td class=\"border-0\"><b>Submitted by:</b></td>
 						<td class=\"border-0\">". $row['whoSubmit'] ."</td>
