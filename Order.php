@@ -130,15 +130,19 @@ function submitToMobel(){
 	}
 	if(!$('#shipAddress').val()){
 		alert('Please select a delivery option');
-	}else{
-		myData = { mode: "submitToMobel", oid: "<?php echo $_GET["OID"] ?>"};
-		$.post("save.php",
-			myData, 
-		       function(data, status, jqXHR) {
-		    	   //console.log(jqXHR['responseText']);
-				   window.location.reload();
-		        });
-	}	
+		return;
+	}
+	if($('#isPriority').val()==1 && $('#OrderNote').val().length==0){
+		alert('For service orders a reason is needed, please add your comments');
+		return;
+	}
+	myData = { mode: "submitToMobel", oid: "<?php echo $_GET["OID"] ?>"};
+	$.post("save.php",
+		myData, 
+	       function(data, status, jqXHR) {
+	    	   //console.log(jqXHR['responseText']);
+			   window.location.reload();
+	        });
 }
 
 
