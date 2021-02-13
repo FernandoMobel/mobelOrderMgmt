@@ -523,4 +523,73 @@ if($_POST['mode']=="getOrdFiles"){
 		echo "<tr><td colspan=\"5\"><h3 class=\"text-info\">No files for this order</h3></td></tr>";
 	}
 }
+
+if($_POST['mode']=="getItemsCat"){
+	$sql = "select id, TRIM(name) name from item where description = '".$_POST['cat']."'";
+	$result = opendb($sql);
+	$items = array();
+	while ($row = $result->fetch_assoc()) {
+		$items[] = $row;
+	}
+	echo json_encode($items);
+}
+
+if($_POST['mode']=="getCategories"){
+	$sql = "select distinct(description) cat from item where CLGroup = 4 order by cat";
+	$result = opendb($sql);
+	$cat = array();
+	while ($row = $result->fetch_assoc()) {
+		//$cat[] = htmlspecialchars($row['cat']);
+		$cat[] = $row['cat'];
+	}
+	echo json_encode($cat);
+}
+
+if($_POST['mode']=="getItemRow"){
+	$sql = "select i.id, i.name, i.description, ROUND(i.W, 2) W, ROUND(i.H, 2) H, ROUND(i.D, 2) D, coalesce(il.cvName,'No Item Code') cvCode, coalesce(il.cvLName,'No Item Code') cvLCode, coalesce(il.cvRName,'No Item Code') cvRCode FROM item i left join itemsLink il on i.id = il.itemId where id=".$_POST['item'];
+	$result = opendb($sql);
+	$item = array();
+	while ($row = $result->fetch_assoc()) {
+		$item[] = $row;
+	}
+	echo json_encode($item);
+}
+
+if($_POST['mode']=="getMultipleItemsRows"){
+	$sql = "select i.id, i.name, i.description, ROUND(i.W, 2) W, ROUND(i.H, 2) H, ROUND(i.D, 2) D, coalesce(il.cvName,'No Item Code') cvCode, coalesce(il.cvLName,'No Item Code') cvLCode, coalesce(il.cvRName,'No Item Code') cvRCode FROM item i left join itemsLink il on i.id = il.itemId where id in(".implode(',',$_POST['items']).")";
+	$result = opendb($sql);
+	$item = array();
+	while ($row = $result->fetch_assoc()) {
+		$item[] = $row;
+	}
+	echo json_encode($item);
+}
+
+if($_POST['mode']=="linkItems"){
+
+	switch ($_POST['door']) {
+		case 'B': //No Door or double door
+			$column = "cvName";
+			break;
+		
+		case 'L': //Left Door
+			$column = "cvLName";
+			break;
+
+		case 'R': //Right Door
+			$column = "cvRName";
+			break;
+	}
+	//First update items
+	$update = "update itemsLink set ".$column."='".strtoupper($_POST['cv'])."' where itemId in(".implode(',',$_POST['items']).")";
+	$resultU = opendb($update);
+	//Insert items not present on the list
+	$sql = "select id from (select id from item ii where ii.id in(".implode(',',$_POST['items']).")) i where not exists(select 1 from itemsLink il where i.id = il.itemId)";
+	$insert = "";
+	$result = opendb($sql);
+	while ($row = $result->fetch_assoc()) {
+		$insert .= "insert into itemsLink(itemId,".$column.") values(".$row['id'].",'".strtoupper($_POST['cv'])."'); ";
+	}	
+	opendbmulti($insert);
+}
 ?>

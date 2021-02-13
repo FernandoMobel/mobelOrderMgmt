@@ -48,6 +48,23 @@ $GLOBALS['$result'] = "";
       $GLOBALS['$conn2']->close();
       $GLOBALS['$conn2'] = null;
   }
+
+
+   $GLOBALS['$result3'] = "";
+  function opendbmulti($sql){
+      if(strpos("--",$sql)!==false){
+          return "SQL Injection Detected";
+      }else{
+        $GLOBALS['$result3'] = $GLOBALS['$conn2']->multi_query($sql);
+        return $GLOBALS['$result3'];
+      }
+  }
+  
+  function closedbmulti(){
+      $GLOBALS['$result3']->close();
+      $GLOBALS['$conn2']->close();
+      $GLOBALS['$conn2'] = null;
+  }
   
   /*
    * Returns the SQL to get a recordset of item numbers from a given room.

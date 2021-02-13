@@ -10,7 +10,7 @@ function navtab(object){
 		$(this).addClass('active');
 	});	
 
-	console.log($('.nav-tabs'));
+	//console.log($('.nav-tabs'));
 	
 	/*Display view*/	
 	switch(object) {
@@ -20,7 +20,7 @@ function navtab(object){
 		document.getElementById("headersTab").style.display = "none";
 		document.getElementById("calendarTab").style.display = "none";
 		document.getElementById("scheduleTab").style.display = "none";
-		document.getElementById("reportTab").style.display = "none";
+		document.getElementById("linkItemsTab").style.display = "none";
 		break;
 	  case "itemView":
 		document.getElementById("orderTab").style.display = "none";
@@ -28,7 +28,7 @@ function navtab(object){
 		document.getElementById("headersTab").style.display = "none";
 		document.getElementById("calendarTab").style.display = "none";
 		document.getElementById("scheduleTab").style.display = "none";
-		document.getElementById("reportTab").style.display = "none";
+		document.getElementById("linkItemsTab").style.display = "none";
 		break;
 	  case "headersView":
 		document.getElementById("orderTab").style.display = "none";
@@ -36,7 +36,7 @@ function navtab(object){
 		document.getElementById("headersTab").style.display = "block";
 		document.getElementById("calendarTab").style.display = "none";
 		document.getElementById("scheduleTab").style.display = "none";
-		document.getElementById("reportTab").style.display = "none";
+		document.getElementById("linkItemsTab").style.display = "none";
 		break;
 	  case "calendarView":
 		document.getElementById("orderTab").style.display = "none";
@@ -44,7 +44,7 @@ function navtab(object){
 		document.getElementById("headersTab").style.display = "none";
 		document.getElementById("calendarTab").style.display = "block";
 		document.getElementById("scheduleTab").style.display = "none";
-		document.getElementById("reportTab").style.display = "none";
+		document.getElementById("linkItemsTab").style.display = "none";
 		break;
 	  case "scheduleView":
 		document.getElementById("orderTab").style.display = "none";
@@ -52,18 +52,18 @@ function navtab(object){
 		document.getElementById("headersTab").style.display = "none";
 		document.getElementById("calendarTab").style.display = "none";
 		document.getElementById("scheduleTab").style.display = "block";
-		document.getElementById("reportTab").style.display = "none";
+		document.getElementById("linkItemsTab").style.display = "none";
 		break;
 	  case "adjustScheduleView":
 		location.href = "../adjustSchedule.php";
 		break;
-	  case "reportView":
+	  case "linkItemView":
 		document.getElementById("orderTab").style.display = "none";
 		document.getElementById("itemTab").style.display = "none";
 		document.getElementById("headersTab").style.display = "none";
 		document.getElementById("calendarTab").style.display = "none";
 		document.getElementById("scheduleTab").style.display = "none";
-		document.getElementById("reportTab").style.display = "block";
+		document.getElementById("linkItemsTab").style.display = "block";
 		break;
 	  default:
 		// code block
@@ -81,6 +81,9 @@ input::-webkit-inner-spin-button {
 	if(strlen($_SESSION["firstName"])==1 && $_SESSION["account"]==2){}else{
 ?>
 		<div class="container-fluid  d-print-none">
+			<?php
+			if(!in_array($_SESSION["userid"],[34,35])){
+			?>
 			<ul id="empTabs" class="nav nav-tabs">
 				  <li class="nav-item border rounded-top">
 					<a class="nav-link active" id="orderView" onclick="navtab(this.id)">
@@ -141,9 +144,9 @@ input::-webkit-inner-spin-button {
 				  </li>
 				  <?php 
 				  }
-				  if(in_array($_SESSION["userid"],[11])){
+				  if(in_array($_SESSION["userid"],[11,30,32])){
 				  ?>
-				   <li class="nav-item border rounded-top">
+				   <!--li class="nav-item border rounded-top">
 					<a class="nav-link" id="reportView" onclick="navtab(this.id)">
 						<b>Reports</b>
 						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-kanban" viewBox="0 0 16 16">
@@ -151,11 +154,23 @@ input::-webkit-inner-spin-button {
 						  <path d="M6.5 3a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1V3zm-4 0a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1V3zm8 0a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1V3z"/>
 						</svg>
 					</a>
+				  </li-->
+				  <li class="nav-item border rounded-top">
+					<a class="nav-link" id="linkItemView" onclick="navtab(this.id)">
+						<b>Link MOS - CV Items</b>
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-link-45deg" viewBox="0 0 16 16">
+						  <path d="M4.715 6.542L3.343 7.914a3 3 0 1 0 4.243 4.243l1.828-1.829A3 3 0 0 0 8.586 5.5L8 6.086a1.001 1.001 0 0 0-.154.199 2 2 0 0 1 .861 3.337L6.88 11.45a2 2 0 1 1-2.83-2.83l.793-.792a4.018 4.018 0 0 1-.128-1.287z"/>
+						  <path d="M6.586 4.672A3 3 0 0 0 7.414 9.5l.775-.776a2 2 0 0 1-.896-3.346L9.12 3.55a2 2 0 0 1 2.83 2.83l-.793.792c.112.42.155.855.128 1.287l1.372-1.372a3 3 0 0 0-4.243-4.243L6.586 4.672z"/>
+						</svg>
+					</a>
 				  </li>
 				   <?php 
 				  }				  
 				  ?>
-			</ul>			
+			</ul>
+			<?php
+			}
+			?>			
 		</div>
 <?php 
 	}
@@ -184,8 +199,8 @@ if(strlen($_SESSION["firstName"])==1 && $_SESSION["account"]==2){
 	include 'schedule.php';
 	echo "</div>";
 
-	echo "<div id=\"reportTab\" style=\"display:none\">";
-	include 'report.php';
+	echo "<div id=\"linkItemsTab\" style=\"display:none\">";
+	include 'linkCVitems.php';
 	echo "</div>";
 }
 ?>
