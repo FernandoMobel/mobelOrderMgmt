@@ -23,7 +23,7 @@ option{ white-space: normal; }
 
 .bootstrap-select .filter-option { white-space: normal; }
 
-p{
+table p{
 	text-align: center;
     line-height: 1.5em;
     height: 1.5em;
@@ -2431,9 +2431,9 @@ function orderValidation(){
             <button type="button" class="close" data-dismiss="modal">&times;</button></h2>
             <hr>
           	
-            <div class="col-12 " >
+            <div class="col-12" >
 				<div class="row">
-					<div class="col-3">
+					<div class="col-xs-3 col-lg-3">
 						<b>This is a:</b>
 						<?php 
 						echo "<select onchange=\"saveOrder('isPriority');fixDate();showOrderOptions('isPriority');\" class=\"form-control \"  id=\"isPriority\">";						
@@ -2447,13 +2447,13 @@ function orderValidation(){
 						echo "</select>";							
 						?>					
 					</div>
-					<div class="col-2">
+					<div class="col-xs-2 col-lg-2">
 						Required Date: 
 						<?php 
 						echo "<input title=\"Some factors may increase your lead time. We will inform you as soon as possible once your quote is submitted.\" type=\"text\" maxlength=\"10\" data-provide=\"datepicker\" data-date-format=\"yyyy-mm-dd\" onchange=\"saveOrder('dateRequired');\" class=\"form-control datepicker\"  value=\"". substr($dateRequired,0,10) ."\" id=\"dateRequired\">";
 						?>
 					</div>
-					<div class="col-1 text-center service">
+					<div class="col-xs-1 col-lg-1 text-center service">
 						Warranty: 
 						<?php 
 						echo "<input type=\"checkbox\"";
@@ -2463,7 +2463,7 @@ function orderValidation(){
 						echo "onchange=\"saveOrder('isWarranty');\" class=\"form-control  \"  id=\"isWarranty\">";
 						?>
 					</div>
-					<div class="col-3 service">
+					<div class="col-xs-3 col-lg-3 service">
 						Original Order Number:
 						<select onchange="getYourOrderItems(this.value)" class="custom-select">
 							<option value="">Please select an order</option>
@@ -2484,7 +2484,7 @@ function orderValidation(){
 							?>
 						</select>						
 					</div>					
-					<div class="col-3">               
+					<div class="col-xs-3 col-lg-3">          
 						<?php 
 						//Cabinet Lines functionality start
 						if($_SESSION["CLGroup"]>3){
@@ -2558,7 +2558,7 @@ function orderValidation(){
             </div>
             </div>
             <br/>
-            <div class="col-sm-6 col-md-6 col-lg-6 date">
+            <div class="col-sm-12 col-md-12 col-lg-12 date">
                 <label for="OrderNote">Order Notes:</label>
                 <?php 
                 echo "<textarea onchange=\"saveOrder('OrderNote');\" class=\"form-control\"  id=\"OrderNote\">".$OrderNote."</textarea>";
@@ -2567,14 +2567,19 @@ function orderValidation(){
             
           </div>
           <div class="modal-footer">
-          <div id="submitText" class="col-sm-8 col-md-8 col-lg-8">
-            	<p>Please check your shipping method is correct and indicate the date your order is required.</p>
-	            <p>Your order will be electronically submitted to orders@mobel.ca and will be processed by our staff.<br/> You will get a copy of the report and will hear from us soon.</p>
-            </div>
-            <div class="col-sm-4 col-md-4 col-lg-4">
-          	<button id="submitButton" type="button" onClick=submitToMobel(); class="btn btn-default" data-dismiss="modal" data-toggle="tooltip" data-placement="top" title="Please select an order type first">Submit to Mobel</button>
-            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-            </div>
+          	<div class="container">
+	          	<div class="row">
+	          		<div id="submitText" class="col-sm-12 col-md-12 col-lg-8">
+			           	<p>Please check your shipping method is correct and indicate the date your order is required.</p>
+				        <p>Your order will be electronically submitted to orders@mobel.ca and will be processed by our staff.<br/> You will get a copy of the report and will hear from us soon.</p>
+			        </div>
+			        <div class="col-sm-12 col-md-12 col-lg-4">
+			          	<button id="submitButton" type="button" onClick=submitToMobel(); class="btn btn-default mx-auto" data-dismiss="modal" data-toggle="tooltip" data-placement="top" title="Please select an order type first">Submit to Mobel</button>
+			            <button type="button" class="btn btn-default mx-auto" data-dismiss="modal">Close</button>
+			        </div>
+	          	</div>
+	        </div>
+	        
           </div>
         </div>
     

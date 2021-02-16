@@ -349,6 +349,7 @@ if($_POST['mode']=="getItems"){
 		$tableRow = 0;//count for every row in order to identify every price column to be printable
         ?>
         <input id="#orderTotal" type="hidden"></input>
+        <div class="table-responsive">
         <table id="itemListingTable" class="table table-striped table-sm" style="width:100%">
 		<!-- display nowrap table-striped table-hover -->
         <thead >
@@ -501,6 +502,7 @@ if($_POST['mode']=="getItems"){
         ?>
         </tbody>
     </table>
+    </div>
     <?php
     }else{
     	echo "No items yet, or you may have chosen a species and door style that are not compatible with each other. Please ensure you have also chosen an Interior Finish. <br/>Please add items or remove this room.";
