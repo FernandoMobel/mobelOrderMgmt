@@ -49,8 +49,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			dayHeaderFormat: { weekday: 'long' }						
 		  },
 		customButtons: {
-		    completition: {
-		      	text: 'Completition',
+		    completion: {
+		      	text: 'Completion',
 		      	click: function(arg, a) {
 		      		schedule = 3;
 		        	$(arg['path'][1]['childNodes']).removeClass('active');
@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		    }
 		},
 		headerToolbar: {
-			left: 'prev,next completition,wrapping,finishing,cutting',
+			left: 'prev,next completion,wrapping,finishing,cutting',
 			center: 'title',
 			right: 'listWeek'//,timeGridDay,dayGridMonth,timeGridWeek 
 		  },
@@ -245,7 +245,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						}
 				});	
 			}else{
-				alert('Completition date is fixed, you cannot update it.');
+				alert('Completion date is fixed, you cannot update it.');
 				info.revert();
 			}
 		},
@@ -301,7 +301,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					var tpc=0;
 					jsonOrder.forEach(function(obj){
 						if(flag){
-							$('#completitionDate').val(obj.dateRequired);
+							$('#completionDate').val(obj.dateRequired);
 							flag = false;
 							html = 	'<table class="table table-sm text-center m-0">'+
 									'<thead>'+
@@ -499,9 +499,9 @@ document.addEventListener('DOMContentLoaded', function() {
 										<div class="form-group">
 											<div class="input-group mb-3">					
 												<div class="input-group-prepend">
-													<span class="input-group-text">Completition Date</span>
+													<span class="input-group-text">Completion Date</span>
 												</div>
-												<input readonly id="completitionDate" type="text" maxlength="10" class="form-control datepicker text-center">
+												<input readonly id="completionDate" type="text" maxlength="10" class="form-control datepicker text-center">
 											</div>		
 										</div>								
 									</div>									
@@ -562,7 +562,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						<div class="col bg-stage1">CUTTING</div>
 						<div class="col bg-stage2">FINISHING</div>
 						<div class="col bg-stage3">WRAPPING</div>
-						<div class="col bg-stage4">COMPLETITION</div>
+						<div class="col bg-stage4">COMPLETION</div>
 					</div>
 				</div>
 			</div>
