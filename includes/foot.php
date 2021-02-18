@@ -22,7 +22,6 @@ echo "<script type=\"text/javascript\" src=\"http://".$_SERVER['SERVER_NAME'].$l
 </body>
 
 <script type="text/javascript">
-	//$('#logo').height($('#logo').height()*0.5);
 	$('#logo').height("45px");
 </script>
 

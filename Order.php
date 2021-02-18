@@ -202,7 +202,7 @@ function loadItems(rid){
 						$("#roomTotal").html("<b>Room Total: Please solve item incompatibilities</b>");
 						alert('One or more items are not compatible, please remove them');
 					}else{
-						$("#roomTotal").html("<b>Room Total: $" + $('#TotalPrice').val() + "</br>pre HST & pre delivery ");
+						$("#roomTotal").html("<b>Room Total: $" + $('#TotalPrice').val() + "<br>pre HST & pre delivery ");
 					}	
 					//set printing properties
 					printPrice();				
@@ -1177,7 +1177,7 @@ function orderValidation(){
 							}else{
 								echo "<script>viewOnly = 1;</script>";
 							}
-							echo "<button type=\"button\" data-toggle=\"modal\" data-target=\"#orderOptions\"class=\"btn btn-primary text-nowrap d-print-none px-2 py-2 mx-0  mt-0\">Order Details</button>";
+							echo "<button type=\"button\" data-toggle=\"modal\" data-target=\"#orderOptions\" class=\"btn btn-primary text-nowrap d-print-none px-2 py-2 mx-0  mt-0\">Order Details</button>";
 							//echo $row['status'] . " " . substr($row['dateSubmitted'],0,10);
 							
 						}
@@ -1232,8 +1232,8 @@ function orderValidation(){
 				echo "</div>";
 				echo "<div class=\"row d-print-none\">";
 					echo "<div class=\"col-12\">";
-					echo "Order Locked: <input type=\"checkbox\"";
-					echo "onchange=\"if($('#isLocked').is(':checked')){viewOnly=1;}else{viewOnly=0;};\"  \" checked id=\"isLocked\">";
+					echo "Order Locked: <input type=\"checkbox\" ";
+					echo "onchange=\"if($('#isLocked').is(':checked')){viewOnly=1;}else{viewOnly=0;};\" checked id=\"isLocked\">";
 				echo "</div>";
 			}
 			?>
@@ -1243,8 +1243,8 @@ function orderValidation(){
 			$sqlSh = "select coalesce((select concat(mu.firstName,' ',mu.lastName) from mosUser mu where mu.id = mo.submittedBy),'No name')whoSubmit,(select a.busDBA from account a where a.id = mo.account)busName,shipAddress,(select concat(coalesce(unit,' '),' ',street,' ',city,' ',province,' ',country,' ',postalCode)  from accountAddress aA where aA.id =mo.shipAddress) shipTo from mosOrder mo where oid = ".$_GET["OID"];
 			$result = opendb($sqlSh);
 			$row = $result->fetch_assoc();
-			echo "<label>Submitted by: " .$row['whoSubmit']."</label></br>";
-			echo "<label>Customer: " .$row['busName']."</label></br>";
+			echo "<label>Submitted by: " .$row['whoSubmit']."</label><br>";
+			echo "<label>Customer: " .$row['busName']."</label><br>";
 			if(strlen($row['shipAddress'])>0){
 				echo "<label>Ship to: " .$row['shipTo']."</label>";
 			}else{
@@ -1286,7 +1286,6 @@ function orderValidation(){
         $roomCount = 0;
     }
     echo "<li class=\"nav-item d-print-none\"><a onclick=\"addRoom(".$i.")\" id=\"addRoom\" class=\"nav-link text-muted\"  >Add</a></li>";
-    //href=\"#Add\"
     
     ?>
 </ul>
@@ -1335,7 +1334,7 @@ function orderValidation(){
 					echo "<div class=\"col-2\">
 							<a class=\"btn btn-primary px-2 py-1 text-nowrap ml-0 editbutton d-print-none\" href=\"#\" role=\"button\" id=\"dropdownMenuLink\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"false\">
 								<svg width=\".8em\" height=\".8em\" viewBox=\"0 0 16 16\" class=\"bi bi-pencil-fill\" fill=\"currentColor\" xmlns=\"http://www.w3.org/2000/svg\">
-									<path fill-rule=\"evenodd\" d=\"M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11l.178-.178z\"/>
+									<path fill-rule=\"evenodd\" d=\"M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11l.178-.178z\"></path>
 								</svg>
 							</a>
 							<div class=\"dropdown-menu\" aria-labelledby=\"dropdownMenuLink\">
@@ -1352,11 +1351,12 @@ function orderValidation(){
 								</div>"; 
 							}
 							
-					echo "<div class=\"col-2 text-left\"><button class=\"btn btn-primary px-3 py-1 ml-0 editbutton d-print-none\" data-toggle=\"modal\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles(".$_GET["OID"] . ",$('a.nav-link.roomtab.active').attr('value'));\">Room Files 
+					echo "<div class=\"col-2 text-left\">
+							<button class=\"btn btn-primary px-3 py-1 ml-0 editbutton d-print-none\" data-toggle=\"modal\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles(".$_GET["OID"] . ",$('a.nav-link.roomtab.active').attr('value'));\">Room Files 
 							<svg width=\"1em\" height=\"1em\" viewBox=\"0 0 16 16\" class=\"bi bi-folder\" fill=\"currentColor\" xmlns=\"http://www.w3.org/2000/svg\">
-								<path d=\"M9.828 4a3 3 0 0 1-2.12-.879l-.83-.828A1 1 0 0 0 6.173 2H2.5a1 1 0 0 0-1 .981L1.546 4h-1L.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3v1z\"/>
-								<path fill-rule=\"evenodd\" d=\"M13.81 4H2.19a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4zM2.19 3A2 2 0 0 0 .198 5.181l.637 7A2 2 0 0 0 2.826 14h10.348a2 2 0 0 0 1.991-1.819l.637-7A2 2 0 0 0 13.81 3H2.19z\"/>
-							</svg></span></button>";                                      
+								<path d=\"M9.828 4a3 3 0 0 1-2.12-.879l-.83-.828A1 1 0 0 0 6.173 2H2.5a1 1 0 0 0-1 .981L1.546 4h-1L.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3v1z\"></path>
+								<path fill-rule=\"evenodd\" d=\"M13.81 4H2.19a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4zM2.19 3A2 2 0 0 0 .198 5.181l.637 7A2 2 0 0 0 2.826 14h10.348a2 2 0 0 0 1.991-1.819l.637-7A2 2 0 0 0 13.81 3H2.19z\"></path>
+							</svg></button>";                                      
 					echo "</div>";
 				
 					echo "<div class=\"col-8 text-left\">";//note preview
@@ -1372,7 +1372,7 @@ function orderValidation(){
 				echo "</div>";
 				
                 //echo "<button class=\"btn btn-primary ml-0 \" data-toggle=\"modal\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles( ".$_GET["OID"].");\">All Files<span class=\"ui-icon ui-icon-disk\"></span></button><br/>";
-                echo "<input type=\"hidden\" value=\"" . $row['note'] . "\" id=\"RoomNote". $row['rid'] ."\">";
+                echo "<input type=\"hidden\" value=\"" .  htmlspecialchars($row['note']) . "\" id=\"RoomNote". $row['rid'] ."\">";
                  
 				?>
 				<!--div id="cabLineOp"-->
@@ -2157,8 +2157,8 @@ function orderValidation(){
 	if($_SESSION["userType"]>1){
 	?>
 	<div class="d-print-none">
-		<input class="d-flex float-right" type="checkbox" id="printChk" name="printChk" onclick="printPrice()"></input>
-		<small class="d-flex float-right" for="printChk">Print price&nbsp</small><br>
+		<input class="d-flex float-right" type="checkbox" id="printChk" name="printChk" onclick="printPrice();">
+		<small class="d-flex float-right" for="printChk">Print price &nbsp;</small><br>
 	</div>
 	<?php
 	}
@@ -2271,7 +2271,7 @@ function orderValidation(){
 					<p>Changes save as you finish making them.</p>
 					<div class="row">
 						<div class="col-7">
-							Starts with:<input type="checkbox" id="startsWith" checked></input>
+							Starts with:<input type="checkbox" id="startsWith" checked>
 							<div class="col-xs-2">
 								Find Item:
 								<input class="col-xs-2" autocomplete="off" type="text"  id="editItemSearch" onkeyup="showResult(this.value)">
@@ -2315,10 +2315,11 @@ function orderValidation(){
 							</div><br/>
 							<div class="row">
 								<div class="col-6 text-left">
-									<label for="Hinged">Hinge:</label> Left <input onchange="saveEditedItem('HL','hingeLeft');" type="checkbox" id="HL" checked></input><input onchange="saveEditedItem('HR','hingeRight');" type="checkbox" id="HR"></input>&nbsp;Right
+									<label for="Hinged">Hinge:</label> Left <input onchange="saveEditedItem('HL','hingeLeft');" type="checkbox" id="HL" checked>
+									<input onchange="saveEditedItem('HR','hingeRight');" type="checkbox" id="HR">&nbsp;Right
 								</div>
 								<div class="col-6 text-left">
-									Finished: Left <input type="checkbox" value="" id="FL" onchange="saveEditedItem('FL','finishLeft');" ></input><input type="checkbox" id="FR" onchange="saveEditedItem('FR','finishRight');" ></input>&nbsp;Right
+									Finished: Left <input type="checkbox" value="" id="FL" onchange="saveEditedItem('FL','finishLeft');" ><input type="checkbox" id="FR" onchange="saveEditedItem('FR','finishRight');" >&nbsp;Right
 								</div>
 							</div>
 						</div>
@@ -2460,7 +2461,7 @@ function orderValidation(){
 						if($isWarranty>0){
 							echo " checked ";
 						}
-						echo "onchange=\"saveOrder('isWarranty');\" class=\"form-control  \"  id=\"isWarranty\">";
+						echo " onchange=\"saveOrder('isWarranty');\" class=\"form-control  \"  id=\"isWarranty\">";
 						?>
 					</div>
 					<div class="col-xs-3 col-lg-3 service">

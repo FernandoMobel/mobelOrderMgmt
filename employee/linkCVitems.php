@@ -135,7 +135,7 @@ function linkCVtoMOS(){
 									<select id="selCVcat" class="custom-select" multiple>										
 										<optgroup label="Wall Cabinets">
 											<option value="W">W - Wall Cabinets</option>
-											<option value="WDR">WDR - Wall 6&#8220 High Drawer</option>
+											<option value="WDR1">WDR1 - Wall 6&#8220 High Drawer</option>
 											<option value="WDR2">WDR2 - Wall Two 6&#8220 High Drawers</option>
 											<option value="WD18">WD18 - Wall Door 18&#8220</option>
 											<option value="WOS18">WOS18 - Wall 18&#8220 Open Shelf</option>
