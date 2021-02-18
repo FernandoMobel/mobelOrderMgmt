@@ -19,8 +19,6 @@ echo "<script type=\"text/javascript\" src=\"http://".$_SERVER['SERVER_NAME'].$l
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.7.1/js/bootstrap-datepicker.min.js"></script>
 
-</body>
-
 <script type="text/javascript">
 	$('#logo').height("45px");
 </script>
@@ -37,4 +35,5 @@ echo "<script type=\"text/javascript\" src=\"http://".$_SERVER['SERVER_NAME'].$l
 	});
 	
 </script>
+</body>
 </html>

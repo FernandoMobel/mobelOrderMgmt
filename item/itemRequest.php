@@ -237,7 +237,7 @@ function sendRequest(){
 		</div>
 	</div>
 </div>
-<?php include 'includes/foot.php';?>
+<?php //include 'includes/foot.php';?>
 <!--script>
 function autocomplete(inp, arr) {
   /*the autocomplete function takes two arguments,

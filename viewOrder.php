@@ -91,8 +91,8 @@ echo "<div id=\"orderTab\">";
 include 'accountOrders.php';
 echo "</div>";
 
-echo "<div id=\"itemTab\" style = \"display:none\">";
+/*echo "<div id=\"itemTab\" style = \"display:none\">";
 include 'item/itemRequest.php';
-echo "</div>";
+echo "</div>";*/
 
 ?>
