@@ -357,13 +357,13 @@ function showFindItem(){
 <div class="container-fluid">
 	<div class="row">
 		<div id="divFindItem" class="col-lg-8 col-sm-6 mx-auto">
-			<!--------------************************************** Find Item Box Start **************************************-------------->
+			<!-- *********************************************************** Find Item Box Start *********************************************************** -->
 			<div class="card my-1">
 				<div onclick="showFindItem()" class="d-flex flex-row card-header py-0">
 					<div class="p-2">
 						<svg width="1.5em" height="1.5em" viewBox="0 0 16 16" class="bi bi-search text-primary" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-							<path fill-rule="evenodd" d="M10.442 10.442a1 1 0 0 1 1.415 0l3.85 3.85a1 1 0 0 1-1.414 1.415l-3.85-3.85a1 1 0 0 1 0-1.415z"/>
-							<path fill-rule="evenodd" d="M6.5 12a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11zM13 6.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z"/>
+							<path fill-rule="evenodd" d="M10.442 10.442a1 1 0 0 1 1.415 0l3.85 3.85a1 1 0 0 1-1.414 1.415l-3.85-3.85a1 1 0 0 1 0-1.415z"></path>
+							<path fill-rule="evenodd" d="M6.5 12a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11zM13 6.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z"></path>
 						</svg>
 					</div>
 					<div class="p-2 toggleEl">
@@ -379,7 +379,7 @@ function showFindItem(){
 					</div>					
 					<div id="livesearch">
 					</div>
-					<!--------------************************************** Catalogue Start **************************************-------------->
+					<!-- *********************************************************** Catalogue Start ***********************************************************-->
 					<!--div class="container">
 						<div class="row my-3">
 							<div class="col">
@@ -459,12 +459,12 @@ function showFindItem(){
 								</div>
 							</div>
 						</div>
-					</div>
-					<!--------------************************************** Catalogue End **************************************-------------->
+					</div-->
+					<!--*********************************************************** Catalogue End ***********************************************************-->
 				</div>				
 			</div>
-			<!--------------************************************** Find Item Box End **************************************-------------->
-			<!--------------************************************** Item Image Start **************************************-------------->
+			<!-- ********************************************************** Find Item Box End *********************************************************** -->
+			<!-- *********************************************************** Item Image Start *********************************************************** -->
 			<!--div hidden id="itemImage" class="card my-1">
 				<div class="card-header">
 					<h5 id="itemName"></h5>
@@ -493,9 +493,9 @@ function showFindItem(){
 					</form>					
 				</div>
 			</div-->
-			<!--------------************************************** Item Image End **************************************-------------->
+			<!-- *********************************************************** Item Image End ***********************************************************-->
 		</div>
-		<!--------------************************************** Find Item End **************************************-------------->
+		<!-- *********************************************************** Find Item End ***********************************************************-->
 		<div id="itemsMainDiv" class="col-lg-4 col-sm-6 mx-auto">
 			<div class="card sticky my-3">
 				<h5 class="card-header">
@@ -529,7 +529,10 @@ function showFindItem(){
 								  <input type="text" class="form-control" name="description" id="description" maxlength="249" aria-describedby="description">
 								</div>
 							</div>
-						</div>
+						</div>						
+						<?php 
+						$disabled = "";
+						if(!in_array($_SESSION["userid"],[11,15])) $disabled = "disabled"; ?>
 						<div class="container-fluid">
 							<div class="row">
 								<div class="col-lg-1 mb-0"><label class="text-muted">Pricing</label></div>
@@ -542,7 +545,7 @@ function showFindItem(){
 											<div class="input-group-prepend">
 												<span class="input-group-text">Price</span>
 											</div>
-											<input type="number" step="0.0001" min="0.00000" class="form-control" name="price" id="price" value="0" aria-describedby="price">
+											<input type="number" step="0.0001" min="0.00000" class="form-control" name="price" id="price" value="0" aria-describedby="price" <?php echo $disabled;?> > 
 										</div>
 									</div>
 								</div>
@@ -552,7 +555,7 @@ function showFindItem(){
 											<div class="input-group-prepend">
 												<span class="input-group-text">Size Price</span>
 											</div>
-											<input type="number" step="0.0001" min="0" class="form-control" name="sizePrice" id="sizePrice" value="0" aria-describedby="sizePrice">
+											<input type="number" step="0.0001" min="0" class="form-control" name="sizePrice" id="sizePrice" value="0" aria-describedby="sizePrice" <?php echo $disabled;?>>
 										</div>
 									</div>
 								</div>
@@ -562,7 +565,7 @@ function showFindItem(){
 											<div class="input-group-prepend">
 												<span class="input-group-text">Min Size</span>
 											</div>
-											<input type="number" step="0.0001" min="0" class="form-control" name="minSize" id="minSize" value="0" aria-describedby="minSize">
+											<input type="number" step="0.0001" min="0" class="form-control" name="minSize" id="minSize" value="0" aria-describedby="minSize" <?php echo $disabled;?>>
 										</div>
 									</div>
 								</div>
@@ -578,7 +581,6 @@ function showFindItem(){
 												<option value="2">Method 3 - (Size = H*D)</option>
 												<option value="3">Method 4 - (Size = W*H)</option>
 											</select>
-											<!--input type="number" class="form-control" name="pricingMethod" id="pricingMethod" min="0" value="0" aria-describedby="pricingMethod"-->
 										</div>
 									</div>
 								</div>
@@ -717,7 +719,7 @@ function showFindItem(){
 								</div>
 							</div>																		
 							<div class="row d-flex justify-content-between">
-								<div class="col-lg-1 mb-0"><label class="text-muted">Factors</labels></div>
+								<div class="col-lg-1 mb-0"><label class="text-muted">Factors</label></div>
 								<div class="col-lg-11 dropdown-divider mb-0"></div>
 							</div>
 							<div class="row d-flex justify-content-between">
@@ -727,7 +729,7 @@ function showFindItem(){
 											<div class="input-group-append">
 												<span class="input-group-text">Door Factor</span>
 											</div>											
-											<select id="doorFactor" class="form-control" name="doorFactor"><option value="0">No</option><option value="1">Yes</option></select>
+											<select id="doorFactor" class="form-control" name="doorFactor" <?php echo $disabled;?> ><option value="0">No</option><option value="1">Yes</option></select>
 										</div>
 									</div>
 								</div>
@@ -737,7 +739,7 @@ function showFindItem(){
 											<div class="input-group-append">
 												<span class="input-group-text">Species Factor</span>
 											</div>
-											<select id="speciesFactor" class="form-control" name="speciesFactor"><option value="0">No</option><option value="1">Yes</option></select>
+											<select id="speciesFactor" class="form-control" name="speciesFactor" <?php echo $disabled;?> ><option value="0">No</option><option value="1">Yes</option></select>
 										</div>
 									</div>
 								</div>
@@ -747,7 +749,7 @@ function showFindItem(){
 											<div class="input-group-append">
 												<span class="input-group-text">Finish Factor</span>
 											</div>
-											<select id="finishFactor" class="form-control" name="finishFactor"><option value="0">No</option><option value="1">Yes</option></select>
+											<select id="finishFactor" class="form-control" name="finishFactor" <?php echo $disabled;?> ><option value="0">No</option><option value="1">Yes</option></select>
 										</div>
 									</div>
 								</div>
@@ -757,7 +759,7 @@ function showFindItem(){
 											<div class="input-group-append">
 												<span class="input-group-text">Interior Factor</span>
 											</div>
-											<select id="interiorFactor" class="form-control" name="interiorFactor"><option value="0">No</option><option value="1">Yes</option></select>
+											<select id="interiorFactor" class="form-control" name="interiorFactor" <?php echo $disabled;?> ><option value="0">No</option><option value="1">Yes</option></select>
 										</div>
 									</div>
 								</div>
@@ -767,7 +769,7 @@ function showFindItem(){
 											<div class="input-group-append">
 												<span class="input-group-text">Sheen Factor</span>
 											</div>
-											<select id="sheenFactor" class="form-control" name="sheenFactor"><option value="0">No</option><option value="1">Yes</option></select>
+											<select id="sheenFactor" class="form-control" name="sheenFactor" <?php echo $disabled;?> ><option value="0">No</option><option value="1">Yes</option></select>
 										</div>
 									</div>
 								</div>
@@ -777,13 +779,13 @@ function showFindItem(){
 											<div class="input-group-append">
 												<span class="input-group-text">Glaze Factor</span>
 											</div>
-											<select id="glazeFactor" class="form-control" name="glazeFactor"><option value="0">No</option><option value="1">Yes</option></select>
+											<select id="glazeFactor" class="form-control" name="glazeFactor" <?php echo $disabled;?> ><option value="0">No</option><option value="1">Yes</option></select>
 										</div>
 									</div>
 								</div>
 							</div>
 						</div>
-						<!--------------*******************-------------- Only for new items End--------------*******************-------------->
+						<!-- ************************************************************* Only for new items End*************************************************************-->
 						<div class="container-fluid">
 							<div class="row">
 								<div class="col-lg-1 mb-0"><label class="text-muted">Drawers</label></div>
@@ -844,7 +846,7 @@ function showFindItem(){
 										</div>
 									</div>
 								</div>
-								<!--------------************************************** Check boxes **************************************-------------->
+								<!-- *********************************************************** Check boxes ***********************************************************-->
 								<div class="col-md-4">
 									<div class="form-group">
 										<div class="input-group mb-3">
@@ -867,13 +869,13 @@ function showFindItem(){
 								</div>
 							</div>
 						</div>
-						<!--------------************************************** Main Buttons Start **************************************-------------->
+						<!-- *********************************************************** Main Buttons Start ***********************************************************-->
 						<div class="float-right">
 							<button type="button" class="btn btn-success" id="createBtn" onclick="createItem()">Create New</button>
 							<button type="button" class="btn btn-success" id="updateBtn" onclick="confirm()">Update</button>
 							<button type="button" class="btn btn-outline-primary" onclick="clearInputs()" id="clearBtn">Clear</button>
 						 </div>
-						<!--------------************************************** Main Buttons End **************************************-------------->
+						<!-- *********************************************************** Main Buttons End ***********************************************************-->
 					</form>
 				</div>
 			</div>

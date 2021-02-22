@@ -19,7 +19,8 @@ if($_POST['mode']=="getAllJobs"){
  while ( $row = $result->fetch_assoc())  {
 	$dbdata[]=$row;
   }
- echo json_encode($dbdata);
+  echo json_encode($dbdata);
+  //echo $sql;
 }
 
 if($_POST['mode']=="getSchedule"){
@@ -99,7 +100,7 @@ if($_POST['mode']=="getSchedule"){
 
 if($_POST['mode']=="getLimitDate"){
 	switch($_POST['schID']){
-		case '2': //Getting completition date as limit
+		case '2': //Getting completion date as limit
 			$sql = "select deliveryDate as limitD from mosOrder where oid =".$_POST['oid'];
 		break;
 		case '1': //Getting wrapping date as limit

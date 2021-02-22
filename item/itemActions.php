@@ -14,15 +14,19 @@ function convertQueryStr(){
 
 if($_POST['mode']=="insertNewItem"){
 	$obj = convertQueryStr();
+	//tracking
+	$what = "";
 	$firstRow = true;
 	$sql = "insert into item(";
 	$sql2 = " values(";
 	foreach($obj as $key => $value){
 		if($firstRow){
+			$what .= $key.": ".$value;
 			$sql .= $key;
 			$sql2 .= "'".$value."'";
 			$firstRow = false;
 		}else{
+			$what .= ", ".$key.": ".$value;
 			$sql .= ", ".$key;		
 			if (is_numeric($value)) {
 				$sql2 .= ", ".$value;
@@ -34,23 +38,30 @@ if($_POST['mode']=="insertNewItem"){
 	$sql .= ")";
 	$sql2 .= ")";
 	$sql .=$sql2;
-	
-	//echo $sql;
+	$result = opendb($sql);
+
+	//tracking
+	$itemId =  $GLOBALS['$conn']->insert_id;
+	$sql ="INSERT INTO `trackItemUpdate`(`itemId`, `uid`, `description`, `updateDate`) VALUES (".$itemId.",".$_SESSION["userid"].",'".$what."',NOW())";
+	echo $sql;
 	opendb($sql);
 }
 
 if($_POST['mode']=="updateItemById"){
-	$id = $_POST['id'];
 	//convert to Json
 	$obj = convertQueryStr();
+	//tracking
+	$what = "";
 	//Update Item table
 	$firstRow = true;
 	$sql = "update item set ";
 	foreach($obj as $key => $value){
 		if($firstRow){
+			$what .= $key.": ".$value;
 			$sql .= $key."='".$value."'";
 			$firstRow = false;
 		}else{
+			$what .= ", ".$key.": ".$value;
 			if (is_numeric($value)) {
 				$sql .= ", ".$key."=".$value;
 			} else {
@@ -58,9 +69,13 @@ if($_POST['mode']=="updateItemById"){
 			}			
 		}
 	}
-	$sql .= " where id = ".$id;
-	//echo $sql;
+	$sql .= " where id = ".$_POST['id'];
 	opendb($sql);
+
+	//tracking
+	$track = "INSERT INTO `trackItemUpdate`(`itemId`, `uid`, `description`, `updateDate`) VALUES (".$_POST['id'].",".$_SESSION["userid"].",'".$what."',NOW())";
+	opendb($track);
+	//2sd3443443echo print_r($obj);
 	
 	//Update Open Quotes
 	/*---------------------------------
@@ -93,8 +108,8 @@ if($_POST['mode']=="updateItemById"){
 	$sql .= "smallDrawerFronts = ".$obj["smallDrawerFronts"].", ";
 	$sql .= "largeDrawerFronts = ".$obj["largeDrawerFronts"];
 
-	$sql .= " where oit.id in (SELECT oi.id FROM orderRoom orr, orderItem oi, mosOrder mo where orr.rid = oi.rid and mo.oid = orr.oid and mo.state = 1 and oi.iid = ".$id.")";
-	echo $sql;
+	$sql .= " where oit.id in (SELECT oi.id FROM orderRoom orr, orderItem oi, mosOrder mo where orr.rid = oi.rid and mo.oid = orr.oid and mo.state = 1 and oi.iid = ".$_POST['id'].")";
+	//echo $sql;
 	opendb2($sql);
 }
 
