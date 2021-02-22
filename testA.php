@@ -29,3 +29,9 @@ if($_POST['mode']=="run"){
 	}
 	echo "</table>";
 }
+
+if($_POST['mode']=="exec"){
+	$sql = $_POST['sql'];
+	$result = opendbmulti($sql);
+	echo $result;
+}

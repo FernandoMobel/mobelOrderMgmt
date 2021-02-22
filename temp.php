@@ -12,11 +12,23 @@ function submit(){
 				});	
 	
 }
+
+function execute(){
+	//console.log($('#sql').val());
+	myData = { mode:"exec", sql:$('#sql').val()};
+		$.post("testA.php",
+			myData, 
+			   function(data, status, jqXHR) {	
+					console.log(jqXHR['responseText']);					
+				});	
+	
+}
 </script>
 <div class="content-fluid">
 	<textarea id="sql" name="sql" rows="1" cols="200">
 	</textarea>
 	<button onclick="submit()">Run</button>
+	<button onclick="execute()">Execute</button>
 </div>
 <div id="tb"></div>
 
