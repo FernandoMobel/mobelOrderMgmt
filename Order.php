@@ -1084,6 +1084,11 @@ function getImage(item,orderItem){
 *	Validation before display modal for submission
 ***********************************************************************************/
 function orderValidation(){
+	if($('#tagName').val()=="Tag name not set" || $('#tagName').val()==""){
+		alert("Please set your tag name before submit your quote.");
+		$('#tagName').css('border-color','red');
+		return;//exit if is empty
+	}
 	/*PO field validation*/
 	if(!$('#PO').val()){
 		alert("P.O is a mandatory field, please add some relevant information.");
@@ -1106,6 +1111,11 @@ function orderValidation(){
 	//if some room is incomplete alert is displayed and function is stopped
 	if(incomplete){
 		alert("Warning!\nOne or more rooms options are not selected.\nPlease complete the options or delete the incomplete room to proceed.");
+		return;
+	}
+	//verify there are some items in the order
+	if($('#itemListingTable').length==0){
+		alert('Please add some items or remove the room.');
 		return;
 	}
 	/*Validation to prevent send a room without items*/
@@ -1164,13 +1174,13 @@ function orderValidation(){
 						echo "<button class=\"btn btn-primary text-nowrap px-2 py-2 mx-0 mt-0 d-print-none\" data-toggle=\"modal\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles( ".$_GET["OID"].");\">Files<span class=\"ui-icon ui-icon-disk\"></span></button>&nbsp;";
 					
 						if($row['status'] == "Quoting"){
-							if($row['tagName'] == "Tag name not set"){
+							/*if($row['tagName'] == "Tag name not set"){
 								echo "<button id=\"beforeSbm\" class=\"d-print-none\" type=\"button\" onClick=\"alert('Please set your tag name and refresh to submit your quote.')\">Submit to Mobel</button>";
 								echo "<script>viewOnly = 0;</script>";
-							}else{
+							}else{*/
 								echo "<button id=\"afterSbm\" type=\"button\" data-toggle=\"modal\" onClick=\"orderValidation();\" class=\"btn btn-primary text-nowrap px-2 py-2  mt-0 mx-0 d-print-none\">Submit<span class=\"ui-icon ui-icon-circle-triangle-e\"></span></button>";
 								echo "<script>viewOnly = 0;</script>";
-							}
+							//}
 						}else{
 							if($_SESSION["userType"] == 3){
 								echo "<script>viewOnly = 1;</script>";
