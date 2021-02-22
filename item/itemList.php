@@ -532,7 +532,7 @@ function showFindItem(){
 						</div>						
 						<?php 
 						$disabled = "";
-						if(!in_array($_SESSION["userid"],[11,15])) $disabled = "disabled"; ?>
+						//if(!in_array($_SESSION["userid"],[11,15])) $disabled = "disabled"; ?>
 						<div class="container-fluid">
 							<div class="row">
 								<div class="col-lg-1 mb-0"><label class="text-muted">Pricing</label></div>
