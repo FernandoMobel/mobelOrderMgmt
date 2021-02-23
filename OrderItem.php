@@ -260,7 +260,9 @@ if($_POST['mode']=="updateOrder"){
     if(strcmp($_POST['id'],"OrderNote")==0){
         $fixPost = "note";
     }
-    
+    if($_POST['isPriority'] == 0){
+        opendb("update mosOrder set invoiceTo=null where oid=".$_POST['oid']);
+    }
     
     $sql = "update mosOrder set ".$fixPost." = '" . $_POST['value'] . "' where oid = " . $_POST['oid'];
     opendb($sql);

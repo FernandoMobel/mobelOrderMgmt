@@ -79,6 +79,9 @@ function saveOrder(objectID){
         	    	alert(data);
         	    }
 	        });
+
+	if($("#isPriority").val()==0)
+		$('#invoiceTo').val("");
 }
 
 /*This function reset options where cabinet lines changes between Span and Kitchen (reset headers)*/
@@ -134,6 +137,12 @@ function submitToMobel(){
 	}
 	if($('#isPriority').val()==1 && $('#OrderNote').val().length==0){
 		alert('For service orders a reason is needed, please add your comments');
+		return;
+	}
+
+	if($('#isPriority').val()==1 && !$('#invoiceTo').val()){
+		alert('For service orders, you need to select who is going to be invoiced');
+		//alert($('#invoiceTo').val());
 		return;
 	}
 	myData = { mode: "submitToMobel", oid: "<?php echo $_GET["OID"] ?>"};
@@ -2430,172 +2439,187 @@ function orderValidation(){
 
     <!-- Submission Info-->
     <div id="orderOptions" class="modal fade" role="dialog">
-      <div class="modal-dialog modal-xl">
+      	<div class="modal-dialog modal-xl">
     
-        <!-- Modal content-->
-        <div class="modal-content">
-          <!-- <div class="modal-header">
+	        <!-- Modal content-->
+	        <div class="modal-content">
+	          <!-- <div class="modal-header">
 
-          </div>-->
-          <div class="modal-body">
-            <h2  class="modal-title"><span id="orderOptionsTitle"></span>
-            <button type="button" class="close" data-dismiss="modal">&times;</button></h2>
-            <hr>
-          	
-            <div class="col-12" >
-				<div class="row">
-					<div class="col-xs-3 col-lg-3">
-						<b>This is a:</b>
-						<?php 
-						echo "<select onchange=\"saveOrder('isPriority');fixDate();showOrderOptions('isPriority');\" class=\"form-control \"  id=\"isPriority\">";						
-						if($isPriority==0){
-							echo "<option selected value=\"0\">Standard Order</option>";
-							echo "<option value=\"1\">Service Order</option>";
-						}else{
-							echo "<option value=\"0\">Standard Order</option>";
-							echo "<option selected value=\"1\">Service Order</option>";
-						}
-						echo "</select>";							
-						?>					
-					</div>
-					<div class="col-xs-2 col-lg-2">
-						Required Date: 
-						<?php 
-						echo "<input title=\"Some factors may increase your lead time. We will inform you as soon as possible once your quote is submitted.\" type=\"text\" maxlength=\"10\" data-provide=\"datepicker\" data-date-format=\"yyyy-mm-dd\" onchange=\"saveOrder('dateRequired');\" class=\"form-control datepicker\"  value=\"". substr($dateRequired,0,10) ."\" id=\"dateRequired\">";
-						?>
-					</div>
-					<div class="col-xs-1 col-lg-1 text-center service">
-						Warranty: 
-						<?php 
-						echo "<input type=\"checkbox\"";
-						if($isWarranty>0){
-							echo " checked ";
-						}
-						echo " onchange=\"saveOrder('isWarranty');\" class=\"form-control  \"  id=\"isWarranty\">";
-						?>
-					</div>
-					<div class="col-xs-3 col-lg-3 service">
-						Original Order Number:
-						<select onchange="getYourOrderItems(this.value)" class="custom-select">
-							<option value="">Please select an order</option>
-							<?php
-							$admin = "";
-							if($_SESSION["userType"]>1){
-								$admin = "or m.account = " . $_SESSION["account"];
-							}
-							$sql = "select m.oid,m.tagName from mosOrder m, mosUser u where m.mosUser = u.id and (u.email = '" . $_SESSION["username"] . "' ". $admin ."  )";
-							$result = opendb($sql);
-							while($row=$result->fetch_assoc()){
-								echo "<option ";
-								if($row['oid']==$fromOrder)
-									echo "selected ";
-								echo "value=\"".$row['oid']."\">".$row['oid']." - ".$row['tagName']."</option>";
-								//echo "<option value=\"".$row['oid']."\">".$row['oid']." - ".$row['tagName']."</option>";
-							}
-							?>
-						</select>						
-					</div>					
-					<div class="col-xs-3 col-lg-3">          
-						<?php 
-						//Cabinet Lines functionality start
-						if($_SESSION["CLGroup"]>3){
-							echo "Line:<select onchange=\"saveOrder('CLid');\" class=\"form-control \" id=\"CLid\">";
-							$sql = "select * from cabinetLine cl where cl.id in (select clg.CLid from cabinetLineGroups clg where clg.CLGid = ".$_SESSION["CLGroup"].")";
-							//echo $sql;
-							$result = opendb($sql);
-							if($result->num_rows >0){
-								while ( $row = $result->fetch_assoc())  {
-									echo "<option ";
-									if($CLid==$row["id"]) echo "selected "; 
-									echo "class=\"form-control \"  value=\"".$row["id"]."\">".$row["CabinetLine"]."</option>";
+	          </div>-->
+	          	<div class="modal-body">
+		            <h2  class="modal-title"><span id="orderOptionsTitle"></span>
+		            <button type="button" class="close" data-dismiss="modal">&times;</button></h2>
+		            <hr>
+		          	
+		            <!--div class="col-12"-->
+						<div class="row">
+							<div class="col-xs-3 col-lg-3">
+								<b>This is a:</b>
+								<?php 
+								echo "<select onchange=\"saveOrder('isPriority');fixDate();showOrderOptions('isPriority');\" class=\"form-control \" id=\"isPriority\">";						
+								if($isPriority==0){
+									echo "<option selected value=\"0\">Standard Order</option>";
+									echo "<option value=\"1\">Service Order</option>";
+								}else{
+									echo "<option value=\"0\">Standard Order</option>";
+									echo "<option selected value=\"1\">Service Order</option>";
 								}
-							}else{
-								echo "<option selected>No Cabinet Line was found for your profile, please check with the administrator</option>";
-							}
-							echo "</select>";
-						}
-						//Cabinet Lines functionality end
-						?>					
-					</div>
-				</div>
-			</div>
-            <br/>
-            
-            
-            <div class="col-sm-12 col-md-12 col-lg-12">
-    	        <div class="row">
-    	        	<div class="col-sm-12 col-md-12 col-lg-12">
-          	          <label for="shipAddress">Ship To:</label>
-                    </div>
-                </div>
-                <div class="row">
-                <div class="col-sm-12 col-md-12 col-lg-12">
-     		    <select onchange="saveOrder('shipAddress','shipAddress');" id="shipAddress" class="custom-select">
-     		       
- 		       <?php 
- 		       
- 		           
-                //echo "<p>This is a test. Does this fit wellThis is a test. Does this fit wellThis is a test. Does this fit wellThis is a test. Does this fit wellThis is a test. Does this fit wellThis is a test. Does this fit wellThis is a test. Does this fit well</p>";
-               opendb("SELECT a.*,m.shipAddress,m.note FROM mosOrder m, accountAddress a, addressType t WHERE a.aType = t.id and t.name = 'Shipping' and m.account = a.aid and m.oid = ". $_GET["OID"] ." order by contactName asc");
-                if($GLOBALS['$result']->num_rows > 0){
-                    foreach ($GLOBALS['$result'] as $row) {
-                        $OrderNote = $row['note'];
-                        if(is_null($row['shipAddress'])||$row['shipAddress']==""){
-                            echo "<option value=\"\">" . "Please choose a ship location" . "</option>";
-                        }
+								echo "</select>";							
+								?>					
+							</div>
+							<div class="col-xs-2 col-lg-2">
+								Required Date: 
+								<?php 
+								echo "<input title=\"Some factors may increase your lead time. We will inform you as soon as possible once your quote is submitted.\" type=\"text\" maxlength=\"10\" data-provide=\"datepicker\" data-date-format=\"yyyy-mm-dd\" onchange=\"saveOrder('dateRequired');\" class=\"form-control datepicker\"  value=\"". substr($dateRequired,0,10) ."\" id=\"dateRequired\">";
+								?>
+							</div>
+							<div class="col-xs-1 col-lg-1 text-center service">
+								Warranty: 
+								<?php 
+								echo "<input type=\"checkbox\"";
+								if($isWarranty>0){
+									echo " checked ";
+								}
+								echo " onchange=\"saveOrder('isWarranty');\" class=\"form-control  \"  id=\"isWarranty\">";
+								?>
+							</div>
+							<div class="col-xs-3 col-lg-3 service">
+								Original Order Number:
+								<select onchange="getYourOrderItems(this.value)" class="custom-select">
+									<option value="">Please select an order</option>
+									<?php
+									$admin = "";
+									if($_SESSION["userType"]>1){
+										$admin = "or m.account = " . $_SESSION["account"];
+									}
+									$sql = "select m.oid,m.tagName from mosOrder m, mosUser u where m.mosUser = u.id and (u.email = '" . $_SESSION["username"] . "' ". $admin ."  )";
+									$result = opendb($sql);
+									while($row=$result->fetch_assoc()){
+										echo "<option ";
+										if($row['oid']==$fromOrder)
+											echo "selected ";
+										echo "value=\"".$row['oid']."\">".$row['oid']." - ".$row['tagName']."</option>";
+										//echo "<option value=\"".$row['oid']."\">".$row['oid']." - ".$row['tagName']."</option>";
+									}
+									?>
+								</select>						
+							</div>					
+							<div class="col-xs-3 col-lg-3">          
+								<?php 
+								//Cabinet Lines functionality start
+								if($_SESSION["CLGroup"]>3){
+									echo "Line:<select onchange=\"saveOrder('CLid');\" class=\"form-control \" id=\"CLid\">";
+									$sql = "select * from cabinetLine cl where cl.id in (select clg.CLid from cabinetLineGroups clg where clg.CLGid = ".$_SESSION["CLGroup"].")";
+									//echo $sql;
+									$result = opendb($sql);
+									if($result->num_rows >0){
+										while ( $row = $result->fetch_assoc())  {
+											echo "<option ";
+											if($CLid==$row["id"]) echo "selected "; 
+											echo "class=\"form-control \"  value=\"".$row["id"]."\">".$row["CabinetLine"]."</option>";
+										}
+									}else{
+										echo "<option selected>No Cabinet Line was found for your profile, please check with the administrator</option>";
+									}
+									echo "</select>";
+								}
+								//Cabinet Lines functionality end
+								?>					
+							</div>
+						</div>
+					<!--/div-->
+		            <br/>            
+		            <!--div class="col-sm-12 col-md-12 col-lg-12"-->
+		    	        <div class="row">
+		    	        	<div class="col-sm-12 col-md-12 col-lg-12">
+		          	          <label for="shipAddress">Ship To:</label>
+		                    </div>
+		                </div>
+		                <div class="row">
+		                	<div class="col-sm-12 col-md-12 col-lg-12">
+			     		    	<select onchange="saveOrder('shipAddress','shipAddress');" id="shipAddress" class="custom-select">
+				 		       	<?php 
+				               	opendb("SELECT a.*,m.shipAddress,m.note FROM mosOrder m, accountAddress a, addressType t WHERE a.aType = t.id and t.name = 'Shipping' and m.account = a.aid and m.oid = ". $_GET["OID"] ." order by contactName asc");
+				                if($GLOBALS['$result']->num_rows > 0){
+				                    foreach ($GLOBALS['$result'] as $row) {
+				                        $OrderNote = $row['note'];
+				                        if(is_null($row['shipAddress'])||$row['shipAddress']==""){
+				                            echo "<option value=\"\">" . "Please choose a ship location" . "</option>";
+				                        }
 
-                		foreach ($GLOBALS['$result'] as $row) {
-                		    if($row['shipAddress']==$row['id']){
-                                echo "<option ". "selected" ." value=\"" . $row['id'] . "\">" . $row['contactName']. " " . $row['contactEmail']. " " . $row['contactPhone']. " " . $row['unit']. " " . $row['street'].  ", " .$row['city']. ", " . $row['province']. " " . $row['postalCode'].  "</option>";
-                		    }else{
-                		        echo "<option value=\"" . $row['id'] . "\">" . $row['contactName']. " " . $row['contactEmail']. " " . $row['contactPhone']. " " . $row['unit']. " " . $row['street'].  ", " .$row['city']. ", " . $row['province']. " " . $row['postalCode'].  "</option>";
-                		    }
-                		}
-                		if($row['shipAddress']=='0'){
-                		    echo "<option ". "selected" ." value=\"" . $row['id'] . "\">" . "Custom Site Delivery (additional charge may apply)" . "</option>";
-                		}else{
-                		    echo "<option value=\"" . $row['id'] . "\">" . "Custom Site Delivery (additional charge may apply)" . "</option>";
-                		}
-                		if($row['shipAddress']=='1'){
-                		    echo "<option ". "selected" ." value=\"1\">" . "Pick up at Mobel" . "</option>";
-                		}else{
-                		    echo "<option value=\"1\">" . "Pick up at Mobel" . "</option>";
-                		}
-                    }
-                }
-                    ?>
-                </select>
-                </div>
-            </div>
-            </div>
-            <br/>
-            <div class="col-sm-12 col-md-12 col-lg-12 date">
-                <label for="OrderNote">Order Notes:</label>
-                <?php 
-                echo "<textarea onchange=\"saveOrder('OrderNote');\" class=\"form-control\"  id=\"OrderNote\">".$OrderNote."</textarea>";
-                ?>
-            </div>
-            
-          </div>
-          <div class="modal-footer">
-          	<div class="container">
-	          	<div class="row">
-	          		<div id="submitText" class="col-sm-12 col-md-12 col-lg-8">
-			           	<p>Please check your shipping method is correct and indicate the date your order is required.</p>
-				        <p>Your order will be electronically submitted to orders@mobel.ca and will be processed by our staff.<br/> You will get a copy of the report and will hear from us soon.</p>
+				                		foreach ($GLOBALS['$result'] as $row) {
+				                		    if($row['shipAddress']==$row['id']){
+				                                echo "<option ". "selected" ." value=\"" . $row['id'] . "\">" . $row['contactName']. " " . $row['contactEmail']. " " . $row['contactPhone']. " " . $row['unit']. " " . $row['street'].  ", " .$row['city']. ", " . $row['province']. " " . $row['postalCode'].  "</option>";
+				                		    }else{
+				                		        echo "<option value=\"" . $row['id'] . "\">" . $row['contactName']. " " . $row['contactEmail']. " " . $row['contactPhone']. " " . $row['unit']. " " . $row['street'].  ", " .$row['city']. ", " . $row['province']. " " . $row['postalCode'].  "</option>";
+				                		    }
+				                		}
+				                		if($row['shipAddress']=='0'){
+				                		    echo "<option ". "selected" ." value=\"" . $row['id'] . "\">" . "Custom Site Delivery (additional charge may apply)" . "</option>";
+				                		}else{
+				                		    echo "<option value=\"" . $row['id'] . "\">" . "Custom Site Delivery (additional charge may apply)" . "</option>";
+				                		}
+				                		if($row['shipAddress']=='1'){
+				                		    echo "<option ". "selected" ." value=\"1\">" . "Pick up at Mobel" . "</option>";
+				                		}else{
+				                		    echo "<option value=\"1\">" . "Pick up at Mobel" . "</option>";
+				                		}
+				                    }
+				                }
+			                    ?>
+			                	</select>
+		                	</div>
+		            	</div>
+		            <!--/div-->
+		            <br/>
+		            <div class="row mb-2">
+				        <div class="col-sm-12 col-md-12 col-lg-8 date">
+				            <label for="OrderNote">Order Notes:</label>
+				            <?php 
+				            echo "<textarea onchange=\"saveOrder('OrderNote');\" class=\"form-control\"  id=\"OrderNote\">".$OrderNote."</textarea>";
+				            ?>
+				        </div>
+				        <?php 
+				        $invoiceArr = ["Mobel","Dealer","Builder","Retailer","Designer","Installer"];
+				        $result = opendb("select invoiceTo from mosOrder where oid=". $_GET["OID"]);
+				        $row = $result->fetch_assoc();
+				        ?>
+				       	<div class="col-sm-12 col-md-12 col-lg-4 service">
+				       		<label for="shipAddress">Invoice to:</label>
+				    		<select onchange="saveOrder('invoiceTo');" id="invoiceTo" class="custom-select">
+				    			<option value="">Please select an option</option>
+				    			<?php				    			
+				    			foreach($invoiceArr as $val){
+				    				$selected = "";
+				    				if($val==$row['invoiceTo']){
+				    					$selected = "selected";
+				    				}
+				    				echo "<option value=\"".$val."\" $selected>".$val."</option>";
+				    			}
+				    			?>
+				       		</select>
+				    	</div>
+				    </div>
+			        <div class="modal-footer">
+			          	<div class="container">
+				          	<div class="row d-flex justify-content-end py-auto">
+				          		<div id="submitText" class="col-sm-12 col-md-12 col-lg-8">
+						           	<p>Please check your shipping method is correct and indicate the date your order is required.</p>
+							        <p>Your order will be electronically submitted to orders@mobel.ca and will be processed by our staff.<br/> You will get a copy of the report and will hear from us soon.</p>
+						        </div>
+						        <div class="col-sm-12 col-md-12 col-lg-4">
+						        	<div class="row">
+					          			<button id="submitButton" type="button" onClick=submitToMobel(); class="btn btn-default mx-auto" data-dismiss="modal" data-toggle="tooltip" data-placement="top" title="Please first remember to select all the options">Submit to Mobel</button>
+					            		<button type="button" class="btn btn-default mx-auto" data-dismiss="modal">Close</button>
+						            </div>
+						        </div>
+				          	</div>
+				        </div>
 			        </div>
-			        <div class="col-sm-12 col-md-12 col-lg-4">
-			          	<button id="submitButton" type="button" onClick=submitToMobel(); class="btn btn-default mx-auto" data-dismiss="modal" data-toggle="tooltip" data-placement="top" title="Please select an order type first">Submit to Mobel</button>
-			            <button type="button" class="btn btn-default mx-auto" data-dismiss="modal">Close</button>
-			        </div>
-	          	</div>
-	        </div>
-	        
-          </div>
-        </div>
-    
-      </div>
-    </div>
+	        	</div>
+      		</div>
+   	 	</div>
+   	</div>
 
 
 
