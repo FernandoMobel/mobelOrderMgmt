@@ -1175,10 +1175,19 @@ function orderValidation(){
 					$fromOrder = $row['fromOrder'];
 					$state = $row['state'];			
 					
-					echo "<div class=\"col-sm-3 col-md-3 col-lg-3  align-self-center mb-0 pb-0\">";           
-						echo "<label for=\"OID\">For Order Number ".$row['oid']."</label><br/>";				
+					echo "<div class=\"col-sm-6 col-md-4 col-lg-3 align-self-center mb-0 pb-0\">";  
+
+						echo "<label class=\"print\" for=\"state\">Order ID:</label>";
+						echo "<textarea readonly class=\"form-control noresize print\" rows=\"1\" id=\"state\">";
+						echo $row['oid'];
+						echo "</textarea>";
+					
+
+
+
+						echo "<label class=\"d-print-none\" for=\"OID\">For Order Number ".$row['oid']."</label><br/>";				
 						echo "<input class=\"d-print-none\" type=\"hidden\" value=\"".$row['oid']."\" id=\"OID\">";  
-						echo "<label class=\"print\">Required: ".substr($dateRequired,0,10)."</label>";				
+						//echo "<label class=\"print\">Required: ".substr($dateRequired,0,10)."</label>";				
 						echo "<button data-toggle=\"modal\" onClick=\"setMinDate();hideSubmit();\" data-target=\"#orderOptions\" class=\"btn btn-primary text-nowrap px-2 py-2 mx-0  mt-0 d-print-none\" data-toggle=\"modal\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles( ".$_GET["OID"].");\">Options<span class=\"ui-icon ui-icon-gear\"></span></button>&nbsp;";
 						echo "<button class=\"btn btn-primary text-nowrap px-2 py-2 mx-0 mt-0 d-print-none\" data-toggle=\"modal\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles( ".$_GET["OID"].");\">Files<span class=\"ui-icon ui-icon-disk\"></span></button>&nbsp;";
 					
@@ -1203,7 +1212,7 @@ function orderValidation(){
 					
 					echo "</div>";
 					
-					echo "<div class=\"col-sm-2 col-md-2 col-lg-2\">";
+					echo "<div class=\"col-sm-6 col-md-4 col-lg-2\">";
 						echo "<label for=\"state\">Order Status:</label>";
 						echo "<textarea readonly class=\"form-control noresize\" rows=\"1\" id=\"state\">";
 						echo $row['status'];
@@ -1211,7 +1220,7 @@ function orderValidation(){
 					echo "</div>";
 					
 					
-					echo "<div class=\"col-sm-3 col-md-3 col-lg-3\">";
+					echo "<div class=\"col-sm-12 col-md-4 col-lg-3\">";
 						echo "<label for=\"tagName\">Tag Name:</label>";
 						echo "<textarea onchange=\"saveOrder('tagName');\" rows=\"1\" class=\"form-control noresize\"  id=\"tagName\">";
 						echo $row['tagName'];
@@ -1219,7 +1228,7 @@ function orderValidation(){
 					echo "</div>";
 					
 					
-					echo "<div class=\"col-sm-2 col-md-2 col-lg-2\">";
+					echo "<div class=\"col-sm-6 col-md-4 col-lg-2\">";
 						echo "<label for=\"PO\">P.O:</label>";
 						echo "<textarea onchange=\"saveOrder('PO');\" rows=\"1\" class=\"form-control rounded-0 noresize\" id=\"PO\">";
 						echo $row['po'];
@@ -1238,7 +1247,7 @@ function orderValidation(){
 			opendb("select * from settings");
 			if($GLOBALS['$result']->num_rows > 0){
 				foreach ($GLOBALS['$result'] as $row){
-					echo "<div class=\"col-sm-1 col-md-2 col-lg-2\">";
+					echo "<div class=\"col-sm-6 col-md-4 col-lg-2\">";
 					echo "<label for=\"state\">Lead Time:</label>";
 					echo "<textarea title=\"Some factors may increase your lead time. We will inform you as soon as possible once your quote is submitted.\" rows=\"1\" readonly class=\"form-control noresize\" id=\"currentLeadtime\">";
 					echo substr($row['currentLeadtime'],0,10);
@@ -1246,6 +1255,13 @@ function orderValidation(){
 					echo "</div>";
 				}
 			}
+
+			echo "<div class=\"col-sm-6 col-md-4 col-lg-2 print\">";
+				echo "<label for=\"state\">Required date:</label>";
+				echo "<textarea readonly class=\"form-control noresize\" rows=\"1\">";
+				echo substr($dateRequired,0,10);
+				echo "</textarea>";
+			echo "</div>";
 			
 			if($_SESSION["userType"] == 3 && $state <> "1"){
 				echo "</div>";
@@ -1257,18 +1273,44 @@ function orderValidation(){
 			}
 			?>
 		</div>
-		<div class="row print">
+		<div class="row mt-2">
 			<?php
-			$sqlSh = "select coalesce((select concat(mu.firstName,' ',mu.lastName) from mosUser mu where mu.id = mo.submittedBy),'No name')whoSubmit,(select a.busDBA from account a where a.id = mo.account)busName,shipAddress,(select concat(coalesce(unit,' '),' ',street,' ',city,' ',province,' ',country,' ',postalCode)  from accountAddress aA where aA.id =mo.shipAddress) shipTo from mosOrder mo where oid = ".$_GET["OID"];
-			$result = opendb($sqlSh);
+			//$sqlSh = "select invoiceTo, coalesce((select concat(mu.firstName,' ',mu.lastName) from mosUser mu where mu.id = mo.submittedBy),'No name')whoSubmit,(select a.busDBA from account a where a.id = mo.account)busName,shipAddress,(select concat(coalesce(unit,' '),' ',street,' ',city,' ',province,' ',country,' ',postalCode)  from accountAddress aA where aA.id =mo.shipAddress) shipTo from mosOrder mo where oid = ".$_GET["OID"];
+			$sqlSh= "select coalesce(invoiceTo,'N/A')invoiceTo,(select concat(coalesce(unit,' '),' ',street,' ',city,' ',province,' ',country,' ',postalCode)  from accountAddress aA where aA.id =mo.shipAddress) shipTo, coalesce((select concat(mu.firstName,' ',mu.lastName) from mosUser mu where mu.id = mo.submittedBy),'No name')whoSubmit, (select a.busDBA from account a where a.id = mo.account)busName,isPriority, isWarranty,shipAddress, CLid from mosOrder mo, mosUser mu, account a, cabinetLine cl where mo.mosUser = mu.id and mo.account = a.id and mo.CLid = cl.id and mo.oid = '" . $_GET["OID"] . "'";
+			$result = opendb($sqlSh);			
 			$row = $result->fetch_assoc();
-			echo "<label>Submitted by: " .$row['whoSubmit']."</label><br>";
-			echo "<label>Customer: " .$row['busName']."</label><br>";
-			if(strlen($row['shipAddress'])>0){
-				echo "<label>Ship to: " .$row['shipTo']."</label>";
-			}else{
-				echo "<label>No shipping address selected</label>";
+			$orderTypeDesc="Dealer";
+			if($row['CLid']==3){
+				$orderTypeDesc = "Span Medical";
 			}
+			if($row['CLid']==2){
+				$orderTypeDesc = "Builder";
+			}
+			if($row['isPriority']==1){
+				$orderTypeDesc = "Service";
+			}
+			if($row['isWarranty']==1){
+				$orderTypeDesc = "Service w/warranty";
+			}
+			echo "<div class=\"col-md-4 print\">";
+				echo "Submitted by: " .$row['whoSubmit']."<br>";
+				echo "Customer: " .$row['busName']."<br>";
+			echo "</div>";
+			echo "<div class=\"col-md-4 print\">";
+				echo "Order Type: " .$orderTypeDesc."<br>";
+				echo "Invoice To: " .$row['invoiceTo']."<br>";	
+			echo "</div>";	
+			echo "<div class=\"col-md-4 print\">";
+				if(strlen($row['shipAddress'])>0){
+					if($row["shipAddress"]==1){
+						echo "Ship to: Pick up at Mobel<br>";
+					}else{
+						echo "Ship to: " .$row['shipTo']."<br>";
+					}					
+				}else{
+					echo "No shipping address selected<br>";
+				}
+			echo "</div>";			
 			?>
 		</div>
 	</div>

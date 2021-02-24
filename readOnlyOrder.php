@@ -11,14 +11,14 @@ echo "<style>
 	}
 	</style>";
 //$_POST['oid'] = 179;
-$sql = "select * ,(select concat(coalesce(unit,' '),' ',street,' ',city,' ',province,' ',country,' ',postalCode)  from accountAddress aA where aA.id =mo.shipAddress) shipTo, coalesce((select concat(mu.firstName,' ',mu.lastName) from mosUser mu where mu.id = mo.submittedBy),'No name')whoSubmit, (select a.busDBA from account a where a.id = mo.account)busName,isPriority, isWarranty, CLid from mosOrder mo, mosUser mu, account a, cabinetLine cl where mo.mosUser = mu.id and mo.account = a.id and mo.CLid = cl.id and mo.oid = '" . $_POST['oid'] . "'";
+$sql = "select *,coalesce(invoiceTo,'N/A')invoiceTo ,(select concat(coalesce(unit,' '),' ',street,' ',city,' ',province,' ',country,' ',postalCode)  from accountAddress aA where aA.id =mo.shipAddress) shipTo, coalesce((select concat(mu.firstName,' ',mu.lastName) from mosUser mu where mu.id = mo.submittedBy),'No name')whoSubmit, (select a.busDBA from account a where a.id = mo.account)busName,isPriority, isWarranty, CLid from mosOrder mo, mosUser mu, account a, cabinetLine cl where mo.mosUser = mu.id and mo.account = a.id and mo.CLid = cl.id and mo.oid = '" . $_POST['oid'] . "'";
 $result = opendb($sql);
 $row = $result->fetch_assoc();
 $accountName = $row['busDBA'];
 $mailOID = $row['oid'];
 $CLfactor = $row['factor'];
 $orderType="";
-$orderTypeDesc="";
+$orderTypeDesc="Dealer";
 if($row['CLid']==3){
 	$orderType="table-primary";
 	$orderTypeDesc = "Span Medical";
@@ -39,33 +39,41 @@ $msg = "
 <body>
 	<div class=\"bg-white container-fluid\">
 		<div class=\"row\">
-			<div class=\"print col-3 d-flex align-items-center justify-content-center my-auto\">
-				<img id=\"logo\" alt=\"logo\" src=\"https://mobel.ca/wp-content/uploads/2019/01/Logo.png\"/>
-				<div class=\"d-flex justify-content-center mt-3\"><h3>Order ID: <b>".$mailOID."</b></h3></div>
+			<div class=\"col-3\">
+				<div class=\"row\">
+					<div class=\"col-sm-10 mx-3\">
+						<img id=\"logo\" alt=\"logo\" src=\"https://mobel.ca/wp-content/uploads/2019/01/Logo.png\"/>
+					</div>
+				</div>
+				<div class=\"row\">
+					<div class=\"col-sm-10 mx-3\">
+						<h3>Order ID: <b>".$mailOID."</b></h3>
+					</div>
+				</div>
 			</div>
 			<div class=\"col-9\">
 				<table class=\"table table-sm my-auto mx-5\">
 					<tr>
-						<td class=\"border-0 d-print-none\"><h4>Order ID:</h4></td>
-						<td class=\"border-0 d-print-none\"><h3><b>".$mailOID."</b></h3></td>
 						<td class=\"border-0\"><b>Customer:</b></td>
-						<td class=\"border-0\">". $row['busName']."</td>";
-						if($orderTypeDesc){
-							$msg .= "<td class=\"border-0\"><b>Order Type:</b></td>
-									<td class=\"border-0\">". $orderTypeDesc ."</td>";
-						}
-			$msg .= "</tr>
-					<tr>
+						<td class=\"border-0\">". $row['busName']."</td>
 						<td class=\"border-0\"><b>Submitted by:</b></td>
-						<td class=\"border-0\">". $row['whoSubmit'] ."</td>
-						<td class=\"border-0\"><b>Date Submitted:</b></td>
-						<td class=\"border-0\">". substr($row['dateSubmitted'],0,10) ."</td>
+						<td class=\"border-0\">". $row['whoSubmit'] ."</td>						
 					</tr>
 					<tr>
-						<td class=\"border-0\"><b>Ship to:</b></td>
-						<td class=\"border-0\">". $row['shipTo'] ."</td>
+						<td class=\"border-0\"><b>Order Type:</b></td>
+						<td class=\"border-0\">". $orderTypeDesc ."</td>
+						<td class=\"border-0\"><b>Invoice to:</b></td>
+						<td class=\"border-0\">". $row['invoiceTo'] ."</td>
+					</tr>
+					<tr>
+						<td class=\"border-0\"><b>Date Submitted:</b></td>
+						<td class=\"border-0\">". substr($row['dateSubmitted'],0,10) ."</td>
 						<td class=\"border-0\"><b>Tag Name / PO</b></td>
 						<td class=\"border-0\">".$row['tagName']." - ". $row['po'] ."</td>
+					</tr>
+					<tr>						
+						<td class=\"border-0\"><b>Ship to:</b></td>
+						<td colspan=\"5\" class=\"border-0\">". $row['shipTo'] ."</td>
 					</tr>
 				</table>
 			</div>
