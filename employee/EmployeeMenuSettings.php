@@ -398,20 +398,20 @@ if($_POST['mode']=="loadSchWeek"){
 				echo "<td class=\"mat align-middle $updated\">".$row['material']."</td>";					
 				echo "<td class=\"drs align-middle $updated\">".$row['doorStyle']."</td>";					
 				echo "<td class=\"fns align-middle $updated\">".$row['finish']."</td>";	
-				echo "<td><div id=\"uptRoom".$row['rid']."\" class=\"custom-control custom-checkbox\"><input ".$completed." onchange=\"completeRoom(".$row['rid'].")\" type=\"checkbox\" class=\"custom-control-input\" id=\"chkDone".$row['rid']."\"><label class=\"custom-control-label\" for=\"chkDone".$row['rid']."\"></label></div></td></tr>";				
+				echo "<td class=\"align-middle\"><div id=\"uptRoom".$row['rid']."\" class=\"custom-control custom-checkbox\"><input ".$completed." onchange=\"completeRoom(".$row['rid'].")\" type=\"checkbox\" class=\"custom-control-input\" id=\"chkDone".$row['rid']."\"><label class=\"custom-control-label\" for=\"chkDone".$row['rid']."\"></label></div></td></tr>";				
 			}else if(strcmp($day,$row['myDate'])==0 && strcmp($oid, $row['oid'])!=0){
 				$oid = $row['oid'];
 				echo "<th id=\"".$row['oid']."\" class=\"align-middle $updated\" rowspan=\"".$row['rooms']."\" scope=\"rowgroup\"><p>".$row['oid']."</p></br><small><b>".$row['account']."</b></small></th>";//Order id header
 				echo "<th class=\"tag align-middle $updated\" rowspan=\"".$row['rooms']."\">".$row['tagName']." - ". $row['po'] ."</th>";
 				echo "<th class=\"sht align-middle $updated\" rowspan=\"".$row['rooms']."\">&nbsp".$row['shipTo']."</th>";
-				echo "<td class=\"rmnm $updated\" scope=\"row\">".$row['roomName']."</td>";//header row room
-				echo "<td class=\"box $updated\">".$row['cc']."</td>";
-				echo "<td class=\"frt $updated\">".$row['fronts']."</td>";
-				echo "<td class=\"itm $updated\">".$row['pieces']."</td>";		
-				echo "<td class=\"mat $updated\">".$row['material']."</td>";					
-				echo "<td class=\"drs $updated\">".$row['doorStyle']."</td>";
-				echo "<td class=\"fns $updated\">".$row['finish']."</td>";	
-				echo "<td><div id=\"uptRoom".$row['rid']."\" class=\"custom-control custom-checkbox\"><input ".$completed." onchange=\"completeRoom(".$row['rid'].")\" type=\"checkbox\" class=\"custom-control-input\" id=\"chkDone".$row['rid']."\"><label class=\"custom-control-label\" for=\"chkDone".$row['rid']."\"></label></div></td></tr>";
+				echo "<td class=\"rmnm align-middle $updated\" scope=\"row\">".$row['roomName']."</td>";//header row room
+				echo "<td class=\"box align-middle $updated\">".$row['cc']."</td>";
+				echo "<td class=\"frt align-middle $updated\">".$row['fronts']."</td>";
+				echo "<td class=\"itm align-middle $updated\">".$row['pieces']."</td>";		
+				echo "<td class=\"mat align-middle $updated\">".$row['material']."</td>";					
+				echo "<td class=\"drs align-middle $updated\">".$row['doorStyle']."</td>";
+				echo "<td class=\"fns align-middle $updated\">".$row['finish']."</td>";	
+				echo "<td class=\"align-middle\"><div id=\"uptRoom".$row['rid']."\" class=\"custom-control custom-checkbox\"><input ".$completed." onchange=\"completeRoom(".$row['rid'].")\" type=\"checkbox\" class=\"custom-control-input\" id=\"chkDone".$row['rid']."\"><label class=\"custom-control-label\" for=\"chkDone".$row['rid']."\"></label></div></td></tr>";
 			}else{
 				$day = $row['myDate'];//new day
 				$oid = $row['oid'];//new order
@@ -427,7 +427,7 @@ if($_POST['mode']=="loadSchWeek"){
 				echo "<td class=\"mat align-middle $updated\">".$row['material']."</td>";					
 				echo "<td class=\"drs align-middle $updated\">".$row['doorStyle']."</td>";
 				echo "<td class=\"fns align-middle $updated\">".$row['finish']."</td>";					
-				echo "<td><div id=\"uptRoom".$row['rid']."\" class=\"custom-control custom-checkbox\"><input ".$completed." onchange=\"completeRoom(".$row['rid'].")\" type=\"checkbox\" class=\"custom-control-input\" id=\"chkDone".$row['rid']."\"><label class=\"custom-control-label\" for=\"chkDone".$row['rid']."\"></label></div></td></tr>";
+				echo "<td class=\"align-middle\"><div id=\"uptRoom".$row['rid']."\" class=\"custom-control custom-checkbox\"><input ".$completed." onchange=\"completeRoom(".$row['rid'].")\" type=\"checkbox\" class=\"custom-control-input\" id=\"chkDone".$row['rid']."\"><label class=\"custom-control-label\" for=\"chkDone".$row['rid']."\"></label></div></td></tr>";
 			}	
 		}
 	}else{
