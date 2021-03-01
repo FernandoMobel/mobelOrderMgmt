@@ -1,3 +1,8 @@
+<style type="text/css">
+	#tbSchedule th{font-weight: 900;}
+	#tbSchedule th p{margin-bottom: .1rem; font-size: 18px;}
+	#tbSchedule td{font-weight: 450;}
+</style>
 <script>
 var currentDate = getMondayCurWeek();
 <?php
@@ -44,15 +49,15 @@ function loadSchWeek(date, dept){
 		// code block
 	}
 
-	console.log('Date:'+localStorage.getItem('date')+' dateType:'+dateType+' Department:'+department+' Filter:'+localStorage.getItem('onlyReady')+' see complete: '+localStorage.getItem('displayComp'));
-	myData = { mode: "loadSchWeek", date: date/*localStorage.getItem('date')*/, dateType: dateType, mydid:department, filter:localStorage.getItem('onlyReady'), displayComp:localStorage.getItem('displayComp')};
+	console.log('Date:'+localStorage.getItem('date')+' dateType:'+dateType+' Department:'+department+' onlyReady:'+localStorage.getItem('onlyReady')+' hideComplete:'+localStorage.getItem('displayComp')+' hideSpan:'+localStorage.getItem('hideSpan')+' onlySpan:'+localStorage.getItem('onlySpan'));
+	myData = { mode: "loadSchWeek", date: date/*localStorage.getItem('date')*/, dateType: dateType, mydid:department, filter:localStorage.getItem('onlyReady'), displayComp:localStorage.getItem('displayComp'), hideSpan:localStorage.getItem('hideSpan'), onlySpan:localStorage.getItem('onlySpan')};
 	
 	$.ajax({
 			url: 'EmployeeMenuSettings.php',
 			type: 'POST',
 			data: myData})
 	  .done(function(data, status, jqXHR) {
-			//console.log(jqXHR['responseText']);
+			console.log(jqXHR['responseText']);
 			$('#scheduleWeek').empty();
 			$('#scheduleWeek').append(data);
 			if(date==0){
@@ -202,16 +207,37 @@ function loadFilters(){
 		$("#columns").val(cols);
 	}
 	
-	//this is for checkbox for only display completed jobs
+	//Checkbox - Hide jobs not ready
 	if(localStorage.getItem('onlyReady')=='true'){
 		$('#displayCmpt').prop('checked',true);
 	}else{
 		$('#displayCmpt').prop('checked',false);
 	}
+	
+	//Checkbox - Hide jobs completed
+	if(localStorage.getItem('displayComp')=='true'){
+		$('#hideMyCmpt').prop('checked',true);
+	}else{
+		$('#hideMyCmpt').prop('checked',false);
+	}
+
+	//Checkbox - Hide Span jobs
+	if(localStorage.getItem('hideSpan')=='true'){
+		$('#hideSpan').prop('checked',true);
+	}else{
+		$('#hideSpan').prop('checked',false);
+	}
+
+	//Checkbox - Only Span jobs
+	if(localStorage.getItem('onlySpan')=='true'){
+		$('#onlySpan').prop('checked',true);
+	}else{
+		$('#onlySpan').prop('checked',false);
+	}
 }
 
 function onlyCompleted(){
-	if($(displayCmpt).prop('checked')){
+	if($('#displayCmpt').prop('checked')){
 		localStorage.setItem('onlyReady',true);		
 	}else{
 		localStorage.setItem('onlyReady',false);
@@ -220,10 +246,32 @@ function onlyCompleted(){
 }
 
 function hideMyCompleted(){
-	if($(hideMyCmpt).prop('checked')){
+	if($('#hideMyCmpt').prop('checked')){
 		localStorage.setItem('displayComp',true);		
 	}else{
 		localStorage.setItem('displayComp',false);
+	}
+	loadSchWeek(localStorage.getItem('date'));
+}
+
+function hideSpan(){
+	if($('#hideSpan').prop('checked')){
+		$('#onlySpan').prop('checked',false);
+		localStorage.setItem('onlySpan',false);
+		localStorage.setItem('hideSpan',true);		
+	}else{
+		localStorage.setItem('hideSpan',false);
+	}
+	loadSchWeek(localStorage.getItem('date'));
+}
+
+function onlySpan(){
+	if($('#onlySpan').prop('checked')){
+		$('#hideSpan').prop('checked',false);
+		localStorage.setItem('hideSpan',false);
+		localStorage.setItem('onlySpan',true);		
+	}else{
+		localStorage.setItem('onlySpan',false);
 	}
 	loadSchWeek(localStorage.getItem('date'));
 }
@@ -309,7 +357,7 @@ function getWithExpiry(key) {
 			<h5 id="fromDatePrint"></h5>
 		</div>
 		<div class="row d-print-none">
-			<div class="d-flex justify-content-start col-sm-6 col-lg-4 mx-auto">
+			<div class="d-flex justify-content-start col-sm-4 col-md-6 col-lg-2">
 				<div class="p-2">
 					<select id="columns" multiple="multiple">
 						<option selected value="tag" id="chkTAG">TAG NAME - PO</option>
@@ -324,37 +372,48 @@ function getWithExpiry(key) {
 					</select>
 				</div>
 			</div>
-			<div class="d-flex justify-content-end col-sm-6 col-lg-2">
-				<div class="col custom-control custom-checkbox p-2 mx-auto">
-					<input onchange="onlyCompleted();" type="checkbox" class="custom-control-input" id="displayCmpt">
-					<label class="custom-control-label mx-auto" for="displayCmpt">Hide jobs not ready on previous station</label>
+			<div class="d-flex justify-content-end col-sm-5 col-md-6 col-lg-3">
+				<div class="col custom-control custom-checkbox p-2 mx-2">
+					<div>
+						<input onchange="onlyCompleted();" type="checkbox" class="custom-control-input" id="displayCmpt">
+						<label class="custom-control-label" for="displayCmpt">Hide jobs not done on previous station</label>				
+					</div>
+					<div>
+						<input onchange="hideMyCompleted();" type="checkbox" class="custom-control-input" id="hideMyCmpt">
+						<label class="custom-control-label" for="hideMyCmpt">Hide completed</label>				
+					</div>
 				</div>
 			</div>
-				<!--div class="custom-control custom-checkbox p-2">
-					<input onchange="hideMyCompleted();" type="checkbox" class="custom-control-input" id="hideMyCmpt">
-					<label class="custom-control-label" for="hideMyCmpt">See completed</label>
-				</div-->
-			<!--/div>
-			<div class="container-fluid">
-				<div class="d-flex justify-content-between"-->
-			<div class="d-flex col-sm-12 col-lg-6 mx-auto">
-					<div class="d-flex justify-content-start align-middle col-sm-2 mr-auto p-2">
-						<a class="btn-sm" onclick="getNewWeek(false);">
-							<svg width="3em" height="3em" viewBox="0 0 16 16" class="bi bi-arrow-left-square-fill btn-primary" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-							  <path fill-rule="evenodd" d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm9.5 8.5a.5.5 0 0 0 0-1H5.707l2.147-2.146a.5.5 0 1 0-.708-.708l-3 3a.5.5 0 0 0 0 .708l3 3a.5.5 0 0 0 .708-.708L5.707 8.5H11.5z"/>
-							</svg><small class="hidden-mobile">Previous week</small>
-						</a>
+			<div class="d-flex justify-content-end col-sm-3 col-md-6 col-lg-2">
+				<div class="col custom-control custom-checkbox p-2 mx-2">
+					<div>
+						<input onchange="hideSpan();" type="checkbox" class="custom-control-input" id="hideSpan">
+						<label class="custom-control-label" for="hideSpan">Hide Span</label>				
 					</div>
-					<div class="d-flex justify-content-center align-middle col-sm-8 p-2">
-						<h5 id="fromDate" onclick="loadSchWeek(0);" data-toggle="tooltip" data-placement="top" title="Click to see all jobs"></h5>
+					<div>
+						<input onchange="onlySpan();" type="checkbox" class="custom-control-input" id="onlySpan">
+						<label class="custom-control-label" for="onlySpan">Only span</label>				
 					</div>
-					<div class="d-flex justify-content-end align-middle col-sm-2 p-2">
-						<a class="btn-sm" onclick="getNewWeek(true);"><small class="hidden-mobile">Next week</small>
-							<svg width="3em" height="3em" viewBox="0 0 16 16" class="bi bi-arrow-right-square-fill btn-primary" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-							  <path fill-rule="evenodd" d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm2.5 8.5a.5.5 0 0 1 0-1h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5z"/>
-							</svg>
-						</a>
-					</div>
+				</div>
+			</div>
+			<div class="d-flex col-sm-12 col-md-12 col-lg-5 mx-auto">
+				<div class="d-flex justify-content-start align-middle col-sm-2 mr-auto p-2">
+					<a class="btn-sm" onclick="getNewWeek(false);">
+						<svg width="3em" height="3em" viewBox="0 0 16 16" class="bi bi-arrow-left-square-fill btn-primary" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+						  <path fill-rule="evenodd" d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm9.5 8.5a.5.5 0 0 0 0-1H5.707l2.147-2.146a.5.5 0 1 0-.708-.708l-3 3a.5.5 0 0 0 0 .708l3 3a.5.5 0 0 0 .708-.708L5.707 8.5H11.5z"/>
+						</svg><small class="hidden-mobile">Previous week</small>
+					</a>
+				</div>
+				<div class="d-flex justify-content-center align-middle col-sm-8 p-2">
+					<h5 id="fromDate" onclick="loadSchWeek(0);" data-toggle="tooltip" data-placement="top" title="Click to see all jobs"></h5>
+				</div>
+				<div class="d-flex justify-content-end align-middle col-sm-2 p-2">
+					<a class="btn-sm" onclick="getNewWeek(true);"><small class="hidden-mobile">Next week</small>
+						<svg width="3em" height="3em" viewBox="0 0 16 16" class="bi bi-arrow-right-square-fill btn-primary" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+						  <path fill-rule="evenodd" d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm2.5 8.5a.5.5 0 0 1 0-1h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5z"/>
+						</svg>
+					</a>
+				</div>
 			</div>
 		</div>
 		<div class="table-responsive">
@@ -399,7 +458,7 @@ $(document).ready(function () {
 		onChange: function(option, checked) {
 			$("."+$(option).val()).toggle('display');
 			localStorage.setItem($(option).val(), checked);//store cookie for column filter
-			console.log(localStorage);
+			//console.log(localStorage);
 		}
 	});
 });

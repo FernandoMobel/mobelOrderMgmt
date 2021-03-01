@@ -1437,6 +1437,10 @@ function orderValidation(){
                  
 				?>
 				<!--div id="cabLineOp"-->
+					<?php
+					if($CLid==3)
+						echo "<div hidden>";
+					?> 
 					<div class="row">
 						<div class="col-2 text-right">
 							<label for="species">Species</label>
@@ -1547,6 +1551,10 @@ function orderValidation(){
 							</select>
 						</div>
 					</div>
+					<?php
+					if($CLid==3)
+						echo "</div>";
+					?> 
 
 					<div class="row">
 					   <!-- 
@@ -1699,7 +1707,10 @@ function orderValidation(){
 							</select>
 						</div>
 					</div>
-                	
+					<?php
+					if($CLid==3)
+						echo "<div hidden>";
+					?>            	
 					<div class="row">
 						<div class="col-2 text-right">
 							<label for="drawerBox">Drawer Box</label>
@@ -2128,6 +2139,10 @@ function orderValidation(){
 							?>
 							</select>
 						</div>
+						<?php
+						if($CLid==3)
+							echo "</div>";
+						?> 
 
 					</div>
 
