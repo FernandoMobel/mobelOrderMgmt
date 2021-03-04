@@ -186,7 +186,7 @@ function loadItems(rid){
 			type: 'POST',
 			data: myData,
 			success: function(data, status, jqXHR) {
-				//getting all the current options
+				//getting all the current header options
 				var arr = $('.container.tab-pane.float-left.col-12.header.active select').map(function(){
 					  return this.value
 				}).get();

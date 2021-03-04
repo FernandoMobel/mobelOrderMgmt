@@ -11,78 +11,108 @@ function btnReset(){
 	$('#selItems').multiselect('refresh');
 }
 
-function selectCat(val){
-	$('#selItems').empty();
-	$('#selItems').multiselect('destroy');
-	if(val){
-		myData = { mode: "getItemsCat", cat: val};
-		$.post("EmployeeMenuSettings.php",
-				myData, 
-			       function(data, status, jqXHR) {
-	            		var items = JSON.parse(jqXHR['responseText']);            		
-	            		items.forEach(item => {
-	            			$('#selItems').append(new Option(item["name"], item["id"]));            			
-						});
-						$('#selItems').multiselect({
-							templates: {
-								resetButton: '<div onClick="btnReset();" class="multiselect-reset text-center p-2"><a class="btn btn-sm btn-block btn-outline-primary">Reset Selection</a></div>'
-							},
-				        	allSelectedText: 'All items selected',
-				        	includeSelectAllOption: true,
-				            enableFiltering: true,
-				            enableCaseInsensitiveFiltering: true,
-				            includeResetOption: true,
-				            includeResetDivider: true,
-				            maxHeight: 600,
-				            buttonWidth: '350px',
-				            selectAllNumber: true,
-				            onChange: function(options, checked) {
-				            	if($('#selItems :selected').length>0){
-				            		$('#divSelection').show();
-				            		if(checked){
-					            		myData = { mode: "getItemRow", item: $(options).attr('value')};
+function selectCat(app,val){
+	var postMode;
+	switch(app){
+		case 'cv':
+			postMode = 'getCVcodes';
+			//$('#cvCode').val(val);
+			if(val){
+				$('#cvCode').prop('disabled',false);
+				$.ajax({
+			          	url: "EmployeeMenuSettings.php",
+			          	dataType: "json",
+			          	type: 'POST',
+			          	data: {mode: postMode, cat:val},
+			          	success: function( data ) {
+			          		console.log(data);
+			          		$( "#cvCode" ).autocomplete({
+						    	source: data
+						    });
+			          	}
+		        	});
+			}else{
+				$('#cvCode').prop('disabled',true);
+			}
+		break;
+		case 'mos':
+			postMode = 'getItemsCat';
+			$('#selItems').empty();
+			$('#selItems').multiselect('destroy');
+
+			if(val){
+				myData = { mode: postMode, cat: val};
+				$.post("EmployeeMenuSettings.php",
+						myData, 
+					       function(data, status, jqXHR) {
+			            		var items = JSON.parse(jqXHR['responseText']);            		
+			            		items.forEach(item => {
+			            			$('#selItems').append(new Option(item["name"], item["id"]));            			
+								});
+								$('#selItems').multiselect({
+									templates: {
+										resetButton: '<div onClick="btnReset();" class="multiselect-reset text-center p-2"><a class="btn btn-sm btn-block btn-outline-primary">Reset Selection</a></div>'
+									},
+						        	allSelectedText: 'All items selected',
+						        	includeSelectAllOption: true,
+						            enableFiltering: true,
+						            enableCaseInsensitiveFiltering: true,
+						            includeResetOption: true,
+						            includeResetDivider: true,
+						            maxHeight: 600,
+						            buttonWidth: '350px',
+						            selectAllNumber: true,
+						            onChange: function(options, checked) {
+						            	if($('#selItems :selected').length>0){
+						            		$('#divSelection').show();
+						            		if(checked){
+							            		myData = { mode: "getItemRow", item: $(options).attr('value')};
+												$.post("EmployeeMenuSettings.php",
+													myData, 
+												       	function(data, status, jqXHR) {
+													       	var item = JSON.parse(jqXHR['responseText']);
+													       	var html = '<tr id="'+item[0].id+'"><td class="font-weight-bold">'+item[0].name+'</td><td>'+item[0].description+'</td><td>'+item[0].W+'</td><td>'+item[0].H+'</td><td>'+item[0].D+'</td><td>'+item[0].cvCode+'</td><td>'+item[0].cvLCode+'</td><td>'+item[0].cvRCode+'</td></tr>';
+													       	$('#tbItems').append(html);
+														});
+											}else{
+												$('#'+$(options).attr('value')).remove();
+						            		}
+						            	}else{
+						            		$('#divSelection').hide();
+						            		$('#tbItems').empty();
+						            	}
+						            },
+						            onSelectAll: function() {
+						            	var items = [];
+						            	$('#selItems :selected').each(function(){
+											//remove existing rows
+											$('#'+$(this).val()).remove();
+											//add item to array
+											items.push($(this).val());
+										});
+										myData = { mode: "getMultipleItemsRows", items: items};
 										$.post("EmployeeMenuSettings.php",
 											myData, 
 										       	function(data, status, jqXHR) {
-											       	var item = JSON.parse(jqXHR['responseText']);
-											       	var html = '<tr id="'+item[0].id+'"><td class="font-weight-bold">'+item[0].name+'</td><td>'+item[0].description+'</td><td>'+item[0].W+'</td><td>'+item[0].H+'</td><td>'+item[0].D+'</td><td>'+item[0].cvCode+'</td><td>'+item[0].cvLCode+'</td><td>'+item[0].cvRCode+'</td></tr>';
-											       	$('#tbItems').append(html);
+										       		var items = JSON.parse(jqXHR['responseText']);
+											       	items.forEach(item=>{
+											       		var html = '<tr id="'+item.id+'"><td class="font-weight-bold">'+item.name+'</td><td>'+item.description+'</td><td>'+item.W+'</td><td>'+item.H+'</td><td>'+item.D+'</td><td>'+item.cvCode+'</td><td>'+item.cvLCode+'</td><td>'+item.cvRCode+'</td></tr>';
+											       		$('#tbItems').append(html);	
+											       	})											       	
 												});
-									}else{
-										$('#'+$(options).attr('value')).remove();
-				            		}
-				            	}else{
-				            		$('#divSelection').hide();
-				            		$('#tbItems').empty();
-				            	}
-				            },
-				            onSelectAll: function() {
-				            	var items = [];
-				            	$('#selItems :selected').each(function(){
-									//remove existing rows
-									$('#'+$(this).val()).remove();
-									//add item to array
-									items.push($(this).val());
-								});
-								myData = { mode: "getMultipleItemsRows", items: items};
-								$.post("EmployeeMenuSettings.php",
-									myData, 
-								       	function(data, status, jqXHR) {
-								       		var items = JSON.parse(jqXHR['responseText']);
-									       	items.forEach(item=>{
-									       		var html = '<tr id="'+item.id+'"><td class="font-weight-bold">'+item.name+'</td><td>'+item.description+'</td><td>'+item.W+'</td><td>'+item.H+'</td><td>'+item.D+'</td><td>'+item.cvCode+'</td><td>'+item.cvLCode+'</td><td>'+item.cvRCode+'</td></tr>';
-									       		$('#tbItems').append(html);	
-									       	})											       	
-										});
-								$('#divSelection').show();								
-				            }
-				        });
-				        
-				        $('#selItems').multiselect('enable');
-					});
-	}else{
-    	$('#selItems').multiselect('disable');
-    }
+										$('#divSelection').show();								
+						            }
+						        });
+						        
+						        $('#selItems').multiselect('enable');
+							});
+			}else{
+		    	$('#selItems').multiselect('disable');
+		    }
+		break;
+	}
+	
+	
 }
 
 function unselectAll(){
@@ -109,13 +139,52 @@ function linkCVtoMOS(){
 	var items =$('#tbItems tr').map(function(){
 		return parseInt(this.id);
 	}).get();
-	myData = { mode: "linkItems", cv: $('#cvCode').val(), items: items, door: $('#selDoor').val()};
+	myData = { mode: "linkItems", cv: $('#cvCode').val().trim(), items: items, door: $('#selDoor').val()};
 	$.post("EmployeeMenuSettings.php",
 	myData, 
        	function(data, status, jqXHR) {
-       		console.log(jqXHR['responseText']);								       	
+       		console.log(jqXHR['responseText']);
+       		console.log($('#selItems :selected'));
+       		$('#tbItems').empty();
+       		myData = { mode: "getItemRow", item: $('#selItems :selected').attr('value')};
+			$.post("EmployeeMenuSettings.php",
+				myData, 
+			       	function(data, status, jqXHR) {
+				       	var item = JSON.parse(jqXHR['responseText']);
+				       	var html = '<tr id="'+item[0].id+'"><td class="font-weight-bold">'+item[0].name+'</td><td>'+item[0].description+'</td><td>'+item[0].W+'</td><td>'+item[0].H+'</td><td>'+item[0].D+'</td><td>'+item[0].cvCode+'</td><td>'+item[0].cvLCode+'</td><td>'+item[0].cvRCode+'</td></tr>';
+				       	$('#tbItems').append(html);
+					});
 		});
 }
+
+/*$(function() {
+		    $("#cvCode" ).autocomplete({
+		      	source: jsonCVitems/*function( request, response ) {
+		        	$.ajax({
+			          	url: "EmployeeMenuSettings.php",
+			          	dataType: "json",
+			          	type: 'POST',
+			          	data: {mode: "getCVcodes", cat:$("#cvCode").val()},
+			          	success: function( data ) {
+				          	console.log(data);
+			        	    response(data);
+			          	}
+		        	});
+		      	},
+		      	minLength: 2,
+		      select: function( event, ui ) {
+		        log( ui.item ?
+		          "Selected: " + ui.item.label :
+		          "Nothing selected, input was " + this.value);
+		      },
+		      open: function() {
+		        $( this ).removeClass( "ui-corner-all" ).addClass( "ui-corner-top" );
+		      },
+		      close: function() {
+		        $( this ).removeClass( "ui-corner-top" ).addClass( "ui-corner-all" );
+		      }
+		    })
+		});*/
 </script>
 <div class="container-fluid px-0">
 	<div class="card card-signin py-1">
@@ -132,8 +201,22 @@ function linkCVtoMOS(){
 									<div class="input-group-prepend">
 										<span class="input-group-text">Category</span>
 									</div>
-									<select id="selCVcat" class="custom-select" multiple>										
-										<optgroup label="Wall Cabinets">
+									<select id="selCVcat" onChange="selectCat('cv',this.value);" class="custom-select">
+									<?php 
+									$flag = true;
+									$sql = "select distinct category, catDescription from cvItem";
+									$result = opendb($sql);							
+									while ($row = $result->fetch_assoc()){
+										if($flag){
+											echo "<option value=\"\">Please choose an option</option>";
+											echo "<option value=\"".htmlspecialchars($row['category'])."\">".htmlspecialchars($row['category'])." - ".htmlspecialchars($row['catDescription'])."</option>";
+											$flag =false;
+										}else{
+											echo "<option value=\"".htmlspecialchars($row['category'])."\">".htmlspecialchars($row['category'])." - ".htmlspecialchars($row['catDescription'])."</option>";
+										}
+									}
+									?>										
+										<!--optgroup label="Wall Cabinets">
 											<option value="W">W - Wall Cabinets</option>
 											<option value="WDR1">WDR1 - Wall 6&#8220 High Drawer</option>
 											<option value="WDR2">WDR2 - Wall Two 6&#8220 High Drawers</option>
@@ -175,9 +258,9 @@ function linkCVtoMOS(){
 										<optgroup label="Wall Decorative Shelves">
 											<option value="WDSE">WDSE -(E) Wall Decorative Shelf</option>
 											<option value="WDSF">WDSF -(F) Wall Decorative Shelf</option>
-										</optgroup>
+										</optgroup-->
 										<!-- --------------------------------------------------------------------->
-										<optgroup label="Base Cabinets">
+										<!--optgroup label="Base Cabinets">
 											<option value="FDB">FDB - Full Height Door</option>
 											<option value="B">B - Base w/1 Top Drawer</option>
 											<option value="BS">BS - Base w/ Split Drawer</option>
@@ -221,9 +304,9 @@ function linkCVtoMOS(){
 											<option value="BWRL">BWRL - Base 24" Wine Rack Lattice</option>
 											<option value="FDBWRL">FDBWRL - Full Door Base 15" Wine Rack Lattice</option>
 											<option value="DBWRL">DBWRL- Drawer Base 18" Wine Rack Lattice</option>
-										</optgroup>
+										</optgroup-->
 										<!-- --------------------------------------------------------------------->										
-										<optgroup label="Vanity Cabinets 31 1/2&#8220 Height">
+										<!--optgroup label="Vanity Cabinets 31 1/2&#8220 Height">
 											<option value="FDV">FDV - Full Door Vanity</option>
 											<option value="FDSV">FDSV - Full Door Sink Vanity</option>
 											<option value="VSB">VSB - Vanity Sink Base</option>
@@ -240,9 +323,9 @@ function linkCVtoMOS(){
 											<option value="VDB(34.5)">VDB(34.5) - Vanity Drawer Base</option>
 											<option value="FDVBDR(34.5)">FDVBDR(34.5) - Full Door Vanity w/Bottom Drawer</option>
 											<option value="VTSP(34.5)">VTSP(34.5) - 46</option>
-										</optgroup>
+										</optgroup-->
 										<!-- --------------------------------------------------------------------->										
-										<optgroup label="Tall Cabinets">
+										<!--optgroup label="Tall Cabinets">
 											<option value="TP">TP - Tall Pantry</option>
 											<option value="TPTDB">TPTDB - Tall Pantry W/ Tall Doors on Bottom</option>
 											<option value="TPOSDR">TPOSDR - Tall Pantry 13 1/2" Open Shelf 6" Drawer</option>
@@ -259,7 +342,7 @@ function linkCVtoMOS(){
 											<option value="SODR3">SODR3 - Single Oven Three Drawer</option>
 											<option value="DODR12">DODR12 - Double Oven 12" Drawer</option>
 											<option value="DOOSDR12">DOOSDR12 - Double Oven 12" Drawer & Open Shelf</option>
-										</optgroup>
+										</optgroup-->
 									</select>
 								</div>
 							</div>
@@ -268,7 +351,7 @@ function linkCVtoMOS(){
 							<div class="form-group">
 								<div class="input-group mb-3">
 									<div class="input-group-prepend">
-										<span class="input-group-text">Item Code</span>
+										<span class="input-group-text">Item</span>
 									</div>
 									<input type="text" id="cvCode" style="text-transform:uppercase">
 								</div>
@@ -301,7 +384,7 @@ function linkCVtoMOS(){
 								  	<div class="input-group-prepend">
 								    	<label class="input-group-text" for="selCate">Category</label>
 								  	</div>
-								  	<select id="selCate" onChange="selectCat(this.value);" class="custom-select">
+								  	<select id="selCate" onChange="selectCat('mos',this.value);" class="custom-select">
 									<?php 
 									$flag = true;
 									$sql = "select distinct(description) cat from item where CLGroup = 4 order by cat";
@@ -361,11 +444,25 @@ function linkCVtoMOS(){
 		</div>
 	</div>
 </div>
+<div class="d-flex justify-content-center align-items-center" style="height: 80vh">
+	<div id="loadingDiv" class="spinner-border" style="width: 4rem; height: 4rem;" role="status">                
+	    <span class="sr-only"></span>
+	</div>            
+</div>            
 <?php
 //include '../includes/foot.php';
 ?>
 <script>
+	$(document)
+	  .ajaxStart(function () {
+	  	$('#loadingDiv').show();
+	  })
+	  .ajaxStop(function () {
+	  	$('#loadingDiv').hide();
+	  });
+
 	$(document).ready(function() {
+		
 		$('#divSelection').hide();
 		$('#selCate').multiselect({
 			buttonWidth: '350px',
@@ -377,22 +474,14 @@ function linkCVtoMOS(){
         $('#selItems').multiselect('disable');
 
         $('#selCVcat').multiselect({
-        	buttonWidth: '350px',
-        	enableCollapsibleOptGroups: true,
-            collapseOptGroupsByDefault: true,
-        	enableFiltering: true,
+			buttonWidth: '350px',
+			enableFiltering: true,
             enableCaseInsensitiveFiltering: true,
             maxHeight: 800,
-            onChange: function(option, checked) {
-                var values = [];
-                $('#selCVcat option').each(function() {
-                    if ($(this).val() !== option.val()) {
-                        values.push($(this).val());
-                    }
-                });
-                $('#selCVcat').multiselect('deselect', values);
-                $('#cvCode').val((option.val()));                
-            }
-        });
+		});
+
+		$('#cvCode').prop('disabled',true);
+
+		$('#loadingDiv').hide();
     });
 </script>

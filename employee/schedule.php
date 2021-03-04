@@ -57,7 +57,7 @@ function loadSchWeek(date, dept){
 			type: 'POST',
 			data: myData})
 	  .done(function(data, status, jqXHR) {
-			console.log(jqXHR['responseText']);
+			//console.log(jqXHR['responseText']);
 			$('#scheduleWeek').empty();
 			$('#scheduleWeek').append(data);
 			if(date==0){

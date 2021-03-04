@@ -604,9 +604,21 @@ if($_POST['mode']=="linkItems"){
 	$sql = "select id from (select id from item ii where ii.id in(".implode(',',$_POST['items']).")) i where not exists(select 1 from itemsLink il where i.id = il.itemId)";
 	$insert = "";
 	$result = opendb($sql);
+	if($GLOBALS['$result']->num_rows > 0){
+		while ($row = $result->fetch_assoc()) {
+			$insert .= "insert into itemsLink(itemId,".$column.") values(".$row['id'].",'".strtoupper($_POST['cv'])."'); ";
+		}	
+		opendbmulti($insert);
+	}
+}
+
+if($_POST['mode']=='getCVcodes'){
+	$item = array();
+	$sql = "select name from cvItem where category ='".$_POST['cat']."'";
+	$result = opendb($sql);
 	while ($row = $result->fetch_assoc()) {
-		$insert .= "insert into itemsLink(itemId,".$column.") values(".$row['id'].",'".strtoupper($_POST['cv'])."'); ";
-	}	
-	opendbmulti($insert);
+		$item[] = $row['name'];
+	}
+	echo json_encode($item);
 }
 ?>

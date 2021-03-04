@@ -82,7 +82,7 @@ input::-webkit-inner-spin-button {
 ?>
 		<div class="container-fluid  d-print-none">
 			<?php
-			if(!in_array($_SESSION["userid"],[34,35])){
+			if(!in_array($_SESSION["userid"],[31,34,35])){
 			?>
 			<ul id="empTabs" class="nav nav-tabs">
 				  <li class="nav-item border rounded-top">

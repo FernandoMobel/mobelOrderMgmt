@@ -1,6 +1,11 @@
 <?php
+//For Clinia
+$filterStates = "";
+if(in_array($_SESSION["userid"],[31])){
+	$filterStates = "where id in (7,8,9)";
+}
 //getting status from DB
-$result = opendb("select id,name from state");
+$result = opendb("select id,name from state ".$filterStates);
 while($row = $result->fetch_assoc()) {
 	$states[] = $row;
 }
@@ -210,7 +215,7 @@ function loadOrders(){
 								data : "oid",
 								render: function(data, type) {
 									order = data;
-									return "<!--a class=\"onlyhover\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" fill=\"currentColor\" class=\"bi bi-file-earmark-arrow-down-fill text-primary\" viewBox=\"0 0 16 16\"><path d=\"M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0zM9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1zm-1 4v3.793l1.146-1.147a.5.5 0 0 1 .708.708l-2 2a.5.5 0 0 1-.708 0l-2-2a.5.5 0 0 1 .708-.708L7.5 11.293V7.5a.5.5 0 0 1 1 0z\"/></svg></a-->&nbsp<a class=\"onlyhover\" href=\"#\" onclick=\"viewOrder("+order+")\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" fill=\"currentColor\" class=\"bi bi-eye text-primary\" viewBox=\"0 0 16 16\"><path d=\"M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z\"/><path d=\"M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z\"/></svg></a>&nbsp<a class=\"onlyhover\" onclick=\"getOrdFiles("+order+");\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" fill=\"currentColor\" class=\"bi bi-folder2-open text-primary\" viewBox=\"0 0 16 16\"><path d=\"M1 3.5A1.5 1.5 0 0 1 2.5 2h2.764c.958 0 1.76.56 2.311 1.184C7.985 3.648 8.48 4 9 4h4.5A1.5 1.5 0 0 1 15 5.5v.64c.57.265.94.876.856 1.546l-.64 5.124A2.5 2.5 0 0 1 12.733 15H3.266a2.5 2.5 0 0 1-2.481-2.19l-.64-5.124A1.5 1.5 0 0 1 1 6.14V3.5zM2 6h12v-.5a.5.5 0 0 0-.5-.5H9c-.964 0-1.71-.629-2.174-1.154C6.374 3.334 5.82 3 5.264 3H2.5a.5.5 0 0 0-.5.5V6zm-.367 1a.5.5 0 0 0-.496.562l.64 5.124A1.5 1.5 0 0 0 3.266 14h9.468a1.5 1.5 0 0 0 1.489-1.314l.64-5.124A.5.5 0 0 0 14.367 7H1.633z\"/></svg></a>&nbsp<a href=\"../Order.php?OID="+order+"\">"+data+"</a>";
+									return "<form class=\"onlyhover\" action=\"download.php\" method=\"post\"><input name=\"oid\" type=\"hidden\" value=\""+order+"\"/><a title=\"Download ORD file\" class=\"onlyhover\" href=\"#\" onclick=\"this.closest('form').submit();return false;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" fill=\"currentColor\" class=\"bi bi-file-earmark-zip text-primary\" viewBox=\"0 0 16 16\"><path d=\"M5 7.5a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v.938l.4 1.599a1 1 0 0 1-.416 1.074l-.93.62a1 1 0 0 1-1.11 0l-.929-.62a1 1 0 0 1-.415-1.074L5 8.438V7.5zm2 0H6v.938a1 1 0 0 1-.03.243l-.4 1.598.93.62.929-.62-.4-1.598A1 1 0 0 1 7 8.438V7.5z\"></path><path d=\"M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5L14 4.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1h-2v1h-1v1h1v1h-1v1h1v1H6V5H5V4h1V3H5V2h1V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5h-2z\"/></svg></a></form>&nbsp<a title=\"View full order\" class=\"onlyhover\" href=\"#\" onclick=\"viewOrder("+order+")\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" fill=\"currentColor\" class=\"bi bi-eye text-primary\" viewBox=\"0 0 16 16\"></path><path d=\"M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z\"></path><path d=\"M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z\"/></svg></a>&nbsp<a title=\"View order files\" class=\"onlyhover\" onclick=\"getOrdFiles("+order+");\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" fill=\"currentColor\" class=\"bi bi-folder2-open text-primary\" viewBox=\"0 0 16 16\"></path><path d=\"M1 3.5A1.5 1.5 0 0 1 2.5 2h2.764c.958 0 1.76.56 2.311 1.184C7.985 3.648 8.48 4 9 4h4.5A1.5 1.5 0 0 1 15 5.5v.64c.57.265.94.876.856 1.546l-.64 5.124A2.5 2.5 0 0 1 12.733 15H3.266a2.5 2.5 0 0 1-2.481-2.19l-.64-5.124A1.5 1.5 0 0 1 1 6.14V3.5zM2 6h12v-.5a.5.5 0 0 0-.5-.5H9c-.964 0-1.71-.629-2.174-1.154C6.374 3.334 5.82 3 5.264 3H2.5a.5.5 0 0 0-.5.5V6zm-.367 1a.5.5 0 0 0-.496.562l.64 5.124A1.5 1.5 0 0 0 3.266 14h9.468a1.5 1.5 0 0 0 1.489-1.314l.64-5.124A.5.5 0 0 0 14.367 7H1.633z\"></path></svg></a>&nbsp<a href=\"../Order.php?OID="+order+"\">"+data+"</a>";
 								}
 							},
 							{
@@ -439,6 +444,13 @@ if($GLOBALS['$result2']-> num_rows >0){
 	opendb2("select m.*,DATE(m.dateSubmitted) dateSubmitted,s.name as 'status', a.busName as 'company', concat(mu.firstName,' ',mu.lastName) as 'designer', email, m.state, isPriority, isWarranty, CLid, m.deliveryDate from mosOrder m, state s, account a, mosUser mu where s.id = m.state and m.account = a.id and m.mosUser = mu.id and m.state > 1 and m.state <> 10 order by m.dateSubmitted asc");
 }
 ?>
+<!--div class='container'>
+ <h1>Create and Download Zip file using PHP</h1>
+ <form method='post' action=''>
+   <input type='submit' name='create' value='Create Zip' />&nbsp;
+   <input type='submit' name='download' value='Download' />
+ </form>
+</div-->
 <div class="container-fluid sticky-top bg-white py-2" id="orderView">
 	<div class="row">
 		<div class="col-sm-6 col-lg-4">
@@ -447,9 +459,14 @@ if($GLOBALS['$result2']-> num_rows >0){
 					<label class="input-group-text bg-primary text-white" for="stateFilter">State</label>
 				</div>
 				<select class="custom-select" id="stateFilter" onchange="saveEmployeeSettings('stateFilter')" placeholder="Status" multiple>
-				<?php				
+				<?php
+				//For Clinia
+				$filterStates = "";
+				if(in_array($_SESSION["userid"],[31])){
+					$filterStates = "where id in (7,8,9)";
+				}
 				//Getting all states
-				opendb2("select * from state order by position asc");
+				opendb2("select * from state ".$filterStates." order by position asc");
 				//Building filter
 				if($GLOBALS['$result2']->num_rows > 0){			
 					foreach ($GLOBALS['$result2'] as $row2) {	
@@ -527,7 +544,7 @@ if($GLOBALS['$result2']-> num_rows >0){
 			<div>
 				<label class="form-check-label" for="lockStatus">
 					<svg width="1.5em" height="1.5em" viewBox="0 0 16 16" class="bi bi-lock text-primary" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-					  <path fill-rule="evenodd" d="M11.5 8h-7a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1zm-7-1a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-7zm0-3a3.5 3.5 0 1 1 7 0v3h-1V4a2.5 2.5 0 0 0-5 0v3h-1V4z"/>
+					  <path fill-rule="evenodd" d="M11.5 8h-7a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1zm-7-1a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-7zm0-3a3.5 3.5 0 1 1 7 0v3h-1V4a2.5 2.5 0 0 0-5 0v3h-1V4z"></path>
 					</svg>
 				</label>
 			</div>
@@ -588,7 +605,7 @@ if($GLOBALS['$result2']-> num_rows >0){
 		<div class="modal-content">
 			<form onsubmit="productionReady()">
 				<div class="modal-header">
-					<input id="orderID" hidden></input>
+					<input id="orderID" hidden>
 					<h5 class="modal-title" id="detailsModalLabel"></h5>
 					<h5 id="lblBoxes" class="modal-title mx-auto"></h5>
 					<button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="setPrevState();">
