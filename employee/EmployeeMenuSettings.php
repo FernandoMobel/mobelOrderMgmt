@@ -563,7 +563,7 @@ if($_POST['mode']=="getCategories"){
 }
 
 if($_POST['mode']=="getItemRow"){
-	$sql = "select i.id, i.name, i.description, ROUND(i.W, 2) W, ROUND(i.H, 2) H, ROUND(i.D, 2) D, coalesce(il.cvName,'-----') cvCode, coalesce(il.cvLName,'No Item Code') cvLCode, coalesce(il.cvRName,'No Item Code') cvRCode FROM item i left join itemsLink il on i.id = il.itemId where id=".$_POST['item'];
+	$sql = "select i.id, i.name, i.description, ROUND(i.W, 2) W, ROUND(i.H, 2) H, ROUND(i.D, 2) D, coalesce(il.cvName,'-----') cvCode, coalesce(il.cvLName,'-----') cvLCode, coalesce(il.cvRName,'-----') cvRCode FROM item i left join itemsLink il on i.id = il.itemId where id=".$_POST['item'];
 	$result = opendb($sql);
 	$item = array();
 	while ($row = $result->fetch_assoc()) {
@@ -573,7 +573,7 @@ if($_POST['mode']=="getItemRow"){
 }
 
 if($_POST['mode']=="reloadTable"){
-	$sql = "select i.id, i.name, i.description, ROUND(i.W, 2) W, ROUND(i.H, 2) H, ROUND(i.D, 2) D, coalesce(il.cvName,'-----') cvCode, coalesce(il.cvLName,'No Item Code') cvLCode, coalesce(il.cvRName,'No Item Code') cvRCode FROM item i left join itemsLink il on i.id = il.itemId where id in(".implode(',',$_POST['items']).")";
+	$sql = "select i.id, i.name, i.description, ROUND(i.W, 2) W, ROUND(i.H, 2) H, ROUND(i.D, 2) D, coalesce(il.cvName,'-----') cvCode, coalesce(il.cvLName,'-----') cvLCode, coalesce(il.cvRName,'-----') cvRCode FROM item i left join itemsLink il on i.id = il.itemId where id in(".implode(',',$_POST['items']).")";
 	$result = opendb($sql);
 	$item = array();
 	while ($row = $result->fetch_assoc()) {
@@ -583,7 +583,7 @@ if($_POST['mode']=="reloadTable"){
 }
 
 if($_POST['mode']=="getMultipleItemsRows"){
-	$sql = "select i.id, i.name, i.description, ROUND(i.W, 2) W, ROUND(i.H, 2) H, ROUND(i.D, 2) D, coalesce(il.cvName,'-----') cvCode, coalesce(il.cvLName,'No Item Code') cvLCode, coalesce(il.cvRName,'No Item Code') cvRCode FROM item i left join itemsLink il on i.id = il.itemId where id in(".implode(',',$_POST['items']).")";
+	$sql = "select i.id, i.name, i.description, ROUND(i.W, 2) W, ROUND(i.H, 2) H, ROUND(i.D, 2) D, coalesce(il.cvName,'-----') cvCode, coalesce(il.cvLName,'-----') cvLCode, coalesce(il.cvRName,'-----') cvRCode FROM item i left join itemsLink il on i.id = il.itemId where id in(".implode(',',$_POST['items']).")";
 	$result = opendb($sql);
 	$item = array();
 	while ($row = $result->fetch_assoc()) {

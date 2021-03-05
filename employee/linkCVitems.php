@@ -1,6 +1,11 @@
-<?php
-
-?>
+<style type="text/css">
+	#divAbsolute{
+		position: absolute;
+  		top: 50%;
+  		left: 50%;
+  		transform: translate(-50%, -50%);
+  	}
+</style>
 <script type="text/javascript">
 function btnReset(){
 	$('#tbItems').empty();
@@ -419,11 +424,11 @@ function linkCVtoMOS(){
 		</div>
 	</div>
 </div>
-<div class="d-flex justify-content-center align-items-center" style="height: 80vh">
+<div id="divAbsolute">
 	<div id="loadingDiv" class="spinner-border" style="width: 4rem; height: 4rem;" role="status">                
 	    <span class="sr-only"></span>
 	</div>            
-</div>            
+</div>
 <?php
 //include '../includes/foot.php';
 ?>
