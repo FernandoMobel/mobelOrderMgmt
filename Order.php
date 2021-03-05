@@ -1262,16 +1262,16 @@ function orderValidation(){
 				echo substr($dateRequired,0,10);
 				echo "</textarea>";
 			echo "</div>";
-			
-			if($_SESSION["userType"] == 3 && $state <> "1"){
-				echo "</div>";
-				echo "<div class=\"row d-print-none\">";
-					echo "<div class=\"col-12\">";
-					echo "Order Locked: <input type=\"checkbox\" ";
-					echo "onchange=\"if($('#isLocked').is(':checked')){viewOnly=1;}else{viewOnly=0;};\" checked id=\"isLocked\">";
-				echo "</div>";
-			}
-			?>
+		echo "</div>";
+		//if($_SESSION["userType"] == 3 && $state <> "1"){
+		if(in_array($_SESSION["userid"],[1,2,11,30,32]) && $state <> "1"){			
+			echo "<div class=\"row d-print-none\">";
+			echo "<div class=\"col-12\">";
+			echo "Order Locked: <input type=\"checkbox\" ";
+			echo "onchange=\"if($('#isLocked').is(':checked')){viewOnly=1;}else{viewOnly=0;};\" checked id=\"isLocked\">";
+			echo "</div>";
+		}
+		?>
 		</div>
 		<div class="row mt-2">
 			<?php
