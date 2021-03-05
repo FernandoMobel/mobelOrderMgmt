@@ -55,7 +55,7 @@ function saveOrder(objectID,OID){
 	if($("#"+objectID+OID).val()==5){
 		getOrderRooms(OID);
 		getRequiredDate(OID);
-		$('#detailsModal').modal('toggle');					
+		$('#detailsModal').modal('toggle');
 	}else{
 		//console.log(objectID);
 		myData = { mode: "updateOrder", id: objectID, value: $("#"+objectID+OID).val(), oid: OID};
@@ -97,6 +97,7 @@ function getOrderRooms(OID){
 			myData, 
 		       function(data, status, jqXHR) {          
 					$('#modalContent').empty();
+					$('#lblBoxes').empty();
 					$('#modalContent').append(jqXHR["responseText"]);
 					$('#orderID').attr('value',OID);
 					$('#detailsModalLabel').html("Details for Order: "+OID);
@@ -349,8 +350,9 @@ function countBoxesxDay(date){
 	    url: 'EmployeeMenuSettings.php',
 	    type: 'POST',
 	    data: myData,
-	    success: function(data, status, jqXHR) {	 
-	    	$('#lblBoxes').html('<b>'+jqXHR['responseText']+'</b> boxes are scheduled for: <b>'+date+'</b>');  
+	    success: function(data, status, jqXHR) {	 	    	
+	    	var totals = JSON.parse(jqXHR['responseText']);
+	    	$('#lblBoxes').html('Boxes&nbsp;<span class="badge badge-pill badge-primary">'+totals['cc']+'</span>&nbsp;&nbsp;Fronts&nbsp;<span class="badge badge-pill badge-primary">'+totals['fronts']+'</span>&nbsp;&nbsp;Pieces&nbsp;<span class="badge badge-pill badge-primary">'+totals['pieces']+'</span>');
     	}
 	});	
 }
@@ -387,6 +389,42 @@ function viewOrder(oid){
 	window.open('', 'TheWindow');
   	$('#TheForm').submit();
 }
+
+function loadCalendar(){
+	var calendarEl = document.getElementById('calendarSch');
+
+	var calendar = new FullCalendar.Calendar(calendarEl, {
+        schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
+		themeSystem: 'bootstrap',
+		weekends: false,
+		views: {
+			dayHeaderFormat: { weekday: 'long' }						
+		  },
+		headerToolbar: {
+			left: 'prev,next',
+			center: 'title',
+			right: ''//,timeGridDay,dayGridMonth,timeGridWeek 
+		  },
+		editable: false,
+		events: function(fetchInfo, successCallback, failureCallback) {
+			myData = { mode: "getSchedule", schID: 3};
+			$.post("../calendarActions.php",
+			myData, 
+		       function(data, status, jqXHR) {
+            		if(status == "success"){
+            	    	var orders = JSON.parse(jqXHR['responseText']);
+            	    	successCallback(orders);
+            	    }
+		    });
+		},
+		dateClick: function(info) {
+			//alert('Let start '+info.dateStr);
+			$('#deliveryDate').val(info.dateStr);
+			countBoxesxDay(info.dateStr);
+		}
+    });
+	calendar.render();
+}
 </script> 
 <style>
 div.sticky {
@@ -402,6 +440,8 @@ div.sticky {
 tr:hover .onlyhover{
 	display: inline-block;
 }
+
+.fc-toolbar-title{color: black;}
 </style>
 <?php 	
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
@@ -444,13 +484,6 @@ if($GLOBALS['$result2']-> num_rows >0){
 	opendb2("select m.*,DATE(m.dateSubmitted) dateSubmitted,s.name as 'status', a.busName as 'company', concat(mu.firstName,' ',mu.lastName) as 'designer', email, m.state, isPriority, isWarranty, CLid, m.deliveryDate from mosOrder m, state s, account a, mosUser mu where s.id = m.state and m.account = a.id and m.mosUser = mu.id and m.state > 1 and m.state <> 10 order by m.dateSubmitted asc");
 }
 ?>
-<!--div class='container'>
- <h1>Create and Download Zip file using PHP</h1>
- <form method='post' action=''>
-   <input type='submit' name='create' value='Create Zip' />&nbsp;
-   <input type='submit' name='download' value='Download' />
- </form>
-</div-->
 <div class="container-fluid sticky-top bg-white py-2" id="orderView">
 	<div class="row">
 		<div class="col-sm-6 col-lg-4">
@@ -603,44 +636,52 @@ if($GLOBALS['$result2']-> num_rows >0){
 <div class="modal fade" id="detailsModal" tabindex="-1" role="dialog" aria-labelledby="detailsModalLabel" aria-hidden="true">
 	<div class="modal-dialog modal-lg" role="document">
 		<div class="modal-content">
-			<form onsubmit="productionReady()">
-				<div class="modal-header">
-					<input id="orderID" hidden>
-					<h5 class="modal-title" id="detailsModalLabel"></h5>
-					<h5 id="lblBoxes" class="modal-title mx-auto"></h5>
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="setPrevState();">
-					  <span aria-hidden="true">&times;</span>
-					</button>
-				</div>
-				<div class="modal-body pt-0">
-					<small class="form-text text-center alert-info mb-3">This date is for the order and all it's rooms</small>
-					<div class="row">
-						<div class="col-md-6">
-							<div class="form-group">
-								<div class="input-group mb-3">					
-									<div class="input-group-prepend">
-										<span class="input-group-text">Order Delivery Date</span>
-									</div>
-									<input required id="deliveryDate" type="text" maxlength="10" data-provide="datepicker" data-date-format="yyyy-mm-dd" class="form-control datepicker text-center" onchange="updateDetail(1, this.id, this.value);">
-								</div>		
-							</div>								
-						</div>
-						<div class="col-md-6">
-							<select id="selDept" multiple="multiple">						
-								<!--option selected value="1" id="shipping">SHIPPING</option-->
-								<option selected value="2" id="wrapping">WRAPPING</option>
-								<option selected value="8" id="sanding">SANDING</option>
-							</select>
-						</div>
+			<div class="row">
+				<form onsubmit="productionReady()">
+					<div class="modal-header mx-2">
+						<input id="orderID" hidden>
+						<h5 class="modal-title" id="detailsModalLabel"></h5>
+						<h5 id="lblBoxes" class="modal-title mx-auto"></h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="setPrevState();">
+						  <span aria-hidden="true">&times;</span>
+						</button>
 					</div>
-					<div id="modalContent" class="container">
+					<div class="modal-body pt-0">
+						<small class="form-text text-center alert-info mb-3">This date is for the order and all it's rooms</small>
+						<div class="container">
+							<div class="row">
+								<div class="col-md-6">
+									<div class="form-group">
+										<div class="input-group mb-3">					
+											<div class="input-group-prepend">
+												<span class="input-group-text">Order Delivery Date</span>
+											</div>
+											<input required id="deliveryDate" type="text" maxlength="10" data-provide="datepicker" data-date-format="yyyy-mm-dd" class="form-control datepicker text-center" onchange="updateDetail(1, this.id, this.value);">
+										</div>		
+									</div>								
+								</div>
+								<div class="col-md-6">
+									<select id="selDept" multiple="multiple">						
+										<!--option selected value="1" id="shipping">SHIPPING</option-->
+										<option selected value="2" id="wrapping">WRAPPING</option>
+										<option selected value="8" id="sanding">SANDING</option>
+									</select>
+								</div>
+							</div>
+						</div>
+						<div class="container">
+							<div id='calendarSch' class="bg-white border"></div>
+						</div>
+						<h6 class="font-weight-normal bg-light m-2">Boxes and pieces</h6>
+						<div id="modalContent" class="container">							
+						</div>
+						<div class="modal-footer">
+							<!--button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button-->
+							<button type="submit" class="btn btn-primary">Save changes</button>
+					  	</div>
 					</div>
-					<div class="modal-footer">
-						<!--button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button-->
-						<button type="submit" class="btn btn-primary">Save changes</button>
-				  	</div>
-				</div>
-			</form>
+				</form>
+			</div>
 		</div>
 	</div> 
 </div> 
@@ -702,6 +743,10 @@ if($GLOBALS['$result2']-> num_rows >0){
 <?php include '../includes/foot.php';?>  
 <script>
 $(document).ready(function () {	
+	$( "#detailsModal" ).on('shown.bs.modal', function (e){
+    	loadCalendar();
+	});
+
 	loadOrders();
 	
 	//Filter options

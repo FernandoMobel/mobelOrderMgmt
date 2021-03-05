@@ -502,11 +502,11 @@ if($_POST['mode']=="updateOrderStatus"){
 }
 
 if($_POST['mode']=="countBoxesxDay"){
-	$sql = "select coalesce(sum(cc),0) total from orderRoom orr where orr.oid in (select mo.oid from mosOrder mo where mo.oid = orr.oid and mo.deliveryDate = '".$_POST['date']."' and mo.state = 5)";
+	$sql = "select coalesce(sum(cc),0) cc, coalesce(sum(fronts),0) fronts, coalesce(sum(pieces),0) pieces from orderRoom orr where orr.oid in (select mo.oid from mosOrder mo where mo.oid = orr.oid and mo.deliveryDate = '".$_POST['date']."' and mo.state = 5)";
 	//echo $sql;
 	$query = opendb($sql);
 	$row = $query->fetch_assoc();
-	echo $row['total'];
+	echo json_encode($row);
 }
 
 if($_POST['mode']=="getRequiredDate"){
