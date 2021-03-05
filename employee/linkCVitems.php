@@ -16,7 +16,7 @@ function selectCat(app,val){
 	switch(app){
 		case 'cv':
 			postMode = 'getCVcodes';
-			//$('#cvCode').val(val);
+			$('#cvCode').val('');
 			if(val){
 				$('#cvCode').prop('disabled',false);
 				$.ajax({
@@ -25,7 +25,7 @@ function selectCat(app,val){
 			          	type: 'POST',
 			          	data: {mode: postMode, cat:val},
 			          	success: function( data ) {
-			          		console.log(data);
+			          		//console.log(data);
 			          		$( "#cvCode" ).autocomplete({
 						    	source: data
 						    });
@@ -139,52 +139,27 @@ function linkCVtoMOS(){
 	var items =$('#tbItems tr').map(function(){
 		return parseInt(this.id);
 	}).get();
-	myData = { mode: "linkItems", cv: $('#cvCode').val().trim(), items: items, door: $('#selDoor').val()};
+	myData = { mode: "linkItems", cv: $('#cvCode').val().trim(), items: items, door: $('#selDoor').val(), cvCat: $('#selCVcat').val()};
 	$.post("EmployeeMenuSettings.php",
 	myData, 
-       	function(data, status, jqXHR) {
-       		console.log(jqXHR['responseText']);
-       		console.log($('#selItems :selected'));
-       		$('#tbItems').empty();
-       		myData = { mode: "getItemRow", item: $('#selItems :selected').attr('value')};
-			$.post("EmployeeMenuSettings.php",
-				myData, 
-			       	function(data, status, jqXHR) {
-				       	var item = JSON.parse(jqXHR['responseText']);
-				       	var html = '<tr id="'+item[0].id+'"><td class="font-weight-bold">'+item[0].name+'</td><td>'+item[0].description+'</td><td>'+item[0].W+'</td><td>'+item[0].H+'</td><td>'+item[0].D+'</td><td>'+item[0].cvCode+'</td><td>'+item[0].cvLCode+'</td><td>'+item[0].cvRCode+'</td></tr>';
-				       	$('#tbItems').append(html);
-					});
-		});
+   	function(data, status, jqXHR) {
+   		//console.log(jqXHR['responseText']);
+   		//Reload table
+   		var arr = $('#selItems :selected').map(function(){
+			  return this.value
+		}).get();
+   		$('#tbItems').empty();
+   		myData = { mode: "reloadTable", items:arr};
+		$.post("EmployeeMenuSettings.php",
+			myData, 
+		       	function(data, status, jqXHR) {
+			       	var item = JSON.parse(jqXHR['responseText']);				       	
+			       	item.forEach(it => {
+			       		$('#tbItems').append('<tr id="'+it['id']+'"><td class="font-weight-bold">'+it['name']+'</td><td>'+it['description']+'</td><td>'+it['W']+'</td><td>'+it['H']+'</td><td>'+it['D']+'</td><td>'+it['cvCode']+'</td><td>'+it['cvLCode']+'</td><td>'+it['cvRCode']+'</td></tr>');
+			       	});
+				});
+	});
 }
-
-/*$(function() {
-		    $("#cvCode" ).autocomplete({
-		      	source: jsonCVitems/*function( request, response ) {
-		        	$.ajax({
-			          	url: "EmployeeMenuSettings.php",
-			          	dataType: "json",
-			          	type: 'POST',
-			          	data: {mode: "getCVcodes", cat:$("#cvCode").val()},
-			          	success: function( data ) {
-				          	console.log(data);
-			        	    response(data);
-			          	}
-		        	});
-		      	},
-		      	minLength: 2,
-		      select: function( event, ui ) {
-		        log( ui.item ?
-		          "Selected: " + ui.item.label :
-		          "Nothing selected, input was " + this.value);
-		      },
-		      open: function() {
-		        $( this ).removeClass( "ui-corner-all" ).addClass( "ui-corner-top" );
-		      },
-		      close: function() {
-		        $( this ).removeClass( "ui-corner-top" ).addClass( "ui-corner-all" );
-		      }
-		    })
-		});*/
 </script>
 <div class="container-fluid px-0">
 	<div class="card card-signin py-1">

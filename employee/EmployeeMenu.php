@@ -130,7 +130,7 @@ input::-webkit-inner-spin-button {
 					</a>
 				  </li>
 				  <?php 
-				  if(in_array($_SESSION["userid"],[11,30,32])){
+				  if(in_array($_SESSION["userid"],[1,2,11,30,32])){
 				  ?>
 				  <li class="nav-item border rounded-top">
 					<a class="nav-link" id="adjustScheduleView" onclick="navtab(this.id)">
@@ -144,7 +144,7 @@ input::-webkit-inner-spin-button {
 				  </li>
 				  <?php 
 				  }
-				  if(in_array($_SESSION["userid"],[11,30,32])){
+				  if(in_array($_SESSION["userid"],[1,2,11,30,32])){
 				  ?>
 				   <!--li class="nav-item border rounded-top">
 					<a class="nav-link" id="reportView" onclick="navtab(this.id)">
