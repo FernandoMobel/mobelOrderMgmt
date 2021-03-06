@@ -397,6 +397,7 @@ function loadCalendar(){
         schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
 		themeSystem: 'bootstrap',
 		weekends: false,
+		selectable: true,
 		views: {
 			dayHeaderFormat: { weekday: 'long' }						
 		  },
