@@ -12,7 +12,7 @@ if(isset($_SESSION["username"])){
 ?>
 <?php 
 include_once 'includes/db.php';
-include 'orderXMLCV.php';
+//include 'orderXMLCV.php';
 ?>
 <?php
 if($_POST['mode'] == "setStyle"){

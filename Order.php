@@ -1194,7 +1194,7 @@ function orderValidation(){
 						echo "<button data-toggle=\"modal\" onClick=\"setMinDate();hideSubmit();\" data-target=\"#orderOptions\" class=\"btn btn-primary text-nowrap px-2 py-2 mx-0  mt-0 d-print-none\" data-toggle=\"modal\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles( ".$_GET["OID"].");\">Options<span class=\"ui-icon ui-icon-gear\"></span></button>&nbsp;";
 						echo "<button class=\"btn btn-primary text-nowrap px-2 py-2 mx-0 mt-0 d-print-none\" data-toggle=\"modal\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles( ".$_GET["OID"].");\">Files<span class=\"ui-icon ui-icon-disk\"></span></button>&nbsp;";
 					
-						if($row['status'] == "Quoting"){
+						if($row['state'] == 1){
 							/*if($row['tagName'] == "Tag name not set"){
 								echo "<button id=\"beforeSbm\" class=\"d-print-none\" type=\"button\" onClick=\"alert('Please set your tag name and refresh to submit your quote.')\">Submit to Mobel</button>";
 								echo "<script>viewOnly = 0;</script>";
@@ -1209,8 +1209,7 @@ function orderValidation(){
 								echo "<script>viewOnly = 1;</script>";
 							//}
 							echo "<button type=\"button\" data-toggle=\"modal\" data-target=\"#orderOptions\" class=\"btn btn-primary text-nowrap d-print-none px-2 py-2 mx-0  mt-0\">Order Details</button>";
-							//echo $row['status'] . " " . substr($row['dateSubmitted'],0,10);
-							
+							//echo $row['status'] . " " . substr($row['dateSubmitted'],0,10);							
 						}
 					
 					echo "</div>";
@@ -2137,14 +2136,14 @@ function orderValidation(){
 	</div>
 	
 	<?php
-	if($_SESSION["userType"]>1){
+	//if($_SESSION["userType"]>1){
 	?>
-	<div class="d-print-none">
+	<div id="divPrintPrice">
 		<input class="d-flex float-right" type="checkbox" id="printChk" name="printChk" onclick="printPrice();">
 		<small class="d-flex float-right" for="printChk">Print price &nbsp;</small><br>
 	</div>
 	<?php
-	}
+	//}
 	?>
 	
 	
@@ -2631,49 +2630,43 @@ if($row['isWarranty']==1){
 $msg = "
 <body>
 	<div class=\"bg-white container-fluid\">
-		<div class=\"row\">
-			<div class=\"col-3\">
-				<div class=\"row\">
-					<div class=\"col-sm-10 mx-3\">
-						<img id=\"logo\" alt=\"logo\" src=\"https://mobel.ca/wp-content/uploads/2019/01/Logo.png\"/>
-					</div>
-				</div>
-				<div class=\"row\">
-					<div class=\"col-sm-10 mx-3\">
-						<h3>Order ID: <b>".$mailOID."</b></h3>
-					</div>
-				</div>
-			</div>
-			<div class=\"col-9\">
+		<div class=\"row d-flex justify-content-around align-items-center\">
+			<img id=\"logo\" alt=\"logo\" src=\"https://mobel.ca/wp-content/uploads/2019/01/Logo.png\"/>
+			<h1>MOS #&nbsp;<b>".$mailOID."</b></h1>
+		</div>
+		<div class=\"row\">			
+			<div class=\"col-12\">
 				<table class=\"table table-sm my-auto mx-5\">
 					<tr>
-						<td class=\"border-0\"><b>Customer:</b></td>
-						<td class=\"border-0\">". $row['busName']."</td>
-						<td class=\"border-0\"><b>Submitted by:</b></td>
-						<td class=\"border-0\">". $row['whoSubmit'] ."</td>						
-					</tr>
-					<tr>
-						<td class=\"border-0\"><b>Order Type:</b></td>
-						<td class=\"border-0\">". $orderTypeDesc ."</td>
-						<td class=\"border-0\"><b>Invoice to:</b></td>
-						<td class=\"border-0\">". $row['invoiceTo'] ."</td>
-					</tr>
-					<tr>
-						<td class=\"border-0\"><b>Date Submitted:</b></td>
-						<td class=\"border-0\">". substr($row['dateSubmitted'],0,10) ."</td>
-						<td class=\"border-0\"><b>Tag Name / PO</b></td>
-						<td class=\"border-0\">".$row['tagName']." - ". $row['po'] ."</td>
+						<td class=\"border-0 text-right\"><h5>Customer:</h5></td>
+						<td class=\"border-0 text-left\"><h5 class=\"font-weight-bold\">". $row['busName']."</h5></td>
+						<td class=\"border-0 text-right\"><h5>Submitted by:</h5></td>
+						<td class=\"border-0 text-left\"><h5>". $row['whoSubmit'] ."</h5></td>						
+					</tr>";
+if($_SESSION["userType"]==3){
+			$msg .= "<tr>
+						<td class=\"border-0 text-right\"><h5>Order Type:</h5></td>
+						<td class=\"border-0 text-left\"><h5 class=\"font-weight-bold\">". $orderTypeDesc ."</h5></td>
+						<td class=\"border-0 text-right\"><h5>Invoice to:</h5></td>
+						<td class=\"border-0 text-left\"><h5>". $row['invoiceTo'] ."</h5></td>
+					</tr>";
+}
+$msg .= "			<tr>
+						<td class=\"border-0 text-right\"><h5>Date Submitted:</h5></td>
+						<td class=\"border-0 text-left\"><h5>". substr($row['dateSubmitted'],0,10) ."</h5></td>
+						<td class=\"border-0 text-right\"><h5>Tag Name / PO:</h5></td>
+						<td class=\"border-0 text-left\"><h5 class=\"font-weight-bold\">".$row['tagName']." - ". $row['po'] ."</h5></td>
 					</tr>
 					<tr>						
-						<td class=\"border-0\"><b>Ship to:</b></td>
-						<td colspan=\"5\" class=\"border-0\">". $row['shipTo'] ."</td>
+						<td class=\"border-0 text-right\"><h5>Ship to:</td>
+						<td colspan=\"5\" class=\"border-0 text-left\"><h5>". $row['shipTo'] ."</h5></td>
 					</tr>
 				</table>
 			</div>
 		</div>
 		<div style=\"height: 7px\" class=\"bg-dark\">&nbsp</div>";
 		if(isset($row['note']))
-			$msg .= "<h5>Order notes: ".$row['note']."</h5>";
+			$msg .= "<h5 class=\"font-weight-bold\">Order notes: ".$row['note']."</h5>";
 		//Rooms start here
 		$sql = "select orr.rid,orr.note,orr.name rname,sp.name spname,irf.name irfname,dd.name ddname,ff.name ffname,db.name dbname,gl.name glname,sdf.name sdfname,sh.name shname,ldf.name ldfname,h.name hname,dg.name dgname, fe.name fename
 		from orderRoom orr,species sp,interiorFinish irf,door dd,frontFinish ff,drawerBox db,glaze gl,smallDrawerFront sdf,sheen sh,largeDrawerFront ldf,hinge h,drawerGlides dg,finishedEnd fe where orr.oid=".$mailOID." and orr.species=sp.id and orr.door=dd.id and orr.frontFinish=ff.id and orr.glaze=gl.id and orr.glaze=gl.id and orr.sheen=sh.id and orr.hinge=h.id and orr.smallDrawerFront=sdf.id and orr.largeDrawerFront=ldf.id and orr.drawerGlides=dg.id and orr.drawerBox=db.id and orr.interiorFinish=irf.id and orr.finishedEnd=fe.id order by orr.name";
@@ -2905,6 +2898,13 @@ $(document).ready(function(){
 		minHeight: 630,
 		minWidth: 500
     });	
+	<?php
+	if($_SESSION["userType"]==1){
+		echo "$('#divPrintPrice').hide();";
+		echo "$('#roomTotal').hide();";
+	}
+	?>
+		
 });
 
 var arr = new Array();
