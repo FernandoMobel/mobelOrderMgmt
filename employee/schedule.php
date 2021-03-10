@@ -305,6 +305,12 @@ function getWithExpiry(key) {
 	}
 	return item.value
 }
+
+function viewOrder(oid){
+	$('#inputOID').val(oid);
+	window.open('', 'TheWindow');
+  	$('#formViewFullOID').submit();
+}
 </script> 
 <style>
   @media (max-width: 1025px) {
@@ -314,6 +320,10 @@ function getWithExpiry(key) {
   }
   
   td{padding:5px !important}
+
+  th:hover{
+  	background-color: #eaf4fb;
+  }
 </style>
 
 <div class="card card-signin my-3 mx-0">
@@ -440,7 +450,9 @@ function getWithExpiry(key) {
 		</div>
 	</div>
 </div>
-
+<form id="formViewFullOID" method="post" action="../readOnlyOrder.php" target="TheWindow">
+<input id="inputOID" type="hidden" name="oid"/>
+</form>
 
 <?php if(strlen($_SESSION["firstName"])==1 && $_SESSION["account"]==2) include '../includes/foot.php';?>  
 <script>

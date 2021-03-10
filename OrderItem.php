@@ -354,7 +354,7 @@ if($_POST['mode']=="getItems"){
         <div class="table-responsive">
         <table id="itemListingTable" class="table table-striped table-sm" style="width:100%">
 		<!-- display nowrap table-striped table-hover -->
-        <thead >
+        <thead>
               <tr>
                 <th class="font-weight-bold">Item</th>
                 <th style="width: 250px;" class="font-weight-bold">Description</th>

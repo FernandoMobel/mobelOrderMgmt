@@ -14,9 +14,9 @@ table{
 }
 
 .zoom:hover {
-  -ms-transform: scale(1.5); /* IE 9 */
-  -webkit-transform: scale(1.5); /* Safari 3-8 */
-  transform: scale(1.5); 
+  -ms-transform: scale(1.3); /* IE 9 */
+  -webkit-transform: scale(1.3); /* Safari 3-8 */
+  transform: scale(1.3); 
 }
 
 option{ white-space: normal; }
@@ -40,7 +40,7 @@ table p{
   .print {display:block!important;}
   body {font-size: 1.3em !important;}
   table td {overflow:hidden !important;font-size: .8em !important;overflow: visible !important;}
-  table th {font-size: .8em !important;overflow: visible !important;}
+  table th {font-size: .8em !important;overflow: visible !important;}  
 }
 
 </style>
@@ -875,11 +875,15 @@ function printPrice(){
 		$('#roomTotal').addClass('d-print-block');
 		$('#itemListingTable .priceCol').removeClass('d-print-none');
 		$('#itemListingTable .priceCol').addClass('d-print-block');
+		$('#printing .priceCol').removeClass('d-print-none');
+		//$('#printing .priceCol').addClass('d-print-block');
 	}else {
 		$('#roomTotal').removeClass('d-print-block');
 		$('#roomTotal').addClass('d-print-none');
 		$('#itemListingTable .priceCol').removeClass('d-print-block');
 		$('#itemListingTable .priceCol').addClass('d-print-none');
+		//$('#printing .priceCol').removeClass('d-print-block');
+		$('#printing .priceCol').addClass('d-print-none');
 	}
 }
 
@@ -1084,6 +1088,8 @@ function getImage(item,orderItem){
 				$image=jqXHR["responseText"];
 				if($image!="false"){
 					$('#itemImg').attr('src', $image+'#'+ new Date().getTime());
+				}else{
+					$('#itemImg').attr('src', 'header/unnamed2.png#'+ new Date().getTime());
 				}
 			}
 	});
@@ -1149,13 +1155,10 @@ function orderValidation(){
 	});	
 }
 </script>
-
-<div class="navbar d-print-block navbar-expand-sm bg-light navbar-light">
+<div class="navbar navbar-expand-sm bg-light navbar-light d-print-none">
 	<div class="col-sm-12 col-md-12 col-lg-12 mx-auto pl-1 pr-1 ml-1 mr-1">
 		<div class="row">
 			<?php
-			
-			
 			$userFilter = " and mosUser = ".$_SESSION["userid"];
 			if($_SESSION["userType"] == 3){
 				$userFilter = "";
@@ -1200,11 +1203,11 @@ function orderValidation(){
 								echo "<script>viewOnly = 0;</script>";
 							//}
 						}else{
-							if($_SESSION["userType"] == 3){
+							/*if($_SESSION["userType"] == 3){
 								echo "<script>viewOnly = 1;</script>";
-							}else{
+							}else{*/
 								echo "<script>viewOnly = 1;</script>";
-							}
+							//}
 							echo "<button type=\"button\" data-toggle=\"modal\" data-target=\"#orderOptions\" class=\"btn btn-primary text-nowrap d-print-none px-2 py-2 mx-0  mt-0\">Order Details</button>";
 							//echo $row['status'] . " " . substr($row['dateSubmitted'],0,10);
 							
@@ -1319,7 +1322,7 @@ function orderValidation(){
 
 
 
-<ul class="nav nav-tabs bg-dark">
+<ul class="nav nav-tabs bg-dark d-print-none">
     <?php 
     //$r =0;
 	//echo window.location.href();
@@ -1358,7 +1361,7 @@ function orderValidation(){
 
 
 <!-- Tab panes -->
-<div id="tabs" class="tab-content mb-3">
+<div id="tabs" class="tab-content mb-3 d-print-none">
     <?php 
     if($i==0){
         ?>
@@ -1437,10 +1440,10 @@ function orderValidation(){
                  
 				?>
 				<!--div id="cabLineOp"-->
-					<?php
-					if($CLid==3)
-						echo "<div hidden>";
-					?> 
+				<?php
+				if($CLid==3)
+					echo "<div hidden>";
+				?> 
 					<div class="row">
 						<div class="col-2 text-right">
 							<label for="species">Species</label>
@@ -1551,39 +1554,11 @@ function orderValidation(){
 							</select>
 						</div>
 					</div>
-					<?php
-					if($CLid==3)
-						echo "</div>";
-					?> 
-
+				<?php
+				if($CLid==3)
+					echo "</div>";
+				?> 
 					<div class="row">
-					   <!-- 
-						<div class="col-2 text-right">
-						<label for="edge">Edge</label>
-						</div>
-						
-						<div class="col-4">
-						<select onchange="saveStyle('edge','<?php echo "edge" . $row['rid'];?>');" id="<?php echo "edge" . $row['rid'];?>" class="custom-select">
-						
-						<?php
-						opendb2("select * from edge order by name");
-						if($GLOBALS['$result2']->num_rows > 0){
-							if(is_null($row['edge'])){
-								echo "<option ". "selected" ." value=\"\">" . "Choose an Edge" . "</option>";
-							}
-							foreach ($GLOBALS['$result2'] as $row2) {
-								if($row2['id']==$row['edge']){
-									echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-								}else{
-									echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-								}
-							}
-						}
-						?>
-						</select>
-						</div>
-						 -->
-
 						<div class="col-2 text-right">
 							<?php
 							if($CLid==3){
@@ -1916,29 +1891,6 @@ function orderValidation(){
 							}else{
 								echo "<option disabled=\"disabled\" ". "selected" ." value=\"0\"> Please choose another finish</option>";
 							}
-							/*if($GLOBALS['$result2']->num_rows > 0){
-								$match = 2;
-								if(is_null($row['sheen'])){
-									echo "<option disabled=\"disabled\" ". "selected" ." value=\"\">" . "Choose a Sheen" . "</option>";
-									$invalidHeaderMessage = $invalidHeaderMessage . "<br>No sheen selected";
-									$match = 3;
-								}
-								foreach ($GLOBALS['$result2'] as $row2) {
-									if($row2['id']==$row['sheen']){
-										echo "<option ". "selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-										$match = 1;
-									}else{
-										echo "<option ". "" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-									}
-								}
-							}
-							if($match==0){
-								echo "<option ". "selected" ." value=\"\">" . "" . "</option>";
-							}
-							if($match==2){
-								echo "<option disabled=\"disabled\"  ". "selected" ." value=\"null\">" . "Please choose your new sheen" . "</option>";
-								$invalidHeaderMessage = $invalidHeaderMessage . "<br>No sheen selected";
-							}*/
 							?>
 							</select>
 						</div>						
@@ -2042,6 +1994,8 @@ function orderValidation(){
 							?>
 							</select>
 						</div>
+					</div>
+					<div class="row">
 
 						<div class="col-2 text-right">
 							<label for="drawerGlides">Drawer Glides</label>
@@ -2145,43 +2099,7 @@ function orderValidation(){
 						?> 
 
 					</div>
-
-					<div class="row">
-					</div>
-            	            	
-					<div class="row">
-						<!-- 
-						<div class="col-2 text-right">
-						<label for="exteriorFinish">Exterior Finish</label>
-						</div>
-						
-						<div class="col-4">
-						<select onchange="saveStyle('exteriorFinish','<?php echo "exteriorFinish" . $row['rid'];?>');" id="<?php echo "exteriorFinish" . $row['rid'];?>" class="custom-select">
-						
-						<?php
-						opendb2("select * from exteriorFinish order by name");
-						if($GLOBALS['$result2']->num_rows > 0){
-							if(is_null($row['exteriorFinish'])){
-								echo "<option ". "selected" ." value=\"\">" . "Choose an Exterior Finish" . "</option>";
-							}
-							foreach ($GLOBALS['$result2'] as $row2) {
-								if($row2['visible']==0){//not available
-										$disabled = "disabled";
-									}else{
-										$disabled = "";
-									}
-								if($row2['id']==$row['exteriorFinish']){
-									echo "<option ".$disabled." selected" ." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-								}else{
-									echo "<option ".$disabled." value=\"" . $row2['id'] . "\">" . $row2['name'] . "</option>";
-								}
-							}
-						}
-						?>
-						</select>
-						</div>
-						 -->
-					</div>             	
+            	           	
                 <!--/div-->
 				<?php
 				
@@ -2195,18 +2113,7 @@ function orderValidation(){
 </div>
 
 
-
-
-
-
-
-
-
-
-
-
-
-<div  class="container tab-pane float-left col-12">
+<div  class="container tab-pane float-left col-12 d-print-none">
 
     <hr/>
     
@@ -2693,9 +2600,271 @@ function orderValidation(){
 <input type="hidden" id="invalidHeaderMessage" value="<?php echo ""; //$invalidHeaderMessage;?>">
 
 
+<!--This is made for printing only -->
+<div id="printing" class="print">
+<?php
+$sql = "select *,coalesce(invoiceTo,'N/A')invoiceTo ,(select concat(coalesce(unit,' '),' ',street,' ',city,' ',province,' ',country,' ',postalCode)  from accountAddress aA where aA.id =mo.shipAddress) shipTo, coalesce((select concat(mu.firstName,' ',mu.lastName) from mosUser mu where mu.id = mo.submittedBy),'No name')whoSubmit, (select a.busDBA from account a where a.id = mo.account)busName,isPriority, isWarranty, CLid from mosOrder mo, mosUser mu, account a, cabinetLine cl where mo.mosUser = mu.id and mo.account = a.id and mo.CLid = cl.id and mo.oid = '" . $_GET["OID"] . "'";
+$result = opendb($sql);
+$row = $result->fetch_assoc();
+$accountName = $row['busDBA'];
+$mailOID = $row['oid'];
+$CLfactor = $row['factor'];
+$orderType="";
+$discount = floatval($row['discount']);
+$orderTypeDesc="Dealer";
+if($row['CLid']==3){
+	$orderType="table-primary";
+	$orderTypeDesc = "Span Medical";
+}
+if($row['CLid']==2){
+	$orderType="table-info";
+	$orderTypeDesc = "Builder";
+}
+if($row['isPriority']==1){
+	$orderType="table-warning";
+	$orderTypeDesc = "Service";
+}
+if($row['isWarranty']==1){
+	$orderType="table-danger";
+	$orderTypeDesc = "Service w/warranty";
+}
+$msg = "
+<body>
+	<div class=\"bg-white container-fluid\">
+		<div class=\"row\">
+			<div class=\"col-3\">
+				<div class=\"row\">
+					<div class=\"col-sm-10 mx-3\">
+						<img id=\"logo\" alt=\"logo\" src=\"https://mobel.ca/wp-content/uploads/2019/01/Logo.png\"/>
+					</div>
+				</div>
+				<div class=\"row\">
+					<div class=\"col-sm-10 mx-3\">
+						<h3>Order ID: <b>".$mailOID."</b></h3>
+					</div>
+				</div>
+			</div>
+			<div class=\"col-9\">
+				<table class=\"table table-sm my-auto mx-5\">
+					<tr>
+						<td class=\"border-0\"><b>Customer:</b></td>
+						<td class=\"border-0\">". $row['busName']."</td>
+						<td class=\"border-0\"><b>Submitted by:</b></td>
+						<td class=\"border-0\">". $row['whoSubmit'] ."</td>						
+					</tr>
+					<tr>
+						<td class=\"border-0\"><b>Order Type:</b></td>
+						<td class=\"border-0\">". $orderTypeDesc ."</td>
+						<td class=\"border-0\"><b>Invoice to:</b></td>
+						<td class=\"border-0\">". $row['invoiceTo'] ."</td>
+					</tr>
+					<tr>
+						<td class=\"border-0\"><b>Date Submitted:</b></td>
+						<td class=\"border-0\">". substr($row['dateSubmitted'],0,10) ."</td>
+						<td class=\"border-0\"><b>Tag Name / PO</b></td>
+						<td class=\"border-0\">".$row['tagName']." - ". $row['po'] ."</td>
+					</tr>
+					<tr>						
+						<td class=\"border-0\"><b>Ship to:</b></td>
+						<td colspan=\"5\" class=\"border-0\">". $row['shipTo'] ."</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		<div style=\"height: 7px\" class=\"bg-dark\">&nbsp</div>";
+		if(isset($row['note']))
+			$msg .= "<h5>Order notes: ".$row['note']."</h5>";
+		//Rooms start here
+		$sql = "select orr.rid,orr.note,orr.name rname,sp.name spname,irf.name irfname,dd.name ddname,ff.name ffname,db.name dbname,gl.name glname,sdf.name sdfname,sh.name shname,ldf.name ldfname,h.name hname,dg.name dgname, fe.name fename
+		from orderRoom orr,species sp,interiorFinish irf,door dd,frontFinish ff,drawerBox db,glaze gl,smallDrawerFront sdf,sheen sh,largeDrawerFront ldf,hinge h,drawerGlides dg,finishedEnd fe where orr.oid=".$mailOID." and orr.species=sp.id and orr.door=dd.id and orr.frontFinish=ff.id and orr.glaze=gl.id and orr.glaze=gl.id and orr.sheen=sh.id and orr.hinge=h.id and orr.smallDrawerFront=sdf.id and orr.largeDrawerFront=ldf.id and orr.drawerGlides=dg.id and orr.drawerBox=db.id and orr.interiorFinish=irf.id and orr.finishedEnd=fe.id order by orr.name";
+		$result = opendb($sql);
+		$totalOrder = 0;
+    	while($row = $result->fetch_assoc()){
+    		$roomTotal = 0;
+	    	$msg .="<table class=\"table table-sm mt-1 mb-0 border border-dark\">
+				<tr class=\"table-secondary\">
+					<td class=\"text-start py-1 my-auto\"><h5><b>Room: ".$row['rname']."</b></h5></td>
+					<td class=\"text-start py-1 my-auto\" colspan=\"3\"><b>Room notes: ".$row['note']."</b></td>
+				</tr>
+				<tr>
+					<td class=\"text-right py-0 font-weight-bold\">Species:</td>
+					<td class=\"text-start py-0 font-weight-bold\">".$row['spname']."</td>
+					<td class=\"text-right py-0 font-weight-bold\">Interior Finish:</td>
+					<td class=\"text-start py-0 font-weight-bold\">".$row['irfname']."</td>
+				</tr>
+				<tr>
+					<td class=\"text-right py-0 font-weight-bold\">Door:</td>
+					<td class=\"text-start py-0 font-weight-bold\">".$row['ddname']."</td>
+					<td class=\"text-right py-0 font-weight-bold\">Finish:</td>
+					<td class=\"text-start py-0 font-weight-bold\">".$row['ffname']."</td>
+				</tr>
+				<tr>
+					<td class=\"text-right py-0 font-weight-bold\">Drawer Box:</td>
+					<td class=\"text-start py-0 font-weight-bold\">".$row['dbname']."</td>
+					<td class=\"text-right py-0 font-weight-bold\">Glaze:</td>
+					<td class=\"text-start py-0 font-weight-bold\">".$row['glname']."</td>
+				</tr>
+				<tr>
+					<td class=\"text-right py-0 font-weight-bold\">Small Drawer Front:</td>
+					<td class=\"text-start py-0 font-weight-bold\">".$row['sdfname']."</td>
+					<td class=\"text-right py-0 font-weight-bold\">Sheen:</td>
+					<td class=\"text-start py-0 font-weight-bold\">".$row['shname']."</td>
+				</tr>
+				<tr>
+					<td class=\"text-right py-0 font-weight-bold\">Large Drawer Front:</td>
+					<td class=\"text-start py-0 font-weight-bold\">".$row['ldfname']."</td>
+					<td class=\"text-right py-0 font-weight-bold\">Hinge:</td>
+					<td class=\"text-start py-0 font-weight-bold\">".$row['hname']."</td>
+				</tr>
+				<tr>
+					<td class=\"text-right py-0 font-weight-bold\">Drawer Glides:</td>
+					<td class=\"text-start py-0 font-weight-bold\">".$row['dgname']."</td>
+					<td class=\"text-right py-0 font-weight-bold\">Finished End:</td>
+					<td class=\"text-start py-0 font-weight-bold\">".$row['fename']."</td>
+				</tr>
+			</table>
+			<table class=\"table table-sm border border-dark mb-3\">
+				<thead>
+					 <tr>
+	                	<th class=\"font-weight-bold border text-center border-dark\">Item</th>
+		                <th class=\"font-weight-bold border border-dark\">Description</th>
+		                <th class=\"font-weight-bold border text-center border-dark\">W</th>
+		                <th class=\"font-weight-bold border text-center border-dark\">H</th>
+		                <th class=\"font-weight-bold border text-center border-dark\">D</th>
+		                <th class=\"font-weight-bold border text-center border-dark\">Qty</th>
+		                <th class=\"font-weight-bold border text-center border-dark\">Hinged</th>
+		                <th class=\"font-weight-bold border text-center border-dark\">F.E.</th>
+		                <th class=\"font-weight-bold border border-dark\">Note</th>";
+		        if($_SESSION["userType"]>1){
+                    $msg .="<th class=\"d-print-none font-weight-bold border border-dark priceCol\">Price</th>";
+                }
+	              	$msg .= "</tr>
+				</thead>
+				<tbody>";
+
+			$sql2 = "select * from (SELECT orr.rid,it.CLGroup,oi.description, oi.note, oi.id as item, 0 as sid,oi.position, oi.qty, oi.name, oi.price, oi.sizePrice, 0 as 'parentPercent', ds.factor as 'DFactor', irf.factor as 'IFactor', ff.factor as 'FFactor', ff.upcharge as 'FUpcharge', sh.factor as 'SFactor', gl.factor as 'GFactor', sp.finishedEndSizePrice as 'EFactor', (db.upcharge + dg.upcharge) as 'drawerCharge', sdf.upcharge as 'smallDrawerCharge', ldf.upcharge as 'largeDrawerCharge', oi.doorFactor as 'DApplies', oi.speciesFactor as 'SpeciesApplies', oi.interiorFactor as 'IApplies', oi.finishFactor as 'FApplies', oi.sheenFactor as 'SApplies', oi.glazeFactor as 'GApplies',oi.drawers, oi.smallDrawerFronts, oi.largeDrawerFronts, oi.H, oi.W, oi.D, oi.W2, oi.D2, oi.minSize, it.pricingMethod as methodID, oi.hingeLeft,oi.hingeRight,oi.finishLeft,oi.finishRight
+	    FROM  orderItem oi, orderRoom orr, doorSpecies ds, interiorFinish irf, item it, sheen sh, glaze gl, frontFinish ff,drawerBox db, drawerGlides dg, smallDrawerFront sdf, largeDrawerFront ldf, species sp
+	    WHERE it.id = oi.iid and oi.rid = orr.rid and orr.species = ds.sid and orr.species = sp.id and orr.door = ds.did and orr.interiorFinish = irf.id and orr.sheen = sh.id and orr.glaze = gl.id and orr.frontFinish = ff.id and orr.drawerBox = db.id and orr.drawerGlides = dg.id and orr.smallDrawerFront = sdf.id and orr.largeDrawerFront = ldf.id and orr.rid = " .$row['rid']." 
+	    union all
+	        SELECT orr.rid,it.CLGroup,oi.description, oi.note, oi.pid,oi.id as sid, oi.position, oi.qty, oi.name, oi.price, oi.sizePrice, parentPercent, ds.factor as 'DFactor', irf.factor as 'IFactor', ff.factor as 'FFactor', ff.upcharge as 'FUpcharge', sh.factor as 'SFactor', gl.factor as 'GFactor', sp.finishedEndSizePrice as 'EFactor', (db.upcharge + dg.upcharge) as 'drawerCharge', sdf.upcharge as 'smallDrawerCharge', ldf.upcharge as 'largeDrawerCharge', oi.doorFactor as 'DApplies', oi.speciesFactor as 'SpeciesApplies', oi.interiorFactor as 'IApplies', oi.finishFactor as 'FApplies', oi.sheenFactor as 'SApplies', oi.glazeFactor as 'GApplies',oi.drawers, oi.smallDrawerFronts, oi.largeDrawerFronts, oi.H, oi.W, oi.D, oi.W2, oi.D2, oi.minSize, it.pricingMethod as methodID, oi.hingeLeft,oi.hingeRight,oi.finishLeft,oi.finishRight
+	    FROM  orderItemMods oi, orderRoom orr, doorSpecies ds, interiorFinish irf, itemMods it, sheen sh, glaze gl, frontFinish ff,drawerBox db, drawerGlides dg,  smallDrawerFront sdf, largeDrawerFront ldf, species sp
+	    WHERE it.id = oi.mid and oi.rid = orr.rid and orr.species = ds.sid and orr.species = sp.id and orr.door = ds.did and orr.interiorFinish = irf.id and orr.sheen = sh.id and orr.glaze = gl.id and orr.frontFinish = ff.id and orr.drawerBox = db.id and orr.drawerGlides = dg.id and orr.smallDrawerFront = sdf.id and orr.largeDrawerFront = ldf.id and orr.rid = ".$row['rid'].") as T1 order by rid,position,item,sid";
+
+		    $result2 = opendb2($sql2);
+		    $i = 0;
+            $si= 0;
+            $parentID = -1;
+            $isParent = -1;
+		    while($row2 = $result2->fetch_assoc()) {
+		    	if($parentID !== $row2['item']){ //new parent item
+                    $parentID = $row2['item'];
+                    $isParent = 1;
+                    $parentPrice = 0;
+                    $si = 0;
+                    $i++;
+                }else{
+                    opendb2("select price from item where id = (select iid from orderItem where id = " . $row2['item'] . ")");
+                    foreach($GLOBALS['$result2'] as $row1){
+                        $parentPrice = $row1['price'];
+                    }
+                    $isParent = 0;
+                    $si = $si + 1;
+                    //$i = $i - 1;
+                }
+	            $hinging = "";
+	            if($row2['hingeLeft']==1){
+	                $hinging = "L";
+	            }
+	            if($row2['hingeRight']=="1"){
+	                $hinging = "R";
+	            }
+	            if($row2['hingeLeft']=="1" && $row2['hingeRight'] =="1"){
+	                $hinging = "B";
+	            }
+	            $finishedEnds = "";
+	            if($row2['finishLeft']=="1"){
+	                $finishedEnds = "L";
+	            }
+	            if($row2['finishRight']=="1"){
+	                $finishedEnds = "R";
+	            }
+	            if($row2['finishLeft']=="1" && $row2['finishRight']=="1"){
+	                $finishedEnds = "B";
+	            }
+	            $mixDoorSpeciesFactor = 0;
+                if($row2['DApplies'] == 1 || $row2['SpeciesApplies']==1){
+                    $mixDoorSpeciesFactor = 1;
+                }else{
+                    $mixDoorSpeciesFactor = 0;
+                }
+                $b=""; 
+                $be = "";
+                if($isParent===1){
+                	$b = "<b>";
+                	$be = "</b>";
+                }
+                $aPrice =  getPrice($row2['qty'],$row2['price'],$row2['sizePrice'],$parentPrice,$row2['parentPercent'],$row2['DFactor'],$row2['IFactor'],$row2['FFactor'],$row2['GFactor'],$row2['SFactor'],$row2['EFactor'],$row2['drawerCharge'],$row2['smallDrawerCharge'],$row2['largeDrawerCharge'], $mixDoorSpeciesFactor,$row2['IApplies'],$row2['FApplies'],$row2['GApplies'],$row2['SApplies'],$row2['drawers'],$row2['smallDrawerFronts'],$row2['largeDrawerFronts'],$row2['finishLeft']+$row2['finishRight'], $row2['H'],$row2['W'],$row2['D'],$row2['minSize'],$row2['methodID'],$row2['FUpcharge'],$CLfactor);
+                $roomFinishUpcharge=$row2['FUpcharge'];
+                if($isParent === 1){
+                    $parentPrice = $aPrice;
+                }
+                $roomTotal += $aPrice;
+			    $msg .="<tr>
+						<td class=\"border text-center border-dark\">".$b.$i.".".$si.$be."</td>
+						<td class=\"border border-dark\">".$b.$row2['name']." - ".$row2['description'].$be."</td>
+						<td class=\"border text-center border-dark\">".$b.(float)$row2['W'].$be."</td>
+						<td class=\"border text-center border-dark\">".$b.(float)$row2['H'].$be."</td>
+						<td class=\"border text-center border-dark\">".$b.(float)$row2['D'].$be."</td>
+						<td class=\"border text-center border-dark\">".$b.(float)$row2['qty'].$be."</td>
+						<td class=\"border text-center border-dark\">".$b.$hinging.$be."</td>
+						<td class=\"border text-center border-dark\">".$b.$finishedEnds.$be."</td>
+						<td class=\"border border-dark\" style=\"max-width: 450px;\">".$row2['note']."</td>
+						<td class=\"d-print-none border text-center border-dark priceCol\"><span title = \"" . getPrice($row2['qty'],$row2['price'],$row2['sizePrice'],$parentPrice,$row2['parentPercent'],$row2['DFactor'],$row2['IFactor'],$row2['FFactor'],$row2['GFactor'],$row2['SFactor'],$row2['EFactor'],$row2['drawerCharge'],$row2['smallDrawerCharge'],$row2['largeDrawerCharge'], $mixDoorSpeciesFactor,$row2['IApplies'],$row2['FApplies'],$row2['GApplies'],$row2['SApplies'],$row2['drawers'],$row2['smallDrawerFronts'],$row2['largeDrawerFronts'],$row2['finishLeft']+$row2['finishRight'], $row2['H'],$row2['W'],$row2['D'],$row2['minSize'],$row2['methodID'],$row2['FUpcharge'],$CLfactor,1) . "\">".$b. number_format($aPrice,2,'.','').$be."</span></td>
+					</tr>";
+			}
+			if($_SESSION["userType"]>1){
+                $msg .= "<tr class=\"d-print-none border-top border-dark priceCol\">
+                            <td class=\"text-end\" colspan=\"9\"><h5 class=\"font-weight-bold\">Room Total:</h5></td>
+                            <td class=\"text-center\"><h5 class=\"font-weight-bold\">$".round($roomTotal,2)."</h5></td>
+                        </tr>";
+            }
+			$msg .="</tbody></table>";
+			$totalOrder += $roomTotal+$roomFinishUpcharge;
+		}
+	if($_SESSION["userType"]>1){
+		$discountPer = $discount*100;
+		$disAmnt = round(($totalOrder*$discount),2);
+		$subTotal = round($totalOrder*(1-$discount),2);
+		$msg .= "<div class=\"d-print-none row justify-content-end priceCol\">
+					<div class=\"col-6 offset-6 align-self-end\">
+						<table  class=\"table border-0\">
+							<tr>
+								<th><h4 class=\"font-weight-bold\">Total:</h4></th>
+								<th><h4 class=\"font-weight-bold\">$$totalOrder</h4></th>
+								<th>pre HST & pre delivery</th>
+							</tr>
+							<tr>
+								<th><h4 class=\"font-weight-bold\">Discount(".$discountPer."%):</h4></th>
+								<th><h4 class=\"font-weight-bold\">$".$disAmnt."</h4></th>
+								<th></th>
+							</tr>
+							<tr>
+								<th><h4 class=\"font-weight-bold\">Sub Total:</h4></th>
+								<th><h4 class=\"font-weight-bold\">$".$subTotal."</h4></th>
+								<th>pre HST & pre delivery</th>
+							</tr>
+						</table>
+					</div>
+				</div>";
+	}
+	$msg .="</div>
+</body>
+</html>";
+echo $msg;
 
 
-
+?>
+</div>
 
 <?php include 'includes/foot.php';?>
 <style>
