@@ -401,9 +401,9 @@ if($_POST['mode']=="loadSchWeek"){
 				echo "<td class=\"align-middle\"><div id=\"uptRoom".$row['rid']."\" class=\"custom-control custom-checkbox\"><input ".$completed." onchange=\"completeRoom(".$row['rid'].")\" type=\"checkbox\" class=\"custom-control-input\" id=\"chkDone".$row['rid']."\"><label class=\"custom-control-label\" for=\"chkDone".$row['rid']."\"></label></div></td></tr>";				
 			}else if(strcmp($day,$row['myDate'])==0 && strcmp($oid, $row['oid'])!=0){
 				$oid = $row['oid'];
-				echo "<th id=\"".$row['oid']."\" class=\"align-middle $updated\" rowspan=\"".$row['rooms']."\" scope=\"rowgroup\"><p>".$row['oid']."</p></br><small><b>".$row['account']."</b></small></th>";//Order id header
-				echo "<th class=\"tag align-middle $updated\" rowspan=\"".$row['rooms']."\">".$row['tagName']." - ". $row['po'] ."</th>";
-				echo "<th class=\"sht align-middle $updated\" rowspan=\"".$row['rooms']."\">&nbsp".$row['shipTo']."</th>";
+				echo "<th id=\"".$row['oid']."\" class=\"align-middle $updated\" rowspan=\"".$row['rooms']."\" scope=\"rowgroup\" onclick=\"viewOrder(".$row['oid'].");\"><p>".$row['oid']."</p></br><small><b>".$row['account']."</b></small></th>";//Order id header
+				echo "<th class=\"tag align-middle $updated\" rowspan=\"".$row['rooms']."\" onclick=\"viewOrder(".$row['oid'].");\">".$row['tagName']." - ". $row['po'] ."</th>";
+				echo "<th class=\"sht align-middle $updated\" rowspan=\"".$row['rooms']."\" onclick=\"viewOrder(".$row['oid'].");\">&nbsp".$row['shipTo']."</th>";
 				echo "<td class=\"rmnm align-middle $updated\" scope=\"row\">".$row['roomName']."</td>";//header row room
 				echo "<td class=\"box align-middle $updated\">".$row['cc']."</td>";
 				echo "<td class=\"frt align-middle $updated\">".$row['fronts']."</td>";
@@ -417,9 +417,9 @@ if($_POST['mode']=="loadSchWeek"){
 				$oid = $row['oid'];//new order
 				echo "<tr>";
 				echo "<th class=\"align-middle\" rowspan=\"".$row['jobsDay']."\" scope=\"rowgroup\"><p>".date("l M j",strtotime($day))."</p><small class=\"d-print-none\">Total boxes: ".$row['boxCurQty']."</small></th>";
-				echo "<th id=\"".$row['oid']."\" class=\"align-middle $updated\" rowspan=\"".$row['rooms']."\" scope=\"rowgroup\"><p>".$row['oid']."</p><small><b>".$row['account']."</b></small></th>";//Order id header
-				echo "<th class=\"tag align-middle $updated\" rowspan=\"".$row['rooms']."\">".$row['tagName']." - ". $row['po'] ."</th>";
-				echo "<th class=\"sht align-middle $updated\" rowspan=\"".$row['rooms']."\">".$row['shipTo']."</th>";
+				echo "<th id=\"".$row['oid']."\" class=\"align-middle $updated\" rowspan=\"".$row['rooms']."\" scope=\"rowgroup\" onclick=\"viewOrder(".$row['oid'].");\"><p>".$row['oid']."</p><small><b>".$row['account']."</b></small></th>";//Order id header
+				echo "<th class=\"tag align-middle $updated\" rowspan=\"".$row['rooms']."\" onclick=\"viewOrder(".$row['oid'].");\">".$row['tagName']." - ". $row['po'] ."</th>";
+				echo "<th class=\"sht align-middle $updated\" rowspan=\"".$row['rooms']."\" onclick=\"viewOrder(".$row['oid'].");\">".$row['shipTo']."</th>";
 				echo "<td class=\"rmnm align-middle $updated\" scope=\"row\">".$row['roomName']."</td>";//header row room
 				echo "<td class=\"box align-middle $updated\">".$row['cc']."</td>";
 				echo "<td class=\"frt align-middle $updated\">".$row['fronts']."</td>";
