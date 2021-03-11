@@ -7,7 +7,7 @@ echo "<style>
 	  .print {display:block!important;}	  
 	  body {font-size: 1.3em !important;}
 	  table td {overflow:hidden !important;font-size: .8em !important;overflow: visible !important;}
-	  table th {font-size: .8em !important;overflow: visible !important;}
+	  table th {font-size: .9em !important;overflow: visible !important;}
 	}
 	</style>";
 //$_POST['oid'] = 179;
@@ -38,45 +38,40 @@ if($row['isWarranty']==1){
 $msg = "
 <body>
 	<div class=\"bg-white container-fluid\">
-		<div class=\"row\">
-			<div class=\"col-3\">
-				<div class=\"row\">
-					<div class=\"col-sm-10 mx-3\">
-						<img id=\"logo\" alt=\"logo\" src=\"https://mobel.ca/wp-content/uploads/2019/01/Logo.png\"/>
-					</div>
-				</div>
-				<div class=\"row\">
-					<div class=\"col-sm-10 mx-3\">
-						<h3>Order ID: <b>".$mailOID."</b></h3>
-					</div>
-				</div>
-			</div>
-			<div class=\"col-9\">
+		<div class=\"row d-flex justify-content-around align-items-center\">
+			<img id=\"logo\" alt=\"logo\" src=\"https://mobel.ca/wp-content/uploads/2019/01/Logo.png\"/>
+			<h1>MOS #&nbsp;<b>".$mailOID."</b></h1>
+		</div>
+		<div class=\"row\">			
+			<div class=\"col-12\">
 				<table class=\"table table-sm my-auto mx-5\">
 					<tr>
-						<td class=\"border-0\"><b>Customer:</b></td>
-						<td class=\"border-0\">". $row['busName']."</td>
-						<td class=\"border-0\"><b>Submitted by:</b></td>
-						<td class=\"border-0\">". $row['whoSubmit'] ."</td>						
-					</tr>
-					<tr>
-						<td class=\"border-0\"><b>Order Type:</b></td>
-						<td class=\"border-0\">". $orderTypeDesc ."</td>
-						<td class=\"border-0\"><b>Invoice to:</b></td>
-						<td class=\"border-0\">". $row['invoiceTo'] ."</td>
-					</tr>
-					<tr>
-						<td class=\"border-0\"><b>Date Submitted:</b></td>
-						<td class=\"border-0\">". substr($row['dateSubmitted'],0,10) ."</td>
-						<td class=\"border-0\"><b>Tag Name / PO</b></td>
-						<td class=\"border-0\">".$row['tagName']." - ". $row['po'] ."</td>
+						<td class=\"border-0 text-right\"><h5>Customer:</h5></td>
+						<td class=\"border-0 text-left\"><h5 class=\"font-weight-bold\">". $row['busName']."</h5></td>
+						<td class=\"border-0 text-right\"><h5>Submitted by:</h5></td>
+						<td class=\"border-0 text-left\"><h5>". $row['whoSubmit'] ."</h5></td>						
+					</tr>";
+	if($_SESSION["userType"]==3){
+			$msg .= "<tr>
+						<td class=\"border-0 text-right\"><h5>Order Type:</h5></td>
+						<td class=\"border-0 text-left\"><h5 class=\"font-weight-bold\">". $orderTypeDesc ."</h5></td>
+						<td class=\"border-0 text-right\"><h5>Invoice to:</h5></td>
+						<td class=\"border-0 text-left\"><h5>". $row['invoiceTo'] ."</h5></td>
+					</tr>";
+	}
+	$msg .= "			<tr>
+						<td class=\"border-0 text-right\"><h5>Date Submitted:</h5></td>
+						<td class=\"border-0 text-left\"><h5>". substr($row['dateSubmitted'],0,10) ."</h5></td>
+						<td class=\"border-0 text-right\"><h5>Tag Name / PO:</h5></td>
+						<td class=\"border-0 text-left\"><h5 class=\"font-weight-bold\">".$row['tagName']." - ". $row['po'] ."</h5></td>
 					</tr>
 					<tr>						
-						<td class=\"border-0\"><b>Ship to:</b></td>
-						<td colspan=\"5\" class=\"border-0\">". $row['shipTo'] ."</td>
+						<td class=\"border-0 text-right\"><h5>Ship to:</td>
+						<td colspan=\"5\" class=\"border-0 text-left\"><h5>". $row['shipTo'] ."</h5></td>
 					</tr>
 				</table>
 			</div>
+		<!--/div-->
 		</div>
 		<div style=\"height: 7px\" class=\"bg-dark\">&nbsp</div>";
 		if(isset($row['note']))
