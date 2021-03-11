@@ -463,7 +463,7 @@ function viewOrder(oid){
 </form>
 <div id="popovercolors" hidden>
 	<table class="table border-0 table-sm mx-auto text-center py-2">
-		<tr><td class="table-danger p-0"><small><b>Scheduled today</b></small></td></tr>
+		<tr><td class="table-danger p-0"><small><b>Scheduled<24h</b></small></td></tr>
 		<tr><td class="table-warning p-0"><small><b>Service</b></small></td></tr>
 		<tr><td class="table-info p-0"><small><b>Builders</b></small></td></tr>
 		<tr><td class="table-primary p-0"><small><b>Span</b></small></td></tr>
