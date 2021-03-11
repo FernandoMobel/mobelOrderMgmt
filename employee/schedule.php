@@ -366,6 +366,14 @@ function viewOrder(oid){
 		<div class="row text-center d-print-block py-3" hidden>
 			<h5 id="fromDatePrint"></h5>
 		</div>
+		<div title="Order Types" class="row d-print-none ml-3">
+			<a id="popOrderTypes" tabindex="0" role="button" data-toggle="popover" data-placement="bottom" data-trigger="focus" data-container="body" data-html="true">
+				<svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-palette" viewBox="0 0 16 16">
+					<path d="M8 5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm4 3a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM5.5 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm.5 6a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/>
+					<path d="M16 8c0 3.15-1.866 2.585-3.567 2.07C11.42 9.763 10.465 9.473 10 10c-.603.683-.475 1.819-.351 2.92C9.826 14.495 9.996 16 8 16a8 8 0 1 1 8-8zm-8 7c.611 0 .654-.171.655-.176.078-.146.124-.464.07-1.119-.014-.168-.037-.37-.061-.591-.052-.464-.112-1.005-.118-1.462-.01-.707.083-1.61.704-2.314.369-.417.845-.578 1.272-.618.404-.038.812.026 1.16.104.343.077.702.186 1.025.284l.028.008c.346.105.658.199.953.266.653.148.904.083.991.024C14.717 9.38 15 9.161 15 8a7 7 0 1 0-7 7z"/>
+				</svg>
+			</a>
+		</div>
 		<div class="row d-print-none">
 			<div class="d-flex justify-content-start col-sm-4 col-md-6 col-lg-2">
 				<div class="p-2">
@@ -453,7 +461,14 @@ function viewOrder(oid){
 <form id="formViewFullOID" method="post" action="../readOnlyOrder.php" target="TheWindow">
 <input id="inputOID" type="hidden" name="oid"/>
 </form>
-
+<div id="popovercolors" hidden>
+	<table class="table border-0 table-sm mx-auto text-center py-2">
+		<tr><td class="table-danger p-0"><small><b>Scheduled today</b></small></td></tr>
+		<tr><td class="table-warning p-0"><small><b>Service</b></small></td></tr>
+		<tr><td class="table-info p-0"><small><b>Builders</b></small></td></tr>
+		<tr><td class="table-primary p-0"><small><b>Span</b></small></td></tr>
+	</table>
+</div>
 <?php if(strlen($_SESSION["firstName"])==1 && $_SESSION["account"]==2) include '../includes/foot.php';?>  
 <script>
 $(document).ready(function () {
@@ -472,6 +487,21 @@ $(document).ready(function () {
 			localStorage.setItem($(option).val(), checked);//store cookie for column filter
 			//console.log(localStorage);
 		}
+	});
+
+	/*Tooltips and Popovers use a built-in sanitizer to sanitize options which accept HTML */
+	$.fn.popover.Constructor.Default.whiteList.table = [];
+    $.fn.popover.Constructor.Default.whiteList.tr = [];
+    $.fn.popover.Constructor.Default.whiteList.td = [];
+    $.fn.popover.Constructor.Default.whiteList.th = [];
+    $.fn.popover.Constructor.Default.whiteList.div = [];
+    $.fn.popover.Constructor.Default.whiteList.tbody = [];
+    $.fn.popover.Constructor.Default.whiteList.thead = [];
+	$("#popOrderTypes").popover({
+    	html: true, 
+		content: function() {
+        	return $('#popovercolors').html();
+        }
 	});
 });
 </script>

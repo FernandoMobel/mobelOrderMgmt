@@ -388,7 +388,7 @@ if($_POST['mode']=="loadSchWeek"){
 			$completed = "";
 			if($row['completed']=='true')
 				$completed = "checked";//mark as completed				
-			/*Here the color code is defined. At the end the services are defined to overwrite the previous ones */
+			/*Here the color code is defined. At the end the services are defined to overwrite the previous ones. Last one is for orders updated today */
 			if($row['CLid']==3)
 				$updated = "table-primary";
 			if($row['CLid']==2)
