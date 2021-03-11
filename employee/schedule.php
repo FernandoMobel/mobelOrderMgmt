@@ -336,7 +336,7 @@ function viewOrder(oid){
 			<div class="p-2">
 				<div class="custom-control custom-radio">
 					<input onchange="loadSchWeek(0,this.value)" type="radio" class="custom-control-input" id="chk3" value="3" name="defaultExampleRadios" checked>
-					<label class="custom-control-label" for="chk3">Completition</label>
+					<label class="custom-control-label" for="chk3">Completion</label>
 				</div>
 			</div>
 			<div class="p-2">
