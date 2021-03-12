@@ -892,7 +892,7 @@ function copyItem($Sroom, $Sitem, $Droom){
     $sql = "insert into your_table (". $myList .")
     select ". $myList ."
     from orderItem
-    where id = " . Sitem;
+    where id = " . $Sitem;
     
     echo $sql;
     
@@ -914,7 +914,7 @@ function fieldList($tableName){
             $Fields = $Fields . $row['COLUMN_NAME'] . ",";
         }
     }
-    return substr($Fields,0,$strlen($Fields)-1);
+    return substr($Fields,0, strlen($Fields)-1);
 }
 
 /*------------------------------------------------------------

@@ -220,6 +220,10 @@ function loadItems(rid){
 					$(".borderless").css('border-top','0px');
 					$("#roomTotal").html("<b>Room Total: undefined </b>");
 				}
+			},
+			error: function (request, error) {
+				console.log(arguments);
+				alert(" Can't do because: " + error);
 			}
 		});
 	}
@@ -1424,14 +1428,15 @@ function orderValidation(){
 				
 					echo "<div class=\"col-8 text-left\">";//note preview
 						echo "<p class=\"d-print-none\" id=\"RoomNotePreview". $row['rid'] ."\">";				
-						if($row['note'])
-						echo "<b>Room note: </b>" . $row['note'] ;						
+						if($row['note']){
+							echo "Room note: <b>" . $row['note']."</b>" ;						
+						}
 						echo "</p>";				
 					echo "</div>";
-					if($row['note']){//note only for printing
+					/*if($row['note']){//note only for printing
 						echo "<h5 class=\"print\" id=\"RoomNotePrint". $row['rid'] ."\"><b>Room note: </b>" . $row['note']."</h5>";
 						echo "<div class=\"dropdown-divider mb-4\"></div>";
-					}
+					}*/
 				echo "</div>";
 				
                 //echo "<button class=\"btn btn-primary ml-0 \" data-toggle=\"modal\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles( ".$_GET["OID"].");\">All Files<span class=\"ui-icon ui-icon-disk\"></span></button><br/>";
