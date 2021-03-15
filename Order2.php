@@ -2238,8 +2238,9 @@ function orderValidation(){
         <!-- Modal content-->
         <div class="modal-content">
           <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            
             <h4 class="modal-title">Room Tools</h4>
+			<button type="button" class="close" data-dismiss="modal">&times;</button>
           </div>
           <div class="modal-body">
             <p>Adjust the room name or add notes here. Click delete room to remove this room and all items and attached files.</p>

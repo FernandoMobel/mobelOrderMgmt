@@ -75,7 +75,7 @@ $msg = "
 		</div>
 		<div style=\"height: 7px\" class=\"bg-dark\">&nbsp</div>";
 		if(isset($row['note']))
-			$msg .= "<h5>Order notes: ".$row['note']."</h5>";
+			$msg .= "<h5 class=\"font-weight-bold\">Order notes: ".$row['note']."</h5>";
 		//Rooms start here
 		$sql = "select orr.rid,orr.note,orr.name rname,sp.name spname,irf.name irfname,dd.name ddname,ff.name ffname,db.name dbname,gl.name glname,sdf.name sdfname,sh.name shname,ldf.name ldfname,h.name hname,dg.name dgname, fe.name fename
 		from orderRoom orr,species sp,interiorFinish irf,door dd,frontFinish ff,drawerBox db,glaze gl,smallDrawerFront sdf,sheen sh,largeDrawerFront ldf,hinge h,drawerGlides dg,finishedEnd fe where orr.oid=".$mailOID." and orr.species=sp.id and orr.door=dd.id and orr.frontFinish=ff.id and orr.glaze=gl.id and orr.glaze=gl.id and orr.sheen=sh.id and orr.hinge=h.id and orr.smallDrawerFront=sdf.id and orr.largeDrawerFront=ldf.id and orr.drawerGlides=dg.id and orr.drawerBox=db.id and orr.interiorFinish=irf.id and orr.finishedEnd=fe.id order by orr.name";
@@ -85,8 +85,8 @@ $msg = "
     		$roomTotal = 0;
 	    	$msg .="<table class=\"table table-sm mt-1 mb-0 border border-dark\">
 				<tr class=\"table-secondary\">
-					<td class=\"text-start py-1 my-auto\"><h5><b>Room: ".$row['rname']."</b></h5></td>
-					<td class=\"text-start py-1 my-auto\" colspan=\"3\"><b>Room notes: ".$row['note']."</b></td>
+					<td class=\"text-start py-1 my-auto\"><h5 class=\"font-weight-bold\">Room: ".$row['rname']."</h5></td>
+					<td class=\"font-weight-bold text-start py-1 my-auto\" colspan=\"3\">Room notes: ".$row['note']."</td>
 				</tr>
 				<tr>
 					<td class=\"text-right py-0 font-weight-bold\">Species:</td>
@@ -210,15 +210,15 @@ $msg = "
                 }
                 $roomTotal += $aPrice;
 			    $msg .="<tr>
-						<td class=\"border text-center border-dark\">".$b.$i.".".$si.$be."</td>
-						<td class=\"border border-dark\">".$b.$row2['name']." - ".$row2['description'].$be."</td>
-						<td class=\"border text-center border-dark\">".$b.(float)$row2['W'].$be."</td>
-						<td class=\"border text-center border-dark\">".$b.(float)$row2['H'].$be."</td>
-						<td class=\"border text-center border-dark\">".$b.(float)$row2['D'].$be."</td>
-						<td class=\"border text-center border-dark\">".$b.(float)$row2['qty'].$be."</td>
-						<td class=\"border text-center border-dark\">".$b.$hinging.$be."</td>
-						<td class=\"border text-center border-dark\">".$b.$finishedEnds.$be."</td>
-						<td class=\"border border-dark\" style=\"max-width: 450px;\">".$row2['note']."</td>
+						<td class=\"border text-center border-dark font-weight-bold\">".$b.$i.".".$si.$be."</td>
+						<td class=\"border border-dark font-weight-bold\">".$b.$row2['name']." - ".$row2['description'].$be."</td>
+						<td class=\"border text-center border-dark font-weight-bold\">".$b.(float)$row2['W'].$be."</td>
+						<td class=\"border text-center border-dark font-weight-bold\">".$b.(float)$row2['H'].$be."</td>
+						<td class=\"border text-center border-dark font-weight-bold\">".$b.(float)$row2['D'].$be."</td>
+						<td class=\"border text-center border-dark font-weight-bold\">".$b.(float)$row2['qty'].$be."</td>
+						<td class=\"border text-center border-dark font-weight-bold\">".$b.$hinging.$be."</td>
+						<td class=\"border text-center border-dark font-weight-bold\">".$b.$finishedEnds.$be."</td>
+						<td class=\"border border-dark font-weight-bold\" style=\"max-width: 450px;\">".$row2['note']."</td>
 						<!--td><span title = \"" . getPrice($row2['qty'],$row2['price'],$row2['sizePrice'],$parentPrice,$row2['parentPercent'],$row2['DFactor'],$row2['IFactor'],$row2['FFactor'],$row2['GFactor'],$row2['SFactor'],$row2['EFactor'],$row2['drawerCharge'],$row2['smallDrawerCharge'],$row2['largeDrawerCharge'], $mixDoorSpeciesFactor,$row2['IApplies'],$row2['FApplies'],$row2['GApplies'],$row2['SApplies'],$row2['drawers'],$row2['smallDrawerFronts'],$row2['largeDrawerFronts'],$row2['finishLeft']+$row2['finishRight'], $row2['H'],$row2['W'],$row2['D'],$row2['minSize'],$row2['methodID'],$row2['FUpcharge'],$CLfactor,1) . "\">".$b. number_format($aPrice,2,'.','').$be."</span></td-->
 					</tr>";
 			}
