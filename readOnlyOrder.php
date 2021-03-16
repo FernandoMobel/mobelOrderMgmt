@@ -40,7 +40,7 @@ $msg = "
 	<div class=\"bg-white container-fluid\">
 		<div class=\"row d-flex justify-content-around align-items-center\">
 			<img id=\"logo\" alt=\"logo\" src=\"https://mobel.ca/wp-content/uploads/2019/01/Logo.png\"/>
-			<h1>MOS #&nbsp;<b>".$mailOID."</b></h1>
+			<h1>MOS: &nbsp;<b>".$mailOID."</b></h1>
 		</div>
 		<div class=\"row\">			
 			<div class=\"col-12\">
