@@ -31,14 +31,14 @@ if($row['isPriority']==1){
 	$orderType="table-warning";
 	$orderTypeDesc = "Service";
 }
-if($row['isWarranty']==1){
+/*if($row['isWarranty']==1){
 	$orderType="table-danger";
 	$orderTypeDesc = "Service w/warranty";
-}
+}*/
 $msg = "
 <body>
 	<div class=\"bg-white container-fluid\">
-		<div class=\"row d-flex justify-content-around align-items-center\">
+		<div class=\"row d-flex justify-content-around align-items-center $orderType\">
 			<img id=\"logo\" alt=\"logo\" src=\"https://mobel.ca/wp-content/uploads/2019/01/Logo.png\"/>
 			<h1>MOS: &nbsp;<b>".$mailOID."</b></h1>
 		</div>
@@ -53,8 +53,8 @@ $msg = "
 					</tr>";
 	if($_SESSION["userType"]==3){
 			$msg .= "<tr>
-						<td class=\"border-0 text-right\"><h5>Order Type:</h5></td>
-						<td class=\"border-0 text-left\"><h5 class=\"font-weight-bold\">". $orderTypeDesc ."</h5></td>
+						<td class=\"border-0 text-right $orderType\"><h5>Order Type:</h5></td>
+						<td class=\"border-0 text-left $orderType\"><h5 class=\"font-weight-bold\">". $orderTypeDesc ."</h5></td>
 						<td class=\"border-0 text-right\"><h5>Invoice to:</h5></td>
 						<td class=\"border-0 text-left\"><h5>". $row['invoiceTo'] ."</h5></td>
 					</tr>";
@@ -227,6 +227,8 @@ $msg = "
 						<td class=\"text-center\"><h5>$".$roomTotal."</h5></td>
 					</tr>";*/
 			$msg .="</tbody></table>";
+			if(!isset($roomFinishUpcharge))
+				$roomFinishUpcharge =0;
 			$totalOrder += $roomTotal+$roomFinishUpcharge;
 		}
 	//$msg .= "<div><h4 class=\"text-center\">Total Order: $$totalOrder pre HST & pre delivery</h4></div>";
