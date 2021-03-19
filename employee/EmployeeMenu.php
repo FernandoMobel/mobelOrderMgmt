@@ -1,5 +1,6 @@
 <?php include '../includes/nav.php';?>
 <?php include '../includes/db.php';?>
+
 <script>
 
 /*Navigation tabs and views functionality*/
