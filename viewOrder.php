@@ -75,7 +75,7 @@ function updateReqDate(object, oid){
 <div class="container-fluid" hidden>
 	<ul id="empTabs" class="nav nav-tabs">
 	  <li class="nav-item">
-		<a class="nav-link active" id="orderView" onclick="navtab(this.id)"><b>My Orders</b></a>
+		<a class="nav-link active" id="orderView" onclick="navtab(this.id)"><b>Orders</b></a>
 	  </li>
 	  <li class="nav-item">
 		<a class="nav-link" id="itemView" onclick="navtab(this.id)"><b>Item Request</b></a>
