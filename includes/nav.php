@@ -46,9 +46,6 @@ echo "<link rel=\"stylesheet\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/
       --input-padding-y: .75rem;
     }
 
-    textarea {
-    }
-
     .noresize {
       resize: none; 
     }

@@ -328,7 +328,7 @@ function viewOrder(oid){
 
 <div class="card card-signin my-3 mx-0">
 	<?php
-	$superUser = array(11,30,32);
+	$superUser = array(1,2,11,28,30,32);
 	if(in_array($_SESSION["userid"],$superUser)){
 	?>
 	<div class="card-header d-print-none">
