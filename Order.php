@@ -67,6 +67,7 @@ function saveOrder(objectID){
 		myData,
 	       function(data, status, jqXHR){	       	
 	       		if(data == "success"){
+					loadPrinting();
         	    	$("#"+objectID).css("border-color", "#00b828");
 					if(objectID=="CLid"){//reload page when updating Cabinet Line
 						resetOrderDefault("<?php echo $_GET["OID"] ?>",$("#"+objectID).data('val'),$("#"+objectID).val());
@@ -113,6 +114,7 @@ function saveStyle(col,objectID){
 			if(col=="species" || col=="frontFinish"){
 				location.reload();
 			}
+			loadPrinting();
 	    }
 	});
 	if( (col=='drawerBox' && $("#"+objectID).val()=='3')||($('#drawerBox'+$("a.nav-link.roomtab.active").attr("value")).val()==3))
@@ -214,7 +216,8 @@ function loadItems(rid){
 						$("#roomTotal").html("<b>Room Total: $" + $('#TotalPrice').val() + "<br>pre HST & pre delivery ");
 					}	
 					//set printing properties
-					printPrice();				
+					//printPrice();				
+					loadPrinting();
 				}else{//One or more headers aren't selected, prices and item list will not be displayed
 					$('#items').append("<h5 class=\"mx-auto\">Please ensure all the above options (Species, Finish, etc) are selected</h5>");
 					$(".borderless").css('border-top','0px');
@@ -625,7 +628,7 @@ function saveRoom(objectID){
 								$('#RoomNotePrint'.concat($("a.nav-link.roomtab.active").attr("value"))).text('Room note: '.concat($('#RoomNote').val()));
 							}
             	    	}
-            	    	
+            	    	loadPrinting();
             	    }
 		        });
 }
@@ -1155,6 +1158,21 @@ function orderValidation(){
 					showSubmit();
 					$('#orderOptions').modal('toggle');	
 				}
+			}
+	});	
+}
+
+/* Loading Printing layout */
+function loadPrinting(){
+	myData = {mode: "updatePrinting", rid:$("a.nav-link.roomtab.active").attr("value"), pro:$('#printRoomChk').prop('checked') };
+	$.ajax({
+	url: 'OrderItem.php',
+	type: 'POST',
+	data: myData,
+	success: function(data, status, jqXHR) {
+				$('#printing').empty();
+				$('#printing').append(jqXHR["responseText"]);
+				printPrice();
 			}
 	});	
 }
@@ -2126,32 +2144,38 @@ function orderValidation(){
     if ($roomCount >0){
     ?>
     <div class="d-flex justify-content-between">
-		<!--button type="button"  onClick=cleanEdit("add"); class="btn btn-primary pt-2 pb-2 d-print-none" data-toggle="modal" data-target="#editItemModal">Add Item<span class="ui-icon ui-icon-plus"></span></button-->
-		<!--div class="input-group mb-3"-->
-		  <div class="input-group-prepend">
-			<button type="button" onClick="cleanEdit('add');" class="btn btn-primary py-2 d-print-none" data-toggle="modal" data-target="#editItemModal">Add Item<span class="ui-icon ui-icon-plus"></span></button>
-			<!--button type="button" class="btn bt-sm btn-primary py-2 d-print-none dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-			</button-->
-			<div class="dropdown-menu">
-			  <a class="dropdown-item" data-toggle="modal" data-target="#copyItemsModal">Copy Items from another order</a>
-			</div>
-		  </div>
-		<!--/div-->
+		<button type="button" onClick="cleanEdit('add');" class="btn btn-primary" data-toggle="modal" data-target="#editItemModal">Add Item<span class="ui-icon ui-icon-plus"></span></button>
 		<span class="ml-auto d-print-none" id="roomTotal"></span>
 	</div>
 	
-	<?php
-	//if($_SESSION["userType"]>1){
-	?>
 	<div id="divPrintPrice">
-		<input class="d-flex float-right" type="checkbox" id="printChk" name="printChk" onclick="printPrice();">
-		<small class="d-flex float-right" for="printChk">Print price &nbsp;</small><br>
+		<div class="d-flex justify-content-end">
+			<div title="Printing options" type="button" class="accordion" id="accordionPrices" data-toggle="collapse" data-target="#collapsePrintOptions" aria-expanded="false" aria-controls="collapsePrintOptions">
+				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer text-primary" viewBox="0 0 16 16">
+					<path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
+					<path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/>
+				</svg>
+				<svg id="down" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-down-fill text-primary" viewBox="0 0 16 16">
+					<path d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
+				</svg>
+				<svg id="up" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-up-fill  text-primary" viewBox="0 0 16 16">
+					<path d="M7.247 4.86l-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z"/>
+				</svg>
+			</div>
+		</div>
+		<div class="d-flex justify-content-end">
+			<div id="collapsePrintOptions" class="collapse" data-parent="#accordionPrices">
+				<div class="input-group d-flex align-items-center">
+					<small for="printChk">Print Price&nbsp;</small>
+					<input type="checkbox" id="printChk" name="printChk" onclick="printPrice();">	
+				</div>
+				<div class="input-group d-flex align-items-center">					
+					<small title="This option will only display room total" for="printRoomChk">Print Current Room Only &nbsp;</small>
+					<input title="This option will only display room total" type="checkbox" id="printRoomChk" name="printRoomChk" onclick="loadPrinting();">	
+				</div>
+			</div>
+		</div>
 	</div>
-	<?php
-	//}
-	?>
-	
-	
     <?php 
     }
     ?>
@@ -2337,9 +2361,9 @@ function orderValidation(){
     
         <!-- Modal content-->
         <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <div class="modal-header">            
             <h4 class="modal-title">Room Tools</h4>
+			<button type="button" class="close" data-dismiss="modal">&times;</button>
           </div>
           <div class="modal-body">
             <p>Adjust the room name or add notes here. Click delete room to remove this room and all items and attached files.</p>
@@ -2607,6 +2631,7 @@ function orderValidation(){
 <!--This is made for printing only -->
 <div id="printing" class="print">
 <?php
+/*
 $sql = "select *,coalesce(invoiceTo,'N/A')invoiceTo ,(select concat(coalesce(unit,' '),' ',street,' ',city,' ',province,' ',country,' ',postalCode)  from accountAddress aA where aA.id =mo.shipAddress) shipTo, coalesce((select concat(mu.firstName,' ',mu.lastName) from mosUser mu where mu.id = mo.submittedBy),'No name')whoSubmit, (select a.busDBA from account a where a.id = mo.account)busName,isPriority, isWarranty, CLid from mosOrder mo, mosUser mu, account a, cabinetLine cl where mo.mosUser = mu.id and mo.account = a.id and mo.CLid = cl.id and mo.oid = '" . $_GET["OID"] . "'";
 $result = opendb($sql);
 $row = $result->fetch_assoc();
@@ -2615,7 +2640,7 @@ $mailOID = $row['oid'];
 $CLfactor = $row['factor'];
 $orderType="";
 $discount = floatval($row['discount']);
-$orderTypeDesc="Dealer";
+$orderTypeDesc="";
 if($row['CLid']==3){
 	$orderType="table-primary";
 	$orderTypeDesc = "Span Medical";
@@ -2637,7 +2662,7 @@ $msg = "
 	<div class=\"bg-white container-fluid\">
 		<div class=\"row d-flex justify-content-around align-items-center\">
 			<img id=\"logo\" alt=\"logo\" src=\"https://mobel.ca/wp-content/uploads/2019/01/Logo.png\"/>
-			<h1>MOS #&nbsp;<b>".$mailOID."</b></h1>
+			<h1>MOS: &nbsp;<b>".$mailOID."</b></h1>
 		</div>
 		<div class=\"row\">			
 			<div class=\"col-12\">
@@ -2649,12 +2674,14 @@ $msg = "
 						<td class=\"border-0 text-left\"><h5>". $row['whoSubmit'] ."</h5></td>						
 					</tr>";
 if($_SESSION["userType"]==3){
-			$msg .= "<tr>
+	if(!empty($orderTypeDesc)){//hide row when is not Span or a Service
+		$msg .= "<tr id='trPrintOrderType'>
 						<td class=\"border-0 text-right\"><h5>Order Type:</h5></td>
 						<td class=\"border-0 text-left\"><h5 class=\"font-weight-bold\">". $orderTypeDesc ."</h5></td>
 						<td class=\"border-0 text-right\"><h5>Invoice to:</h5></td>
 						<td class=\"border-0 text-left\"><h5>". $row['invoiceTo'] ."</h5></td>
 					</tr>";
+	}
 }
 $msg .= "			<tr>
 						<td class=\"border-0 text-right\"><h5>Date Submitted:</h5></td>
@@ -2855,10 +2882,8 @@ $msg .= "			<tr>
 					</div>
 				</div>";
 	}
-	$msg .="</div>
-</body>
-</html>";
-echo $msg;
+	$msg .="</div>";
+echo $msg;*/
 
 
 ?>
@@ -2902,14 +2927,24 @@ $(document).ready(function(){
 	$(".modal-content").resizable({
 		minHeight: 630,
 		minWidth: 500
-    });	
+    });
+	$('#up').hide();
+	$('#down').show();
+	$('#collapsePrintOptions').on('hidden.bs.collapse', function () {
+		$('#up').hide();
+		$('#down').show();
+	});
+	$('#collapsePrintOptions').on('show.bs.collapse', function () {
+		$('#down').hide();
+		$('#up').show();
+	});
 	<?php
 	if($_SESSION["userType"]==1){
 		echo "$('#divPrintPrice').hide();";
 		echo "$('#roomTotal').hide();";
 	}
 	?>
-		
+	loadPrinting();		
 });
 
 var arr = new Array();

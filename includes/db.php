@@ -107,12 +107,12 @@ $GLOBALS['$result'] = "";
       if($GLOBALS['$result']->num_rows > 0){
           foreach ($GLOBALS['$result'] as $row) {
               if($mod == 0 || strcmp($mod,"Y")){
-                  if(row['sid']==$id){
-                      return row['itemNum'];
+                  if($row['sid']==$id){
+                      return $row['itemNum'];
                   }
               }else{
-                  if(row['item']==$id){
-                      return row['itemNum'];
+                  if($row['item']==$id){
+                      return $row['itemNum'];
                   }
               }
           }

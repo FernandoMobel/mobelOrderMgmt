@@ -760,7 +760,7 @@ $(document).ready(function () {
 
 	$('#orderTypeFilter').multiselect({
 		allSelectedText: 'All order types are selected',
-		buttonWidth: '350px',
+		buttonWidth: '300px',
 		maxHeight: 600,
 		dropRight: true,
 		onChange: function(options, checked) {
