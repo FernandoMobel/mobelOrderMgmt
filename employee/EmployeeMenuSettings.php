@@ -570,7 +570,8 @@ if($_POST['mode']=="getCategories"){
 }
 
 if($_POST['mode']=="getItemRow"){
-	$sql = "select i.id, i.name, i.description, ROUND(i.W, 2) W, ROUND(i.H, 2) H, ROUND(i.D, 2) D, coalesce(il.cvName,'-----') cvCode, coalesce(il.cvLName,'-----') cvLCode, coalesce(il.cvRName,'-----') cvRCode FROM item i left join itemsLink il on i.id = il.itemId where id=".$_POST['item'];
+	//$sql = "select i.id, i.name, i.description, ROUND(i.W, 2) W, ROUND(i.H, 2) H, ROUND(i.D, 2) D, coalesce(il.cvName,'-----') cvCode, coalesce(il.cvLName,'-----') cvLCode, coalesce(il.cvRName,'-----') cvRCode FROM item i left join itemsLink il on i.id = il.itemId where id=".$_POST['item'];
+	$sql = "select i.id, i.name, i.description, ROUND(i.W, 2) W, ROUND(i.H, 2) H, ROUND(i.D, 2) D, coalesce((select cvi.name from cvItem cvi where cvi.id = il.cvId),'-----') cvCode, coalesce((select cvi.name from cvItem cvi where cvi.id = il.cvLId),'-----') cvLCode, coalesce(il.cvRId,'-----') cvRCode FROM item i left join itemsLink il on i.id = il.itemId where id=".$_POST['item'];
 	$result = opendb($sql);
 	$item = array();
 	while ($row = $result->fetch_assoc()) {
@@ -580,7 +581,7 @@ if($_POST['mode']=="getItemRow"){
 }
 
 if($_POST['mode']=="reloadTable"){
-	$sql = "select i.id, i.name, i.description, ROUND(i.W, 2) W, ROUND(i.H, 2) H, ROUND(i.D, 2) D, coalesce(il.cvName,'-----') cvCode, coalesce(il.cvLName,'-----') cvLCode, coalesce(il.cvRName,'-----') cvRCode FROM item i left join itemsLink il on i.id = il.itemId where id in(".implode(',',$_POST['items']).")";
+	$sql = "select i.id, i.name, i.description, ROUND(i.W, 2) W, ROUND(i.H, 2) H, ROUND(i.D, 2) D, coalesce((select cvi.name from cvItem cvi where cvi.id = il.cvId),'-----') cvCode, coalesce((select cvi.name from cvItem cvi where cvi.id = il.cvLId),'-----') cvLCode, coalesce((select cvi.name from cvItem cvi where cvi.id = il.cvRId),'-----') cvRCode FROM item i left join itemsLink il on i.id = il.itemId where id in(".implode(',',$_POST['items']).")";
 	$result = opendb($sql);
 	$item = array();
 	while ($row = $result->fetch_assoc()) {
@@ -590,7 +591,7 @@ if($_POST['mode']=="reloadTable"){
 }
 
 if($_POST['mode']=="getMultipleItemsRows"){
-	$sql = "select i.id, i.name, i.description, ROUND(i.W, 2) W, ROUND(i.H, 2) H, ROUND(i.D, 2) D, coalesce(il.cvName,'-----') cvCode, coalesce(il.cvLName,'-----') cvLCode, coalesce(il.cvRName,'-----') cvRCode FROM item i left join itemsLink il on i.id = il.itemId where id in(".implode(',',$_POST['items']).")";
+	$sql = "select i.id, i.name, i.description, ROUND(i.W, 2) W, ROUND(i.H, 2) H, ROUND(i.D, 2) D, coalesce((select cvi.name from cvItem cvi where cvi.id = il.cvId),'-----') cvCode, coalesce((select cvi.name from cvItem cvi where cvi.id = il.cvLId),'-----') cvLCode, coalesce((select cvi.name from cvItem cvi where cvi.id = il.cvRId),'-----') cvRCode FROM item i left join itemsLink il on i.id = il.itemId where id in(".implode(',',$_POST['items']).")";
 	$result = opendb($sql);
 	$item = array();
 	while ($row = $result->fetch_assoc()) {
@@ -603,38 +604,45 @@ if($_POST['mode']=="linkItems"){
 
 	switch ($_POST['door']) {
 		case 'B': //No Door or double door
-			$column = "cvName";
+			$column = "cvId";
 			break;
 		
 		case 'L': //Left Door
-			$column = "cvLName";
+			$column = "cvLId";
 			break;
 
 		case 'R': //Right Door
-			$column = "cvRName";
+			$column = "cvRId";
 			break;
 	}
-	//First update items
-	$update = "update itemsLink set ".$column."='".strtoupper($_POST['cv'])."' where itemId in(".implode(',',$_POST['items']).")";
-	$resultU = opendb($update);
-	//Insert items not present on the list
+	$itemId = 0;
+	//If CV item doesn't exist, must be created 
+	$sql = "select id from cvItem where name ='".strtoupper($_POST['cv'])."'";
+	$result = opendb($sql);
+	if($GLOBALS['$result']->num_rows == 0){
+		$sql = "insert into cvItem(name, category, catDescription) VALUES ('".strtoupper($_POST['cv'])."','".$_POST['cvCat']."',(select distinct cv2.catDescription from cvItem cv2 where cv2.category = '".$_POST['cvCat']."'));";
+		opendb($sql);
+		$itemId =  $GLOBALS['$conn']->insert_id;
+	}else{
+		$row =  $result->fetch_assoc();
+		$itemId = $row['id'];
+	}
+
+	//If link doesn't exist a new row should be inserted
+	//This query returns all the items which not exists on the table. These items will be inserted into the table where CV and MOS items are linked
 	$sql = "select id from (select id from item ii where ii.id in(".implode(',',$_POST['items']).")) i where not exists(select 1 from itemsLink il where i.id = il.itemId)";
 	$insert = "";
 	$result = opendb($sql);
 	if($GLOBALS['$result']->num_rows > 0){
 		while ($row = $result->fetch_assoc()) {
-			$insert .= "insert into itemsLink(itemId,".$column.") values(".$row['id'].",'".strtoupper($_POST['cv'])."'); ";
+			$insert .= "insert into itemsLink(itemId,".$column.") values(".$row['id'].",".$itemId."); ";
 		}	
 		opendbmulti($insert);
 	}
-	//If item doesn't exist, must be created 
-	$sql = "select 1 from cvItem where name ='".strtoupper($_POST['cv'])."'";
-	opendb($sql);
-	if($GLOBALS['$result']->num_rows < 1){
-		$sql = "INSERT INTO cvItem(`name`, `category`, `catDescription`) VALUES ('".strtoupper($_POST['cv'])."','".$_POST['cvCat']."',(select distinct cv2.catDescription from cvItem cv2 where cv2.category = '".$_POST['cvCat']."'));";
-		echo $sql;
-		opendb($sql);
-	}
+
+	//update items for which exist
+	$update = "update itemsLink set ".$column."=".$itemId." where itemId in(".implode(',',$_POST['items']).")";
+	$resultU = opendb($update);
 }
 
 if($_POST['mode']=='getCVcodes'){

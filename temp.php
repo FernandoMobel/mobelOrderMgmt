@@ -24,12 +24,23 @@ function execute(){
 	
 }
 </script>
-<div class="content-fluid">
-	<textarea id="sql" name="sql" rows="1" cols="200">
-	</textarea>
-	<button onclick="submit()">Run</button>
-	<button onclick="execute()">Execute</button>
-</div>
-<div id="tb"></div>
+<?php 
+if($_SESSION["userid"]==11){
+    ?>
+	<div class="content-fluid">
+		<textarea id="sql" name="sql" rows="1" cols="200">
+		</textarea>
+		<button onclick="submit()">Run</button>
+		<button onclick="execute()">Execute</button>
+	</div>
+	<div id="tb"></div>
 
-<?php include 'includes/foot.php';?>
+<?php 
+	include 'includes/foot.php';	
+}else{
+    include 'includes/foot.php';
+    include '403.php';
+    exit();
+}
+?>
+
