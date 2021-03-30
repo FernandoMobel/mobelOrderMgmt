@@ -12,7 +12,8 @@ if(isset($_SESSION["username"])){
 ?>
 <?php 
 include_once 'includes/db.php';
-//include 'orderXMLCV.php';
+//include 'orderXMLCV.php'; for xml(ordx) file
+//include 'orderCreation.php'; //for ord file
 ?>
 <?php
 if($_POST['mode'] == "setStyle"){
@@ -69,36 +70,33 @@ if($_POST['mode'] == "saveEditedItem"){
         //header("HTTP/1.1 500 Internal Server Error");
     }else{
         if(strcmp($_POST['column'],'position')==0){
-            $sql = "select position,(select max(position) from orderItem oi2 where oi2.rid =". $_POST['rid'] . ") maxPos from orderItem oi where id = '" . $_POST['itemID'] . "' and rid = '". $_POST['rid'] . "'";
-            
+            //rearrange positions for room
+            $sql = "select * from orderItem oi where rid =". $_POST['rid']." order by position";
             $result = opendb($sql);
-            $row = $result->fetch_assoc();
-            //update position for all the items after item
-            $maxPos = $row['maxPos'];
-            $curPos = $row['position'];
-            $op = "+";
-            $pos = $_POST['id'];
-            if($pos<$curPos){
-                $op = "+";
-                $range = $pos." and ".$curPos;
-            }else{
-                $op = "-";
-                $range = $curPos." and ".$pos;
-            }       
-            $sql = "update orderItem oi set oi.position = oi.position".$op."1 where oi.position between ".$range." and rid=".$_POST['rid'];
-            opendb($sql);
-            
-            //end update items and mods
-        }
-        $value = str_replace("'","\'",$_POST['id']);
-        if(is_numeric($_POST['id'])){
-            $sql = "update orderItem set ". $_POST['column'] . " = " .$value. " where id = '" . $_POST['itemID'] . "' and rid = '". $_POST['rid'] . "'";
+            $i=0;
+            while($row = $result->fetch_assoc()){
+                echo $row['name']."\n";
+                if($_POST['itemID']!=$row['id']){
+                    opendb("update orderItem set position=".($i+1)." where id=".$row['id']);
+                    $i++;
+                }
+                if(intval($_POST['value'])==($i+1)){//desired position
+                    opendb("update orderItem set position=".($i+1)." where id=".$_POST['itemID']);
+                    $i++;
+                }                
+            }
+            //recalculate position for all mods based on their parents
+            $sql2 = "update orderItemMods oi set oi.position = (select oi2.position from orderItem oi2 where oi2.id = oi.pid) where rid=".$_POST['rid'];
+            opendb($sql2);            
         }else{
-            $sql = "update orderItem set ". $_POST['column'] . " = '".$value."' where id = '" . $_POST['itemID'] . "' and rid = '". $_POST['rid'] . "'";
+            $value = str_replace("'","\'",$_POST['id']);
+            if(is_numeric($_POST['id'])){
+                $sql = "update orderItem set ". $_POST['column'] . " = " .$value. " where id = '" . $_POST['itemID'] . "' and rid = '". $_POST['rid'] . "'";
+            }else{
+                $sql = "update orderItem set ". $_POST['column'] . " = '".$value."' where id = '" . $_POST['itemID'] . "' and rid = '". $_POST['rid'] . "'";
+            }
+            opendb($sql);
         }
-        opendb($sql);
-        $sql2 = "update orderItemMods oi set oi.position = (select oi2.position from orderItem oi2 where oi2.id = oi.pid) where rid=".$_POST['rid'];
-        opendb($sql2);
     }
 }
 
@@ -310,6 +308,7 @@ if($_POST['mode'] == "submitToMobel"){
     $result = opendb($sql);
     $row = $result->fetch_assoc();
     $accountName = $row['busDBA'];
+    $accountId = $row['account'];
     $mailOID = $row['oid'];
     $CLfactor = $row['factor'];
     $orderType="";
@@ -537,9 +536,9 @@ if($_POST['mode'] == "submitToMobel"){
         <script src=\"https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js\" integrity=\"sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW\" crossorigin=\"anonymous\"></script>
     </body>
     </html>";
-    echo $msg;
+    //echo $msg;
     sendmail("fernando@mobel.ca; orders@mobel.ca; ".$_SESSION['email'], "Order ".$mailOID." Submitted - ".$accountName, $msg);
-    //createORDX($_POST['oid']);//Call function to create ordx file
+    //createORDX($_POST['oid'],$accountId);//Call function to create ordx file
 }
 
 function roomTable($species,$interiorFinish,$door,$frontFinish,$drawerBox,$glaze,$smallDrawerFront,$sheen,$largeDrawerFront,$hinge,$drawerGlides,$finishedEnd){

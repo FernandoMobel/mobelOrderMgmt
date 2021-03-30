@@ -1,6 +1,31 @@
 <?php include 'includes/nav.php';?>
 <?php include_once 'includes/db.php';?>
-<?php $roomCount = 1; $dateRequired = ""; 
+<?php 
+/*Declare Variables */
+$roomCount = 1; $dateRequired = ""; 
+$invalidHeaderMessage = "";
+
+/*Getting Order main specs*/
+$userFilter = " and mosUser = ".$_SESSION["userid"];
+if($_SESSION["userType"] == 3){
+	$userFilter = "";
+}
+if($_SESSION["userType"] == 2){
+	$userFilter = " and account = ".$_SESSION["account"];
+}
+$sql = "select m.*,s.name as 'status' from mosOrder m, state s  where m.state = s.id and m.oid = ".$_GET["OID"] . $userFilter;
+$result = opendb($sql);
+if($GLOBALS['$result']->num_rows > 0){
+    $mosOrderTB = $result->fetch_assoc();
+}else{
+    include 'includes/foot.php';
+    include '403.php';
+    exit();
+}
+/*Getting general settings*/
+$sql ="select * from settings";
+$result = opendb($sql);
+$settings = $result->fetch_assoc();
 ?>
 <style>
 table.table-sm td{
@@ -17,6 +42,14 @@ table{
   -ms-transform: scale(1.3); /* IE 9 */
   -webkit-transform: scale(1.3); /* Safari 3-8 */
   transform: scale(1.3); 
+}
+
+.highlight:hover {
+  /*-ms-transform: scale(1.3); /* IE 9 */
+  /*-webkit-transform: scale(1.3); /* Safari 3-8 */
+  /*transform: scale(1.3); */
+  color: white;
+  background: #4285f4;
 }
 
 option{ white-space: normal; }
@@ -44,10 +77,17 @@ table p{
 }
 
 </style>
-<script src="js/MDB/js/popper.min.js"></script>
+<!--script src="js/MDB/js/popper.min.js"></script-->
 
 <script>
-var viewOnly = 0;
+<?php
+/*Read only order according to the state */
+if($mosOrderTB['state']==1){
+    echo "var viewOnly = 0;";
+}else{
+    echo "var viewOnly = 1;";
+}
+?>
 var noChangeMsg = "To make changes to a submitted order, please contact Mobel.";
 var refresh = 1;
 function saveOrder(objectID){
@@ -201,11 +241,14 @@ function loadItems(rid){
 					}
 				}
 				if(!incomplete){//Header options are selected
-					$("#Position").empty();
 					$('#items').append(data);
+					//Reload positions
+					var pos = $("#Position").val();
+					$("#Position").empty();					
 					for(i=1; i<=$('#items tr.font-weight-bold').length; i++){
 						$("#Position").append(new Option(i+".0", i));
 					}
+					$("#Position").val(pos);
 					$(".borderless").css('border-top','0px');
 					if($('#itemListingTable tbody tr').hasClass('table-danger')){
 						$('#beforeSbm').prop('disabled', true);
@@ -299,9 +342,9 @@ function editItems(itemID, mod){
 	       			$('#D2').val(parseFloat(myObj.d2));
 	       			$('#Qty').val(parseFloat(myObj.qty));
 	       			//Disable option for mods or enable for items
-	       			if($('#editItemID').val()!==0){//items
-	       				$('#Position').val(myObj.position);
+	       			if($('#editItemID').val()!==0){//items	       				
 	       				$('#Position').prop('disabled',false);
+						$('#Position').val(myObj.position);						
 	       			}else{//mods
 	       				$('#Position').prop('disabled',true);
 	       			}
@@ -391,7 +434,7 @@ function cleanEdit(rqst){
 		$("#Position").val($('#items tr.font-weight-bold').length+1);
 	}		
 	if($('#editItemID').prop('value')==0){
-		$("#Position").prop('disabled',true);	
+		$("#Position").prop('disabled',true);
 	}else{
 		$("#Position").prop('disabled',false);
 	}
@@ -401,7 +444,6 @@ function cleanEdit(rqst){
 	}else{
 		$("#Position").show();
 		$("#lblPosition").show();
-
 	}
 }
 
@@ -440,7 +482,7 @@ function solvefirst(W,H,D,W2,H2,D2,name,catid) {
 		}
 		$("#Position").prop('disabled', false);
     	resolve('');
-    	//}, 5000); set time out
+		//}, 5000); set time out
 		}
   );
 }
@@ -448,10 +490,10 @@ function solvefirst(W,H,D,W2,H2,D2,name,catid) {
 async function setSizes(W,H,D,W2,H2,D2,name,desc,catid) {
   const result = await solvefirst(W,H,D,W2,H2,D2,name,catid);
   $('#editItemSearch').val(result);
-	document.getElementById("livesearch").innerHTML=name;
-	loadItems($("a.nav-link.roomtab.active").attr("value"));
+	document.getElementById("livesearch").innerHTML=name;	
 	if($('#editItemTitle').text() != "Edit/Delete Mod")
 		getImage(catid,false);
+	loadItems($("a.nav-link.roomtab.active").attr("value"));
 }
 
 function saveEditedItem(objectID,col){
@@ -489,11 +531,12 @@ function saveEditedItem(objectID,col){
 	}else{
 		myData = { column:col, id: $("#"+objectID).val(), itemID: $('#editOrderItemID').val(), mode: myMode, rid: $("a.nav-link.roomtab.active").attr("value"), value: $("#"+objectID).val(), oid: "<?php echo $_GET["OID"] ?>"};
 	}
+	console.log(myData);
 	$.post("save.php",myData,function(data, status, jqXHR) {
 		if(status == "success"){
 	    	$("#"+objectID).css("border-color", "#00b828");
 	    	if(refresh>0){
-		    	//console.log(jqXHR['responseText']);
+		    	console.log(jqXHR['responseText']);
 		    	loadItems($("a.nav-link.roomtab.active").attr("value"));
 		    	refresh = 0;
 	    	}
@@ -1177,293 +1220,164 @@ function loadPrinting(){
 	});	
 }
 </script>
+
 <div class="navbar navbar-expand-sm bg-light navbar-light d-print-none">
 	<div class="col-sm-12 col-md-12 col-lg-12 mx-auto pl-1 pr-1 ml-1 mr-1">
 		<div class="row">
-			<?php
-			$userFilter = " and mosUser = ".$_SESSION["userid"];
-			if($_SESSION["userType"] == 3){
-				$userFilter = "";
-			}
-			if($_SESSION["userType"] == 2){
-				$userFilter = " and account = ".$_SESSION["account"];
-			}
-		 
-			opendb("select m.*,s.name as 'status' from mosOrder m, state s  where m.state = s.id and m.oid = ".$_GET["OID"] . $userFilter);
-			
-			if($GLOBALS['$result']->num_rows > 0){
-				foreach ($GLOBALS['$result'] as $row) {
-					$dateRequired = $row['dateRequired'];
-					$isWarranty = $row['isWarranty'];
-					$isPriority = $row['isPriority'];
-					$CLid = $row['CLid'];
-					$fromOrder = $row['fromOrder'];
-					$state = $row['state'];			
-					
-					echo "<div class=\"col-sm-6 col-md-4 col-lg-3 align-self-center mb-0 pb-0\">";  
-
-						echo "<label class=\"print\" for=\"state\">Order ID:</label>";
-						echo "<textarea readonly class=\"form-control noresize print\" rows=\"1\" id=\"state\">";
-						echo $row['oid'];
-						echo "</textarea>";
-					
-
-
-
-						echo "<label class=\"d-print-none\" for=\"OID\">For Order Number ".$row['oid']."</label><br/>";				
-						echo "<input class=\"d-print-none\" type=\"hidden\" value=\"".$row['oid']."\" id=\"OID\">";  
-						//echo "<label class=\"print\">Required: ".substr($dateRequired,0,10)."</label>";				
-						echo "<button data-toggle=\"modal\" onClick=\"setMinDate();hideSubmit();\" data-target=\"#orderOptions\" class=\"btn btn-primary text-nowrap px-2 py-2 mx-0  mt-0 d-print-none\" data-toggle=\"modal\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles( ".$_GET["OID"].");\">Options<span class=\"ui-icon ui-icon-gear\"></span></button>&nbsp;";
-						echo "<button class=\"btn btn-primary text-nowrap px-2 py-2 mx-0 mt-0 d-print-none\" data-toggle=\"modal\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles( ".$_GET["OID"].");\">Files<span class=\"ui-icon ui-icon-disk\"></span></button>&nbsp;";
-					
-						if($row['state'] == 1){
-							/*if($row['tagName'] == "Tag name not set"){
-								echo "<button id=\"beforeSbm\" class=\"d-print-none\" type=\"button\" onClick=\"alert('Please set your tag name and refresh to submit your quote.')\">Submit to Mobel</button>";
-								echo "<script>viewOnly = 0;</script>";
-							}else{*/
-								echo "<button id=\"afterSbm\" type=\"button\" data-toggle=\"modal\" onClick=\"orderValidation();\" class=\"btn btn-primary text-nowrap px-2 py-2  mt-0 mx-0 d-print-none\">Submit<span class=\"ui-icon ui-icon-circle-triangle-e\"></span></button>";
-								echo "<script>viewOnly = 0;</script>";
-							//}
-						}else{
-							/*if($_SESSION["userType"] == 3){
-								echo "<script>viewOnly = 1;</script>";
-							}else{*/
-								echo "<script>viewOnly = 1;</script>";
-							//}
-							echo "<button type=\"button\" data-toggle=\"modal\" data-target=\"#orderOptions\" class=\"btn btn-primary text-nowrap d-print-none px-2 py-2 mx-0  mt-0\">Order Details</button>";
-							//echo $row['status'] . " " . substr($row['dateSubmitted'],0,10);							
-						}
-					
-					echo "</div>";
-					
-					echo "<div class=\"col-sm-6 col-md-4 col-lg-2\">";
-						echo "<label for=\"state\">Order Status:</label>";
-						echo "<textarea readonly class=\"form-control noresize\" rows=\"1\" id=\"state\">";
-						echo $row['status'];
-						echo "</textarea>";
-					echo "</div>";
-					
-					
-					echo "<div class=\"col-sm-12 col-md-4 col-lg-3\">";
-						echo "<label for=\"tagName\">Tag Name:</label>";
-						echo "<textarea onchange=\"saveOrder('tagName');\" rows=\"1\" class=\"form-control noresize\"  id=\"tagName\">";
-						echo $row['tagName'];
-						echo "</textarea>";
-					echo "</div>";
-					
-					
-					echo "<div class=\"col-sm-6 col-md-4 col-lg-2\">";
-						echo "<label for=\"PO\">P.O:</label>";
-						echo "<textarea onchange=\"saveOrder('PO');\" rows=\"1\" class=\"form-control rounded-0 noresize\" id=\"PO\">";
-						echo $row['po'];
-						echo "</textarea>";
-					echo "</div>";
-				}
-			}else{
-				//echo "Webpage forbidden";
-				ob_start();
-				header("Location: viewOrder.php");
-				ob_end_flush();
-				echo "<script> location.href='viewOrder.php'; </script>";
-				exit("Sorry, this page is not available for you.");
-			}
-			
-			opendb("select * from settings");
-			if($GLOBALS['$result']->num_rows > 0){
-				foreach ($GLOBALS['$result'] as $row){
-					echo "<div class=\"col-sm-6 col-md-4 col-lg-2\">";
-					echo "<label for=\"state\">Lead Time:</label>";
-					echo "<textarea title=\"Some factors may increase your lead time. We will inform you as soon as possible once your quote is submitted.\" rows=\"1\" readonly class=\"form-control noresize\" id=\"currentLeadtime\">";
-					echo substr($row['currentLeadtime'],0,10);
-					echo "</textarea>";
-					echo "</div>";
-				}
-			}
-
-			echo "<div class=\"col-sm-6 col-md-4 col-lg-2 print\">";
-				echo "<label for=\"state\">Required date:</label>";
-				echo "<textarea readonly class=\"form-control noresize\" rows=\"1\">";
-				echo substr($dateRequired,0,10);
-				echo "</textarea>";
-			echo "</div>";
-		echo "</div>";
-		//if($_SESSION["userType"] == 3 && $state <> "1"){
-		if(in_array($_SESSION["userid"],[1,2,11,30,32]) && $state <> "1"){			
-			echo "<div class=\"row d-print-none\">";
-			echo "<div class=\"col-12\">";
-			echo "Order Locked: <input type=\"checkbox\" ";
-			echo "onchange=\"if($('#isLocked').is(':checked')){viewOnly=1;}else{viewOnly=0;};\" checked id=\"isLocked\">";
-			echo "</div>";
+		<div class="col-sm-6 col-md-4 col-lg-3 align-self-center mb-0 pb-0">
+                <label class="print" for="state">Order ID:</label>
+				<textarea readonly class="form-control noresize print" rows="1" id="state">
+				<?php echo $mosOrderTB['oid'];?>
+				</textarea>
+				<label class="d-print-none" for="OID">For Order Number <?php echo $mosOrderTB['oid'];?></label><br/>
+				<input class="d-print-none" type="hidden" value="<?php echo $mosOrderTB['oid'];?>" id="OID">
+				<button data-toggle="modal" onClick="setMinDate();hideSubmit();" data-target="#orderOptions" class="btn btn-primary text-nowrap px-2 py-2 mx-0  mt-0 d-print-none" data-toggle="modal" data-target="#fileModal" type="button" onClick="loadFiles(<?php echo $mosOrderTB['oid'];?>);">Options<span class="ui-icon ui-icon-gear"></span></button>&nbsp;
+				<button class="btn btn-primary text-nowrap px-2 py-2 mx-0 mt-0 d-print-none\" data-toggle="modal" data-target="#fileModal" type="button" onClick="loadFiles( <?php echo $mosOrderTB['oid'];?>);">Files<span class="ui-icon ui-icon-disk"></span></button>&nbsp;
+				<?php
+                /*Only for Quoting, Submit button should be enabled*/
+                if($mosOrderTB['state']==1){
+					echo "<button id=\"afterSbm\" type=\"button\" data-toggle=\"modal\" onClick=\"orderValidation();\" class=\"btn btn-primary text-nowrap px-2 py-2  mt-0 mx-0 d-print-none\">Submit<span class=\"ui-icon ui-icon-circle-triangle-e\"></span></button>";
+				}/*else{
+                    echo "<button type=\"button\" data-toggle=\"modal\" data-target=\"#orderOptions\" class=\"btn btn-primary text-nowrap d-print-none px-2 py-2 mx-0  mt-0\">Order Details</button>";
+				}*/
+                ?>
+            </div>
+			<div class="col-sm-6 col-md-4 col-lg-2">
+				<label for="state">Order Status:</label>
+				<textarea readonly class="form-control noresize" rows="1" id="state"><?php echo $mosOrderTB['status']; ?></textarea>
+			</div>
+            <div class="col-sm-12 col-md-4 col-lg-3">
+			    <label for="tagName">Tag Name:</label>
+				<textarea onchange="saveOrder('tagName');" rows="1" class="form-control noresize"  id="tagName"><?php echo $mosOrderTB['tagName'];?></textarea>
+			</div>
+            <div class="col-sm-6 col-md-4 col-lg-2">
+                <label for="PO">P.O:</label>
+                <textarea onchange="saveOrder('PO');" rows="1" class="form-control rounded-0 noresize" id="PO"><?php echo $mosOrderTB['po'];?></textarea>
+            </div>
+            <div class="col-sm-6 col-md-4 col-lg-2">
+				<label for="state">Lead Time:</label>
+				<textarea title="Some factors may increase your lead time. We will inform you as soon as possible once your quote is submitted." rows="1" readonly class="form-control noresize" id="currentLeadtime"><?php echo substr($settings['currentLeadtime'],0,10);?></textarea>
+			</div>
+            <div class="col-sm-6 col-md-4 col-lg-2 print">
+			    <label for="state">Required date:</label>
+				<textarea readonly class="form-control noresize" rows="1"><?php echo substr($dateRequired,0,10); ?></textarea>
+			</div>
+		</div>
+        <?php
+        if(in_array($_SESSION["userid"],[1,2,11,30,32]) && $mosOrderTB['state'] <> "1"){			
+			echo "<div class=\"row\">";
+				echo "<div class=\"col-12\">";
+					echo "Order Locked: <input type=\"checkbox\" ";
+					echo "onchange=\"if($('#isLocked').is(':checked')){viewOnly=1;}else{viewOnly=0;};\" checked id=\"isLocked\">";
+				echo "</div>";
+			echo "</div>";									
 		}
-		?>
-		</div>
-		<div class="row mt-2">
-			<?php
-			//$sqlSh = "select invoiceTo, coalesce((select concat(mu.firstName,' ',mu.lastName) from mosUser mu where mu.id = mo.submittedBy),'No name')whoSubmit,(select a.busDBA from account a where a.id = mo.account)busName,shipAddress,(select concat(coalesce(unit,' '),' ',street,' ',city,' ',province,' ',country,' ',postalCode)  from accountAddress aA where aA.id =mo.shipAddress) shipTo from mosOrder mo where oid = ".$_GET["OID"];
-			$sqlSh= "select coalesce(invoiceTo,'N/A')invoiceTo,(select concat(coalesce(unit,' '),' ',street,' ',city,' ',province,' ',country,' ',postalCode)  from accountAddress aA where aA.id =mo.shipAddress) shipTo, coalesce((select concat(mu.firstName,' ',mu.lastName) from mosUser mu where mu.id = mo.submittedBy),'No name')whoSubmit, (select a.busDBA from account a where a.id = mo.account)busName,isPriority, isWarranty,shipAddress, CLid from mosOrder mo, mosUser mu, account a, cabinetLine cl where mo.mosUser = mu.id and mo.account = a.id and mo.CLid = cl.id and mo.oid = '" . $_GET["OID"] . "'";
-			$result = opendb($sqlSh);			
-			$row = $result->fetch_assoc();
-			$orderTypeDesc="Dealer";
-			if($row['CLid']==3){
-				$orderTypeDesc = "Span Medical";
-			}
-			if($row['CLid']==2){
-				$orderTypeDesc = "Builder";
-			}
-			if($row['isPriority']==1){
-				$orderTypeDesc = "Service";
-			}
-			if($row['isWarranty']==1){
-				$orderTypeDesc = "Service w/warranty";
-			}
-			echo "<div class=\"col-md-4 print\">";
-				echo "Submitted by: " .$row['whoSubmit']."<br>";
-				echo "Customer: " .$row['busName']."<br>";
-			echo "</div>";
-			echo "<div class=\"col-md-4 print\">";
-				echo "Order Type: " .$orderTypeDesc."<br>";
-				echo "Invoice To: " .$row['invoiceTo']."<br>";	
-			echo "</div>";	
-			echo "<div class=\"col-md-4 print\">";
-				if(strlen($row['shipAddress'])>0){
-					if($row["shipAddress"]==1){
-						echo "Ship to: Pick up at Mobel<br>";
-					}else{
-						echo "Ship to: " .$row['shipTo']."<br>";
-					}					
-				}else{
-					echo "No shipping address selected<br>";
-				}
-			echo "</div>";			
-			?>
-		</div>
+		?>		
 	</div>
 </div>
 
-
-
-
 <ul class="nav nav-tabs bg-dark d-print-none">
     <?php 
-    //$r =0;
-	//echo window.location.href();
-    opendb("select * from orderRoom where oid = ".$_GET["OID"]." order by name asc");
+    $sql = "select * from orderRoom where oid = ".$mosOrderTB['oid']." order by name asc";
+    $orderRoomList = opendb($sql);
     $s = " active";
     $i = 0;
-    //window.location.replace(window.location.href+'test');
     if($GLOBALS['$result']->num_rows > 0){
-        foreach ($GLOBALS['$result'] as $row) {
+        while($row = $orderRoomList->fetch_assoc()){
             echo "<li value=\"".$row['rid']."\" class=\"btn-group nav-item" . $s . "\">
 					<a value=\"".$row['rid']."\" class=\"nav-link roomtab" . $s . "\" onclick=\"loadItems(" .$row['rid']. ");\" href=\"#r". str_replace(" ","",$row['name']) . $i . "\">
 						<span class=\"nav-link-active text-muted\">
 							<b id=\"" . $row['name'] ."\">" . $row['name'] ."</b>
 						</span>
-					</a></li>";
-            if($s != ""){
-                //$r = $i;
-            }
+					</a>
+				</li>";
             $s = "";
-            $i = $i + 1;
+            $i++;
         }
         $roomCount = $i;
     }else{
         echo "<li class=\"nav-item" . $s . "\"><a class=\"nav-link active\"href=\"#NoRooms\">No Rooms</a></li>";
         $roomCount = 0;
     }
-    echo "<li class=\"nav-item d-print-none\"><a onclick=\"addRoom(".$i.")\" id=\"addRoom\" class=\"nav-link text-muted\"  >Add</a></li>";
-    
+    echo "<li class=\"nav-item d-print-none\"><a onclick=\"addRoom(".$roomCount.")\" id=\"addRoom\" class=\"nav-link text-muted\"  >Add</a></li>";
     ?>
 </ul>
-
-
-
-
-
-
 
 <!-- Tab panes -->
 <div id="tabs" class="tab-content mb-3 d-print-none">
     <?php 
-    if($i==0){
+    if($roomCount==0){
         ?>
         <div id="NoRooms" class="container tab-pane float-left col-12 active"><br>
         <h3>No Rooms</h3>
         <p>No rooms were found. Please click the "Add" tab to create a new room.</p>
         </div>
         <?php 
-    }
+    }else{
     ?>
     <div id="Add" class="container tab-pane float-left col-12 fade"><br>
         <h3>Add Room</h3>
         <p>This creates a new room</p>
     </div>
     <?php
-    $invalidHeaderMessage = "";
-    if($i!=0){
-        //$RID = $r;
-        $i=0;
-		$sql = "select * from orderRoom where oid = ". $_GET["OID"] ." order by name asc";
-		//echo $sql;
-        opendb($sql);
-        if($GLOBALS['$result']->num_rows > 0){
-            foreach ($GLOBALS['$result'] as $row) {
-                //$i=$i+1;
-                echo "<div id=\"r" . str_replace(" ","",$row['name']) . $i ."\" class=\"container tab-pane float-left col-12 header";
-                if($i==0){
-                    echo " active";
-                }
-                echo "\"><br>";
-                
-                echo "<div class=\"row\">";
-                
-					echo "<div class=\"col-2\">
-							<a class=\"btn btn-primary px-2 py-1 text-nowrap ml-0 editbutton d-print-none\" href=\"#\" role=\"button\" id=\"dropdownMenuLink\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"false\">
-								<svg width=\".8em\" height=\".8em\" viewBox=\"0 0 16 16\" class=\"bi bi-pencil-fill\" fill=\"currentColor\" xmlns=\"http://www.w3.org/2000/svg\">
-									<path fill-rule=\"evenodd\" d=\"M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11l.178-.178z\"></path>
-								</svg>
-							</a>
-							<div class=\"dropdown-menu\" aria-labelledby=\"dropdownMenuLink\">
-								<a class=\"dropdown-item\" onClick=\"editRoom(".$row['rid']. ",'" . $row['name'] . "');\"  data-toggle=\"modal\" title=\"Edit room\" data-target=\"#editRoomModal\">Edit Room Name/Notes</a>
-								<a class=\"dropdown-item\" onclick=\"copyRoom(".$row['rid'].")\">Copy Room '".ucfirst($row['name'])."'</a>
-								<a class=\"dropdown-item\" data-toggle=\"modal\" data-target=\"#copyItemsModal\" onclick=\"clearModal();\">Copy Items From Order</a>
-							</div>";                							
-							echo "<b><a  class=\"btn btn-primary px-3 py-1 mr-0 float-right d-print-none\" target=\"_blank\" ";
-							if($CLid==3){
-								echo "href=\"header/SPANSTYLES.pdf\">Span Catalogue</a></b>
-								</div>"; 
-							}else{
-								echo "href=\"uploads/MobelCatalogue.pdf\">Catalogue</a></b>
-								</div>"; 
-							}
-							
-					echo "<div class=\"col-2 text-left\">
-							<button class=\"btn btn-primary px-3 py-1 ml-0 editbutton d-print-none\" data-toggle=\"modal\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles(".$_GET["OID"] . ",$('a.nav-link.roomtab.active').attr('value'));\">Room Files 
-							<svg width=\"1em\" height=\"1em\" viewBox=\"0 0 16 16\" class=\"bi bi-folder\" fill=\"currentColor\" xmlns=\"http://www.w3.org/2000/svg\">
-								<path d=\"M9.828 4a3 3 0 0 1-2.12-.879l-.83-.828A1 1 0 0 0 6.173 2H2.5a1 1 0 0 0-1 .981L1.546 4h-1L.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3v1z\"></path>
-								<path fill-rule=\"evenodd\" d=\"M13.81 4H2.19a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4zM2.19 3A2 2 0 0 0 .198 5.181l.637 7A2 2 0 0 0 2.826 14h10.348a2 2 0 0 0 1.991-1.819l.637-7A2 2 0 0 0 13.81 3H2.19z\"></path>
-							</svg></button>";                                      
-					echo "</div>";
-				
-					echo "<div class=\"col-8 text-left\">";//note preview
-						echo "<p class=\"d-print-none\" id=\"RoomNotePreview". $row['rid'] ."\">";				
-						if($row['note']){
-							echo "Room note: <b>" . $row['note']."</b>" ;						
-						}
-						echo "</p>";				
-					echo "</div>";
+    $i=0;
+	foreach($orderRoomList as $row){
+        echo "<div id=\"r" . str_replace(" ","",$row['name']) . $i ."\" class=\"container tab-pane float-left col-12 header";
+        if($i==0){
+        	echo " active";
+        }
+        echo "\"><br>";
+        ?>
+		<div class="row">
+			<div class="col-2">
+				<a class="btn btn-primary px-2 py-1 text-nowrap ml-0 editbutton d-print-none" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					<svg width=".8em" height=".8em" viewBox="0 0 16 16" class="bi bi-pencil-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+						<path fill-rule="evenodd" d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11l.178-.178z"></path>
+					</svg>
+				</a>
+				<div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+					<a class="dropdown-item" onClick="editRoom(<?php echo $row['rid']."," .$row['name'];?>);"  data-toggle="modal" title="Edit room" data-target="#editRoomModal">Edit Room Name/Notes</a>
+					<a class="dropdown-item" onclick="copyRoom(<?php echo $row['rid'];?>);">Copy Room '<?php echo ucfirst($row['name']); ?>'</a>
+					<a class="dropdown-item" data-toggle="modal" data-target="#copyItemsModal" onclick="clearModal();">Copy Items From Order</a>
+				</div>                							
+				<?php
+				echo "<b><a  class=\"btn btn-primary px-3 py-1 mr-0 float-right d-print-none\" target=\"_blank\" ";
+				if($mosOrderTB['CLid']==3){
+					echo "href=\"header/SPANSTYLES.pdf\">Span Catalogue</a></b>
+			</div>"; 
+				}else{
+					echo "href=\"uploads/MobelCatalogue.pdf\">Catalogue</a></b>
+			</div>"; 
+				}
+				?>		
+				<div class="col-2 text-left">
+					<button class="btn btn-primary px-3 py-1 ml-0 editbutton d-print-none" data-toggle="modal" data-target="#fileModal" type="button" onClick="loadFiles(<?php echo $mosOrderTB['oid'];?>,$('a.nav-link.roomtab.active').attr('value'));">Room Files 
+                        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-folder" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M9.828 4a3 3 0 0 1-2.12-.879l-.83-.828A1 1 0 0 0 6.173 2H2.5a1 1 0 0 0-1 .981L1.546 4h-1L.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3v1z"></path>
+                            <path fill-rule="evenodd" d="M13.81 4H2.19a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4zM2.19 3A2 2 0 0 0 .198 5.181l.637 7A2 2 0 0 0 2.826 14h10.348a2 2 0 0 0 1.991-1.819l.637-7A2 2 0 0 0 13.81 3H2.19z"></path>
+                        </svg>
+                    </button>                                      
+				</div>
+				<div class="col-8">
+					<?php
+                    echo "<p id=\"RoomNotePreview".$row['rid']."\">";
+                    if($row['note']) 
+                        echo "Room note: <b>" . $row['note']."</b></p>";                    
+                    ?>				    
+				</div>
+                <?php
 					/*if($row['note']){//note only for printing
 						echo "<h5 class=\"print\" id=\"RoomNotePrint". $row['rid'] ."\"><b>Room note: </b>" . $row['note']."</h5>";
 						echo "<div class=\"dropdown-divider mb-4\"></div>";
 					}*/
 				echo "</div>";
 				
-                //echo "<button class=\"btn btn-primary ml-0 \" data-toggle=\"modal\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles( ".$_GET["OID"].");\">All Files<span class=\"ui-icon ui-icon-disk\"></span></button><br/>";
                 echo "<input type=\"hidden\" value=\"" .  htmlspecialchars($row['note']) . "\" id=\"RoomNote". $row['rid'] ."\">";
                  
 				?>
 				<!--div id="cabLineOp"-->
 				<?php
-				if($CLid==3)
+				if($mosOrderTB['CLid']==3)
 					echo "<div hidden>";
 				?> 
 					<div class="row">
@@ -1474,7 +1388,7 @@ function loadPrinting(){
 							<select onchange="saveStyle('species','<?php echo "species" . $row['rid'];?>');" id="<?php echo "species" . $row['rid'];?>" class="custom-select">
 							<?php	
 							$flag = false;					
-							$sql = "select id, name,visible from species s where s.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$CLid.") order by s.name";
+							$sql = "select id, name,visible from species s where s.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$mosOrderTB['CLid'].") order by s.name";
 							opendb2($sql);
 							if($GLOBALS['$result2']->num_rows == 1){
 								foreach ($GLOBALS['$result2'] as $row2) {
@@ -1522,7 +1436,7 @@ function loadPrinting(){
 						
 						<div class="col-2 text-right">
 							<?php
-							if($CLid==3){
+							if($mosOrderTB['CLid']==3){
 								echo "<label for=\"interiorFinish\">Backing</label>";
 							}else{
 								echo "<label for=\"interiorFinish\">Interior Finish</label>";
@@ -1532,7 +1446,7 @@ function loadPrinting(){
 						<div class="col-4">
 							<select onchange="saveStyle('interiorFinish','<?php echo "interiorFinish" . $row['rid'];?>');" id="<?php echo "interiorFinish" . $row['rid'];?>" class="custom-select">						
 							<?php
-							opendb2("select * from interiorFinish inf where inf.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$CLid.") order by inf.name");
+							opendb2("select * from interiorFinish inf where inf.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$mosOrderTB['CLid'].") order by inf.name");
 							if($GLOBALS['$result2']->num_rows == 1){
 								foreach ($GLOBALS['$result2'] as $row2) {
 									if($row2['visible']==0){//not available
@@ -1577,13 +1491,13 @@ function loadPrinting(){
 						</div>
 					</div>
 				<?php
-				if($CLid==3)
+				if($mosOrderTB['CLid']==3)
 					echo "</div>";
 				?> 
 					<div class="row">
 						<div class="col-2 text-right">
 							<?php
-							if($CLid==3){
+							if($mosOrderTB['CLid']==3){
 								echo "<label  for=\"doorstyle\"><a id=\"doorPDF\" href=\"header/SPANSTYLES.pdf\" target=\"_blank\">Style</a></label>";
 							}else{
 								echo "<label  for=\"doorstyle\"><a id=\"doorPDF\" href=\"header/DOORSTYLES.pdf\" target=\"_blank\">Door Style</a></label>";
@@ -1593,8 +1507,7 @@ function loadPrinting(){
 						<div class="col-4">
 							<select onchange="$('#doorPDF').attr('href','header/'+$('option:selected', this).attr('doorPDFTag')); saveStyle('door','<?php echo "doorstyle" . $row['rid'];?>');" id="<?php echo "doorstyle" . $row['rid'];?>" class="custom-select">						
 							<?php
-							//$sql = "select d.*,ds.visible from door d, doorSpecies ds where d.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$CLid.") and d.id = ds.did and ds.sid = '" . $row['species'] . "' order by name";
-							$sql = "select d.*,ds.visible from door d, doorSpecies ds where d.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$CLid.") and d.id = ds.did and ds.sid = (select species from orderRoom where rid=".$row['rid'].") order by name";
+							$sql = "select d.*,ds.visible from door d, doorSpecies ds where d.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$mosOrderTB['CLid'].") and d.id = ds.did and ds.sid = (select species from orderRoom where rid=".$row['rid'].") order by name";
 							//echo $sql;
 							opendb2($sql);
 							if($GLOBALS['$result2']->num_rows == 1){
@@ -1646,7 +1559,7 @@ function loadPrinting(){
 						
 						<div class="col-2 text-right">
 							<?php
-							if($CLid==3){
+							if($mosOrderTB['CLid']==3){
 								echo "<label  for=\"frontFinish\">Color</label>";
 							}else{
 								echo "<label for=\"frontFinish\">Finish</label>";
@@ -1656,7 +1569,7 @@ function loadPrinting(){
 						<div class="col-4">
 							<select onchange="saveStyle('frontFinish','<?php echo "frontFinish" . $row['rid'];?>');" id="<?php echo "frontFinish" . $row['rid'];?>" class="custom-select">						
 							<?php
-							opendb2("select * from frontFinish where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") and finishType in (select ftid from finishTypeMaterial where mid in (select mid from species where id in (select species from orderRoom where rid = " . $row['rid'] . "))) order by name");
+							opendb2("select * from frontFinish where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$mosOrderTB['CLid'].") and finishType in (select ftid from finishTypeMaterial where mid in (select mid from species where id in (select species from orderRoom where rid = " . $row['rid'] . "))) order by name");
 							if($GLOBALS['$result2']->num_rows == 1){
 								foreach ($GLOBALS['$result2'] as $row2) {
 									if($row2['visible']==0){//not available
@@ -1705,7 +1618,7 @@ function loadPrinting(){
 						</div>
 					</div>
 					<?php
-					if($CLid==3)
+					if($mosOrderTB['CLid']==3)
 						echo "<div hidden>";
 					?>            	
 					<div class="row">
@@ -1715,7 +1628,7 @@ function loadPrinting(){
 						<div class="col-4">
 							<select onchange="saveStyle('drawerBox','<?php echo "drawerBox" . $row['rid'];?>');" id="<?php echo "drawerBox" . $row['rid'];?>" class="custom-select">						
 							<?php
-							opendb2("select * from drawerBox where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name");
+							opendb2("select * from drawerBox where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$mosOrderTB['CLid'].") order by name");
 							if($GLOBALS['$result2']->num_rows == 1){
 								foreach ($GLOBALS['$result2'] as $row2) {
 									if($row2['visible']==0){//not available
@@ -1765,7 +1678,7 @@ function loadPrinting(){
 							<select onchange="saveStyle('glaze','<?php echo "glaze" . $row['rid'];?>');" id="<?php echo "glaze" . $row['rid'];?>" class="custom-select">
 							
 							<?php
-							opendb2("select * from glaze where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name");
+							opendb2("select * from glaze where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$mosOrderTB['CLid'].") order by name");
 							if($GLOBALS['$result2']->num_rows == 1){
 								foreach ($GLOBALS['$result2'] as $row2) {
 									if($row2['visible']==0){//not available
@@ -1816,10 +1729,10 @@ function loadPrinting(){
 							<label for="smallDrawerFront">Small Drawer Front</label>
 						</div>
 						<div class="col-4">
-							<select onchange="saveStyle('smallDrawerFront','<?php echo "smallDrawerFront" . $row['rid'];?>');" id="<?php echo "smallDrawerFront" . $row['rid'];?>" class="custom-select">
+						<select onchange="saveStyle('smallDrawerFront','<?php echo "smallDrawerFront" . $row['rid']; ?>');" id="<?php echo "smallDrawerFront" . $row['rid'];?>" class="custom-select">
 							
 							<?php
-							opendb2("select * from smallDrawerFront where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name");
+							opendb2("select * from smallDrawerFront where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$mosOrderTB['CLid'].") order by name");
 							if($GLOBALS['$result2']->num_rows == 1){
 								foreach ($GLOBALS['$result2'] as $row2) {
 									if($row2['visible']==0){//not available
@@ -1868,7 +1781,7 @@ function loadPrinting(){
 							<select onchange="saveStyle('sheen','<?php echo "sheen" . $row['rid'];?>');" id="<?php echo "sheen" . $row['rid'];?>" class="custom-select">
 							
 							<?php
-							$sql ="select * from sheen where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") and id in (
+							$sql ="select * from sheen where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$mosOrderTB['CLid'].") and id in (
 								select sid from finishTypeSheen where ftid in (
 								select finishType from frontFinish where id in (
 								select frontFinish from orderRoom where rid = " . $row['rid'] . "))) order by name";
@@ -1926,7 +1839,7 @@ function loadPrinting(){
 							<select onchange="saveStyle('largeDrawerFront','<?php echo "LargeDrawerFront" . $row['rid'];?>');" id="<?php echo "LargeDrawerFront" . $row['rid'];?>" class="custom-select">
 							
 							<?php
-							opendb2("select * from largeDrawerFront where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name");
+							opendb2("select * from largeDrawerFront where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$mosOrderTB['CLid'].") order by name");
 							if($GLOBALS['$result2']->num_rows == 1){
 								foreach ($GLOBALS['$result2'] as $row2) {
 									if($row2['visible']==0){//not available
@@ -1975,7 +1888,7 @@ function loadPrinting(){
 							<select onchange="saveStyle('hinge','<?php echo "hinge" . $row['rid'];?>');" id="<?php echo "hinge" . $row['rid'];?>" class="custom-select">
 							
 							<?php
-							opendb2("select * from hinge where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name");
+							opendb2("select * from hinge where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$mosOrderTB['CLid'].") order by name");
 							if($GLOBALS['$result2']->num_rows == 1){
 								foreach ($GLOBALS['$result2'] as $row2) {
 									if($row2['visible']==0){//not available
@@ -2026,7 +1939,7 @@ function loadPrinting(){
 							<select onchange="saveStyle('drawerGlides','<?php echo "drawerGlides" . $row['rid'];?>');" id="<?php echo "drawerGlides" . $row['rid'];?>" class="custom-select">
 							
 							<?php
-							opendb2("select * from drawerGlides where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name");
+							opendb2("select * from drawerGlides where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$mosOrderTB['CLid'].") order by name");
 							if($GLOBALS['$result2']->num_rows == 1){
 								foreach ($GLOBALS['$result2'] as $row2) {
 									if($row2['visible']==0){//not available
@@ -2074,7 +1987,7 @@ function loadPrinting(){
 						<div class="col-4">
 							<select onchange="saveStyle('finishedEnd','<?php echo "finishedEnd" . $row['rid'];?>');" id="<?php echo "finishedEnd" . $row['rid'];?>" class="custom-select">							
 							<?php
-							opendb2("select * from finishedEnd where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$CLid.") order by name");
+							opendb2("select * from finishedEnd where CLGroup in(select CLGid FROM cabinetLineGroups where CLid = ".$mosOrderTB['CLid'].") order by name");
 							if($GLOBALS['$result2']->num_rows == 1){
 								foreach ($GLOBALS['$result2'] as $row2) {
 									if($row2['visible']==0){//not available
@@ -2116,7 +2029,7 @@ function loadPrinting(){
 							</select>
 						</div>
 						<?php
-						if($CLid==3)
+						if($mosOrderTB['CLid']==3)
 							echo "</div>";
 						?> 
 
@@ -2127,7 +2040,7 @@ function loadPrinting(){
 				
 				echo "</div>";
 				$i++;
-            }
+            //}
         }
     }
     
@@ -2507,7 +2420,7 @@ function loadPrinting(){
 									if($result->num_rows >0){
 										while ( $row = $result->fetch_assoc())  {
 											echo "<option ";
-											if($CLid==$row["id"]) echo "selected "; 
+											if($mosOrderTB['CLid']==$row["id"]) echo "selected "; 
 											echo "class=\"form-control \"  value=\"".$row["id"]."\">".$row["CabinetLine"]."</option>";
 										}
 									}else{
@@ -2897,12 +2810,11 @@ echo $msg;*/
 <script>
 
 $(document).ready(function(){
+
 	$(".nav-tabs li a").click(function(){
 	    $(this).tab('show');
 	});
 	$(".dropdown-toggle a").click(function(){
-		//console.log(this);
-	    //$(this).tab('show');
 	});
 	$('#btnGetItems').hide();
 	$('#btnGetItems2').hide();
@@ -3024,8 +2936,4 @@ $('#fileListing').on('click','#sendFile',
 	    }
 	  });
 	});
-
-
-
-
 </script>
