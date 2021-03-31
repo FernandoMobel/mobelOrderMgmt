@@ -492,7 +492,8 @@ if($_POST['mode']=="getItems"){
     				echo "<button type=\"button\" onClick=editItems(".$row['item'].",0) class=\"btn btn-primary pl-3 pr-3 btn-sm editbutton\" data-toggle=\"modal\" title=\"Edit\" data-target=\"#editItemModal\"><span class=\"ui-icon ui-icon-pencil \"></span></button>" . "";
     				echo "<button type=\"button\" title=\"Add Mod\" onclick=\"var promise = new Promise(function(resolve,reject){\$('#editItemTitle').text('Edit/Delete Mod');cleanEdit();resolve();}); promise.then(function(){\$('#editOrderItemPID').val(". $parentID .");});\" class=\"btn btn-primary btn-sm editbutton btn-primary ml-0 pl-3 pr-3\" data-toggle=\"modal\" data-target=\"#editItemModal\"><span class=\"ui-icon ui-icon-circle-plus\"></button>";
     				echo "<button class=\"btn btn-primary pl-3 pr-3 btn-sm ml-0 editbutton\" data-toggle=\"modal\" title=\"Add files\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles(".$_POST['oid'] . ",$('a.nav-link.roomtab.active').attr('value'),".$parentID.");\"><span class=\"ui-icon  ui-icon-disk\"></span></button>";
-    				echo "<button class=\"btn btn-primary btn-sm editbutton btn-primary ml-0 pl-3 pr-3\" data-toggle=\"tooltip\" title=\"Copy item\" onclick=\"copyItemRow(".$row['item'].")\"><span class=\"ui-icon  ui-icon-copy\"></span></button>";
+    				echo "<button class=\"btn btn-primary btn-sm editbutton btn-primary ml-0 pl-3 pr-3\" data-toggle=\"tooltip\" title=\"Copy item\" onclick=\"copyItemRow(".$row['item'].")\"><span class=\"ui-icon ui-icon-copy\"></span></button>";
+                    echo "<button class=\"btn btn-primary btn-sm editbutton btn-primary ml-0 pl-3 pr-3\" data-toggle=\"tooltip\" title=\"Delete item\" onclick=\"deleteItemShort(".$row['item'].")\"><span class=\"ui-icon  ui-icon-trash\"></span></button>";
                 }else{
                     echo "&nbsp;&nbsp;<span onClick=\"cleanEdit();$('#editOrderItemPID').val(". $parentID ."); editItems(".$row['item'].",". $row['sid'] .");\" data-toggle=\"modal\" title=\"Edit\" data-target=\"#editItemModal\" class=\"btn btn-primary pl-3 pr-3 btn-sm editbutton\"><span class=\"ui-icon ui-icon-pencil btn-primary pl-2 pr-2\" ></span></span>";
                 echo "<button class=\"btn btn-primary pl-3 pr-3 btn-sm editbutton\" data-toggle=\"modal\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles(".$_POST['oid'] . ",$('a.nav-link.roomtab.active').attr('value'),".$parentID.",". $row['sid'] .");\"><span class=\"ui-icon ui-icon-disk\"></span></button>";
@@ -772,6 +773,15 @@ if($_POST['mode'] == "copyRowItem"){
 }
 
 if($_POST['mode'] == "copySomeItems"){
+    if($_POST['headers']=="true"){
+        $sql = "select door,species,frontFinish,glaze,sheen,hinge,smallDrawerFront,largeDrawerFront,drawerGlides,drawerBox,interiorFinish,finishedEnd from orderRoom orr where orr.rid = ".$_POST['headerRID'];
+        //echo $sql."\n";
+        $result = opendb($sql);
+        $row = $result->fetch_assoc();
+        $sql = "update orderRoom set door=".$row['door'].",species=".$row['species'].",frontFinish=".$row['frontFinish'].",glaze=".$row['glaze'].",sheen=".$row['sheen'].",hinge=".$row['hinge'].",smallDrawerFront=".$row['smallDrawerFront'].",largeDrawerFront=".$row['largeDrawerFront'].",drawerGlides=".$row['drawerGlides'].",drawerBox=".$row['drawerBox'].",interiorFinish=".$row['interiorFinish'].",finishedEnd=".$row['finishedEnd']." where rid = ".$_POST['rid'];
+        //echo $sql."\n";
+        opendb($sql);
+    }
 	copyItemsToRoom($_POST['items'],$_POST['rid']);
 }
 
@@ -1108,6 +1118,82 @@ if($_POST['mode']=="updatePrinting"){
         }
         $msg .="</div>";
     echo $msg;
+}
+
+//get headers when copy items
+if($_POST['mode']=="copyItemHeaders"){
+    $sql = "SELECT distinct orr.rid, orr.name, s.name species, d.name door, ff.name frontfinish, g.name glaze, sh.name sheen, h.name hinge, sdf.name smalldrawerfront, ldf.name largedrawerfront, db.name drawerbox, dg.name drawerglides, inf.name interiorfinish, fe.name finishedend FROM orderItem oi, orderRoom orr, species s, door d, frontFinish ff, glaze g, sheen sh, hinge h, smallDrawerFront sdf, largeDrawerFront ldf, drawerBox db, interiorFinish inf, finishedEnd fe, drawerGlides dg where orr.rid = oi.rid and s.id = orr.species and d.id = orr.door and ff.id = orr.frontFinish and g.id = orr.glaze and sh.id = orr.sheen and h.id = orr.hinge and sdf.id = orr.smallDrawerFront and ldf.id = orr.largeDrawerFront and db.id = orr.drawerGlides and inf.id = orr.interiorFinish and fe.id = orr.finishedEnd and dg.id = orr.drawerGlides and oi.id in (".implode(",", $_POST['items']).") order by orr.rid";
+    $result = opendb($sql);
+    $rid = 0;
+    while($row = $result->fetch_assoc()){
+        if($rid==0){
+            $rid=$row['rid'];   
+            echo "<input id=\"copyHeaderRoomID\" type=\"hidden\" value=\"".$rid."\">";         
+            echo "<table class=\"table table-sm border-1\">";            
+            echo "<tr class=\"bg-light\">
+                    <th  colspan=\"2\" class=\"text-left\">
+                        <input class=\"chkHeadClass\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Select header\" onchange=\"chkHeader(this,".$rid.");\" type='checkbox' id=\"chkH".$rid."\" checked>
+                    </th>
+                    <th colspan=\"2\" class=\"text-left\">
+                        <h6 class=\"font-weight-bold\">".$row['name']."</h6>
+                    </th>
+                </tr>";
+        }else{
+            $rid=$row['rid'];
+            echo "</table>";
+            echo "<table class=\"table table-sm border-1\">";
+            echo "<tr class=\"bg-light\">
+                    <th colspan=\"2\" class=\"text-left\">
+                        <input class=\"chkHeadClass\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Select header\" onchange=\"chkHeader(this,".$rid.");\" type='checkbox' id=\"chkH".$rid."\">
+                    </th>
+                    <th colspan=\"2\" class=\"text-left\">
+                        <h6 class=\"font-weight-bold\">".$row['name']."</h6>
+                    </th>
+                </tr>";
+        }
+        echo buildHeaderHTML($row);        
+    }
+}
+
+function buildHeaderHTML($row){
+    $html = "<tr>
+                <th class=\"text-right\">Species</th>
+                <th class=\"text-left\">".$row['species']."</th>
+                <th class=\"text-right\">Interior Finish</th>
+                <th class=\"text-left\">".$row['interiorfinish']."</th>
+            </tr>
+            <tr>
+                <th class=\"text-right\">Door Style</th>
+                <th class=\"text-left\">".$row['door']."</th>
+                <th class=\"text-right\">Finish</th>
+                <th class=\"text-left\">".$row['frontfinish']."</th>
+            </tr>
+            <tr>
+                <th class=\"text-right\">Drawer Box</th>
+                <th class=\"text-left\">".$row['drawerbox']."</th>
+                <th class=\"text-right\">Glaze</th>
+                <th class=\"text-left\">".$row['glaze']."</th>
+            </tr>
+            <tr>
+                <th class=\"text-right\">Small Drawer Front</th>
+                <th class=\"text-left\">".$row['smalldrawerfront']."</th>
+                <th class=\"text-right\">Sheen</th>
+                <th class=\"text-left\">".$row['sheen']."</th>
+            </tr>
+            <tr>
+                <th class=\"text-right\">Large Drawer Front</th>
+                <th class=\"text-left\">".$row['largedrawerfront']."</th>
+                <th class=\"text-right\">Hinge</th>
+                <th class=\"text-left\">".$row['hinge']."</th>
+            </tr>
+            <tr>
+                <th class=\"text-right\">Drawer Glides</th>
+                <th class=\"text-left\">".$row['drawerglides']."</th>
+                <th class=\"text-right\">Finished End</th>
+                <th class=\"text-left\">".$row['finishedend']."</th>
+            </tr>
+            ";
+    return $html;
 }
 
 //copy items including mods to specific room

@@ -2326,7 +2326,7 @@ function orderValidation(){
 								<b>This is a:</b>
 								<?php 
 								echo "<select onchange=\"saveOrder('isPriority');fixDate();showOrderOptions('isPriority');\" class=\"form-control \" id=\"isPriority\">";						
-								if($isPriority==0){
+								if($mosOrderTB['isPriority']==0){
 									echo "<option selected value=\"0\">Standard Order</option>";
 									echo "<option value=\"1\">Service Order</option>";
 								}else{
@@ -2346,7 +2346,7 @@ function orderValidation(){
 								Warranty: 
 								<?php 
 								echo "<input type=\"checkbox\"";
-								if($isWarranty>0){
+								if($mosOrderTB['isWarranty']>0){
 									echo " checked ";
 								}
 								echo " onchange=\"saveOrder('isWarranty');\" class=\"form-control  \"  id=\"isWarranty\">";
