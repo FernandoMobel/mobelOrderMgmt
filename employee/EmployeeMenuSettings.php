@@ -72,7 +72,7 @@ if($_POST['mode']=="getOrders"){
 }
 
 if($_POST['mode']=="getOrdersAccounting"){
-	$sql = "select '$' amount,isPriority,isWarranty,CLid, month(dateSubmitted) mth, day(dateSubmitted) day, year(dateSubmitted) yr, oid, account,(select a.busName from account a where a.id = mo.account)busName, tagName, (select concat(mu.firstName,' ',mu.lastName) from mosUser mu where mu.id = mo.mosUser )sales, deliveryDate, CAST(dateShipped AS DATE) dateShipped from mosOrder mo where year(dateSubmitted) = ".$_POST['year']." and state > 1 order by dateSubmitted";
+	$sql = "select '$' amount,isPriority,isWarranty,CLid, month(dateSubmitted) mth, day(dateSubmitted) day, year(dateSubmitted) yr, oid, account,(select a.busName from account a where a.id = mo.account)busName, concat( tagName,if(po<>'',concat(' - ',po),'')) contract, (select concat(mu.firstName,' ',mu.lastName) from mosUser mu where mu.id = mo.mosUser )sales, deliveryDate, CAST(dateShipped AS DATE) dateShipped from mosOrder mo where year(dateSubmitted) = ".$_POST['year']." and state > 1 order by dateSubmitted";
 	$result = opendb($sql);
 	$dbdata = array();
 	while($row = $result->fetch_assoc()){
@@ -81,7 +81,7 @@ if($_POST['mode']=="getOrdersAccounting"){
 		$data['yr'] = $row['yr'];
 		$data['oid'] = $row['oid'];
 		$data['busName'] = $row['busName'];
-		$data['tagName'] = $row['tagName'];
+		$data['contract'] = $row['contract'];
 		$data['sales'] = $row['sales'];
 		$data['dateShipped'] = $row['dateShipped'];
 		$data['CLid'] = $row['CLid'];

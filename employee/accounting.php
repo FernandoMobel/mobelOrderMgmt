@@ -20,12 +20,12 @@ function loadOrders(yr){
 	    data: myData,
 	    success: function(data, status, jqXHR) {						
     		        dataSet =  JSON.parse(jqXHR['responseText']);
-                    console.log(jqXHR['responseText']);
+                    //onsole.log(jqXHR['responseText']);
 					table = $('#mainTable').DataTable({
 						//order: [[ 7, "asc" ]],
-						lengthMenu: [50, 100, 250],
+						lengthMenu: [50, 100, 250, 500],
 						//stateSave: true,
-						//retrieve: true,
+						retrieve: true,
 						data: dataSet,
 						columns : [
 							{
@@ -50,7 +50,7 @@ function loadOrders(yr){
 							},
 							{
 								className: "font-weight-normal",
-								data : "tagName"
+								data : "contract"
 							},
 							{	
                                 className: "font-weight-normal",							
