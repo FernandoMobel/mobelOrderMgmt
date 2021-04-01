@@ -7,6 +7,7 @@ if(strcmp($_SERVER['SERVER_NAME'],"localhost")==0 || strcmp($_SERVER['SERVER_NAM
 	$local = "/mobelOrderMgmt";
 }
 session_start();
+
 if($_POST['mode']=="getOrders"){
 	$result = opendb("select mainMenuDefaultStateFilter as state, clFilter, servFilter from employeeSettings where mosUser = " .$_SESSION["userid"]);
 	$row = $result -> fetch_assoc();
@@ -64,10 +65,31 @@ if($_POST['mode']=="getOrders"){
 		$data['CLid'] = $row['CLid'];
 		$data['deliveryDate'] = $row['deliveryDate'];
 		$data['dateShipped'] = $row['dateShipped'];
-		//$dbdata[]=$row;
 		array_push($dbdata, $data);
 	}
 	//this returns a json with the data
+	echo json_encode($dbdata);
+}
+
+if($_POST['mode']=="getOrdersAccounting"){
+	$sql = "select '$' amount,isPriority,isWarranty,CLid, month(dateSubmitted) mth, day(dateSubmitted) day, year(dateSubmitted) yr, oid, account,(select a.busName from account a where a.id = mo.account)busName, tagName, (select concat(mu.firstName,' ',mu.lastName) from mosUser mu where mu.id = mo.mosUser )sales, deliveryDate, CAST(dateShipped AS DATE) dateShipped from mosOrder mo where year(dateSubmitted) = ".$_POST['year']." and state > 1 order by dateSubmitted";
+	$result = opendb($sql);
+	$dbdata = array();
+	while($row = $result->fetch_assoc()){
+		$data['mth'] = $row['mth'];
+		$data['day'] = $row['day'];
+		$data['yr'] = $row['yr'];
+		$data['oid'] = $row['oid'];
+		$data['busName'] = $row['busName'];
+		$data['tagName'] = $row['tagName'];
+		$data['sales'] = $row['sales'];
+		$data['dateShipped'] = $row['dateShipped'];
+		$data['CLid'] = $row['CLid'];
+		$data['isPriority'] = $row['isPriority'];
+		$data['isWarranty'] = $row['isWarranty'];
+		$data['amount'] = $row['amount'];
+		array_push($dbdata, $data);
+	}
 	echo json_encode($dbdata);
 }
 
