@@ -201,11 +201,15 @@ echo "<link rel=\"stylesheet\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/
                     echo "<li class=\"nav-item\">";
                     echo "<a class=\"nav-link text-white\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/userProfiles.php\">Account</a>";
                     echo "</li>";
-                    if(array_key_exists("userType",$_SESSION)){
-                      if($_SESSION["userType"]==3){				  
-                          echo "<li class=\"nav-item\">";
-                          echo "<a class=\"nav-link text-white\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/employee/EmployeeMenu.php\">Mobel Only</a>";
-                          echo "</li>";
+                    if(array_key_exists("userType",$_SESSION)){                      
+                      if($_SESSION["userid"]==29){
+                        echo "<li class=\"nav-item\">";
+                        echo "<a class=\"nav-link text-white\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/employee/accounting.php\">Mobel Only</a>";
+                        echo "</li>";
+                      }elseif($_SESSION["userType"]==3){				  
+                        echo "<li class=\"nav-item\">";
+                        echo "<a class=\"nav-link text-white\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/employee/EmployeeMenu.php\">Mobel Only</a>";
+                        echo "</li>";
                       }
                     }
                   }

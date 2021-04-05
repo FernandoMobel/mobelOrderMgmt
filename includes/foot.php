@@ -33,6 +33,18 @@ echo "<script type=\"text/javascript\" src=\"http://".$_SERVER['SERVER_NAME'].$l
 	   e.preventDefault();
 	   $(this).attr("autocomplete", "off");
 	});
+
+	$("body").on('click','.toggle-password',function(){
+		$(this).toggleClass("fa-eye fa-eye-slash");
+		
+		var input = $("#inputPassword");
+		
+		if (input.prop("type") === "password") {
+			input.prop("type", "text");
+		} else {
+			input.prop("type", "password");
+		}
+	});
 	
 </script>
 </body>
