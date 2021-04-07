@@ -7,7 +7,7 @@ if(strcmp($_SERVER['SERVER_NAME'],"localhost")==0 || strcmp($_SERVER['SERVER_NAM
 	$local = "/mobelOrderMgmt";
 }
 session_start();
-if($_POST['mode']=="run"){
+if($_POST['mode']=="run"){ 
 	$sql = $_POST['sql'];
 	$result = opendb($sql);
 	if ($result) {
