@@ -1,6 +1,6 @@
 <?php include_once 'includes/db.php';?>
 <?php
-//mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 /* For local environment */
 $local = "";
 if(strcmp($_SERVER['SERVER_NAME'],"localhost")==0 || strcmp($_SERVER['SERVER_NAME'],"192.168.16.199")==0){
@@ -33,5 +33,9 @@ if($_POST['mode']=="run"){
 if($_POST['mode']=="exec"){
 	$sql = $_POST['sql'];
 	$result = opendbmulti($sql);
-	echo $result;
+	if (!$result) {
+		printf("Errormessage: %s\n", $GLOBALS['$conn']->error);
+	 }else{
+		echo $result;
+	 }
 }
