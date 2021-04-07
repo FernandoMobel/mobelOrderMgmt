@@ -111,8 +111,8 @@ function saveOrder(objectID){
         	    	$("#"+objectID).css("border-color", "#00b828");
 					if(objectID=="CLid"){//reload page when updating Cabinet Line
 						resetOrderDefault("<?php echo $_GET["OID"] ?>",$("#"+objectID).data('val'),$("#"+objectID).val());
-						//window.location.reload();
-						window.location = window.location.href;
+						window.location.reload();
+						//window.location = window.location.href;
         	    	//$("#"+objectID).attr('title',data);
 					}
         	    }else{
@@ -709,8 +709,8 @@ function DeleteRoomDialog(message){
         		       function(data, status, jqXHR) {
         		       		//console.log(jqXHR['responseText']);
                     		if(status == "success"){
-                    	    	//location.reload();
-								window.location = window.location.href;
+                    	    	location.reload();
+								//window.location = window.location.href;
                     	    }
         		        });
           // $(obj).removeAttr('onclick');                                
@@ -1146,8 +1146,8 @@ function copyRoom(rid){
 		myData, 
 		function(data, status, jqXHR) {
 			//console.log(jqXHR['responseText']);
-			//window.location.reload();
-			window.location = window.location.href;
+			window.location.reload();
+			//window.location = window.location.href;
 		});
 }
 
@@ -1378,7 +1378,7 @@ function loadPrinting(){
 					</svg>
 				</a>
 				<div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-					<a class="dropdown-item" onClick="editRoom(<?php echo $row['rid']."," .$row['name'];?>);"  data-toggle="modal" title="Edit room" data-target="#editRoomModal">Edit Room Name/Notes</a>
+					<a class="dropdown-item" onClick="editRoom(<?php echo $row['rid'].",'" .$row['name'];?>');"  data-toggle="modal" title="Edit room" data-target="#editRoomModal">Edit Room Name/Notes</a>
 					<a class="dropdown-item" onclick="copyRoom(<?php echo $row['rid'];?>);">Copy Room '<?php echo ucfirst($row['name']); ?>'</a>
 					<a class="dropdown-item" data-toggle="modal" data-target="#copyItemsModal" onclick="clearModal();">Copy Items From Order</a>
 				</div>                							
