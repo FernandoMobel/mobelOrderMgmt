@@ -459,7 +459,7 @@ function itemUpdateConstraintsOK($table){
         when i.maxD <> 0 and " . $_POST['id'] . " > i.maxD then \"Sorry, this depth is beyond the maximum.\"
         else \"ok\" end as allowed from " . $table . " i where i.id = " . $_POST['itemID'] . ";";
     }
-    if(strcmp($_POST['column'],"qty")==0 && $table!="orderItemMods"){
+    if(strcmp($_POST['column'],"qty")==0 && $table!="orderItemMods" && $_POST['cline'] != 3){//cline allow cabinets more than 1 since for Span this doen't apply
         $sql = "select case
         when " . $_POST['id'] . " <> 1 and isCabinet = 1 then \"Sorry, the quantity of a cabinet must be 1 and more than 0.\"
         else \"ok\" end as allowed from " . $table . " i, item ii where i.id = " . $_POST['itemID'] . " and ii.id = i.iid;";
