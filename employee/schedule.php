@@ -4,53 +4,75 @@
 	#tbSchedule td{font-weight: 450;}
 </style>
 <script>
-var currentDate = getMondayCurWeek();
 <?php
+$sql = "select * from departments";
+$result = opendb($sql);
+while($row = $result->fetch_assoc()) {
+	$dep[] = $row;
+}
+$depts = json_encode($dep);
+echo "const depts = JSON.parse('".$depts."');";
+
 $sql = "select * from departments where id=".(int)$_SESSION['firstName'];
 $result = opendb($sql);
 $row = $result->fetch_assoc();
+/* the mosUser first name should match with the department at the department table */
 if(strlen($_SESSION["firstName"])==1 && $_SESSION["account"]==2){
 	echo "const department =".(int)$_SESSION['firstName'].";";
 	echo "const dateType =".$row['dateType'].";";
+	echo "var deptDesc ='".$row['department']."';";
 	echo "setTimeout(function(){
 		   window.location.reload(1);
 		}, 600000);";
 }else{
-	/*echo "const department =1;";
-	echo "const dateType =3;";*/
+	/* Set default values for office user (no departament)*/
 	echo "var department =1;";
 	echo "var dateType =3;";
+	echo "var deptDesc=\"\";";
+	echo "var schDesc=\"\";";
 }
 ?>
+var currentDate = getMondayCurWeek();
 
-function loadSchWeek(date, dept){	
+function loadSchWeek(date, sch){	
 	if(date=='0'){
 		localStorage.setItem('date','0');
 	}
 	//What schedule are using
-	switch (dept){
-		case '3'://Shipping
-			department = 1;		
-			dateType = 3;	
+	switch(sch){
+		case '3'://Shipping			
+			department = 1;		//You can find definition into departments table
+			dateType = 3;
+			schDesc='Completion';
+			deptDesc = getDepartmentName(department);
 		break;
 		case '2'://Wrapping
 			department = 2;
 			dateType = 2;
+			schDesc="Wrapping";
+			deptDesc = getDepartmentName(department);
 		break;
 		case '1'://Sanding
 			department = 8;
 			dateType = 1;
+			schDesc="Finishing";
+			deptDesc = getDepartmentName(department);
 		break;
 		case '0'://Doors
 			department = 9;
 			dateType = 0;
+			schDesc="Cutting";
+			deptDesc = getDepartmentName(department);
 		break;
 	  default:
+	  	schDesc="Completion";
+		deptDesc = getDepartmentName(department);
 		// code block
 	}
-
-	console.log('Date:'+localStorage.getItem('date')+' dateType:'+dateType+' Department:'+department+' onlyReady:'+localStorage.getItem('onlyReady')+' hideComplete:'+localStorage.getItem('displayComp')+' hideSpan:'+localStorage.getItem('hideSpan')+' onlySpan:'+localStorage.getItem('onlySpan'));
-	myData = { mode: "loadSchWeek", date: date/*localStorage.getItem('date')*/, dateType: dateType, mydid:department, filter:localStorage.getItem('onlyReady'), displayComp:localStorage.getItem('displayComp'), hideSpan:localStorage.getItem('hideSpan'), onlySpan:localStorage.getItem('onlySpan')};
+	console.clear();
+	/* This is being printed to the console to be able to know more details about what informations is being displayed */
+	console.log('Week of: '+date+', Schedule View:'+schDesc+', Department:'+deptDesc+', onlyReady:'+localStorage.getItem('onlyReady')+', hideComplete:'+localStorage.getItem('displayComp')+', hideSpan:'+localStorage.getItem('hideSpan')+', onlySpan: '+localStorage.getItem('onlySpan'));
+	myData = { mode: "loadSchWeek", date: date, dateType: dateType, mydid:department, filter:localStorage.getItem('onlyReady'), displayComp:localStorage.getItem('displayComp'), hideSpan:localStorage.getItem('hideSpan'), onlySpan:localStorage.getItem('onlySpan')};
 	
 	$.ajax({
 			url: 'EmployeeMenuSettings.php',
@@ -76,6 +98,18 @@ function loadSchWeek(date, dept){
 		  console.log(xhr);
 		  console.log(error);
 	})
+}
+
+function getDepartmentName(dptID){
+	var desc;
+	depts.every(obj=>{
+		if(obj.id == dptID){
+			desc = obj.department;
+			return false;
+		}
+		return true;
+	});
+	return desc;
 }
 
 function getNewWeek(nextWeek){
@@ -311,6 +345,17 @@ function viewOrder(oid){
 	window.open('', 'TheWindow');
   	$('#formViewFullOID').submit();
 }
+
+function showStatus(oid){
+	$('#stationsBody').empty();
+	myData = { mode: "getStationStatus",  oid:oid};
+	$.post("EmployeeMenuSettings.php",
+		myData, 
+			function(data, status, jqXHR) { 
+			$('#stationsBody').append(jqXHR["responseText"]);
+			$('#stationStatus').modal('toggle');
+			});
+}
 </script> 
 <style>
   @media (max-width: 1025px) {
@@ -457,6 +502,24 @@ function viewOrder(oid){
 			</table>
 		</div>
 	</div>
+</div>
+<!-- Modal Order Station Status-->
+<div class="modal fade bd-example-modal-lg" id="stationStatus" tabindex="-1" role="dialog" aria-labelledby="stationStatusTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLongTitle">Order Status</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" id="stationsBody">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
 </div>
 <form id="formViewFullOID" method="post" action="../readOnlyOrder.php" target="TheWindow">
 <input id="inputOID" type="hidden" name="oid"/>

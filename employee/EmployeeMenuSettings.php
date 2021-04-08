@@ -404,6 +404,8 @@ if($_POST['mode']=="loadSchWeek"){
 	Classes for every column are used to hide or display on the view. New columns will need new custom classes and options in the view.
 	This layout displays jobs grouped by day and order. Every room is a row.
 	-----------------------------------------------------------------*/
+	
+
 	if($GLOBALS['$result']->num_rows > 0){
         foreach ($GLOBALS['$result'] as $row) {
 			/*if(strcmp($_POST['displayComp'],"true")!=0 && $row['completed']=='true')
@@ -432,7 +434,12 @@ if($_POST['mode']=="loadSchWeek"){
 				echo "<td class=\"align-middle $updated\"><div id=\"uptRoom".$row['rid']."\" class=\"custom-control custom-checkbox\"><input ".$completed." onchange=\"completeRoom(".$row['rid'].")\" type=\"checkbox\" class=\"custom-control-input\" id=\"chkDone".$row['rid']."\"><label class=\"custom-control-label\" for=\"chkDone".$row['rid']."\"></label></div></td></tr>";				
 			}else if(strcmp($day,$row['myDate'])==0 && strcmp($oid, $row['oid'])!=0){
 				$oid = $row['oid'];
-				echo "<th id=\"".$row['oid']."\" class=\"align-middle $updated\" rowspan=\"".$row['rooms']."\" scope=\"rowgroup\" onclick=\"viewOrder(".$row['oid'].");\"><p>".$row['oid']."</p></br><small><b>".$row['account']."</b></small></th>";//Order id header
+				if(strlen($_SESSION["firstName"])==1 && $_SESSION["account"]==2){
+					$btnStatus="";
+				}else{
+					$btnStatus="<a class=\"btn btn-sm btn-link text-primary\" onclick=\"showStatus(".$oid.")\">Status</a>";
+				}
+				echo "<th id=\"".$row['oid']."\" class=\"align-middle $updated\" rowspan=\"".$row['rooms']."\" scope=\"rowgroup\">".$btnStatus."<p onclick=\"viewOrder(".$row['oid'].");\">".$row['oid']."</p></br><small onclick=\"viewOrder(".$row['oid'].");\"><b>".$row['account']."</b></small></th>";//Order id header
 				echo "<th class=\"tag align-middle $updated\" rowspan=\"".$row['rooms']."\" onclick=\"viewOrder(".$row['oid'].");\">".$row['tagName']." - ". $row['po'] ."</th>";
 				echo "<th class=\"sht align-middle $updated\" rowspan=\"".$row['rooms']."\" onclick=\"viewOrder(".$row['oid'].");\">&nbsp".$row['shipTo']."</th>";
 				echo "<td class=\"rmnm align-middle $updated\" scope=\"row\">".$row['roomName']."</td>";//header row room
@@ -446,9 +453,14 @@ if($_POST['mode']=="loadSchWeek"){
 			}else{
 				$day = $row['myDate'];//new day
 				$oid = $row['oid'];//new order
+				if(strlen($_SESSION["firstName"])==1 && $_SESSION["account"]==2){
+					$btnStatus="";
+				}else{
+					$btnStatus="<a class=\"btn btn-sm btn-link text-primary\" onclick=\"showStatus(".$oid.")\">Status</a>";
+				}
 				echo "<tr>";
 				echo "<th class=\"align-middle\" rowspan=\"".$row['jobsDay']."\" scope=\"rowgroup\"><p>".date("l M j",strtotime($day))."</p><small class=\"d-print-none\">Total boxes: ".$row['boxCurQty']."</small></th>";
-				echo "<th id=\"".$row['oid']."\" class=\"align-middle $updated\" rowspan=\"".$row['rooms']."\" scope=\"rowgroup\" onclick=\"viewOrder(".$row['oid'].");\"><p>".$row['oid']."</p><small><b>".$row['account']."</b></small></th>";//Order id header
+				echo "<th id=\"".$row['oid']."\" class=\"align-middle $updated\" rowspan=\"".$row['rooms']."\" scope=\"rowgroup\">".$btnStatus."<p onclick=\"viewOrder(".$row['oid'].");\">".$row['oid']."</p><small onclick=\"viewOrder(".$row['oid'].");\"><b>".$row['account']."</b></small></th>";//Order id header
 				echo "<th class=\"tag align-middle $updated\" rowspan=\"".$row['rooms']."\" onclick=\"viewOrder(".$row['oid'].");\">".$row['tagName']." - ". $row['po'] ."</th>";
 				echo "<th class=\"sht align-middle $updated\" rowspan=\"".$row['rooms']."\" onclick=\"viewOrder(".$row['oid'].");\">".$row['shipTo']."</th>";
 				echo "<td class=\"rmnm align-middle $updated\" scope=\"row\">".$row['roomName']."</td>";//header row room
@@ -677,5 +689,61 @@ if($_POST['mode']=='getCVcodes'){
 		$item[] = $row['name'];
 	}
 	echo json_encode($item);
+}
+
+if($_POST['mode']=='getStationStatus'){
+	$html = "<table class=\"table text-center\"><thead class=\"thead-light\"><tr>";
+	$html .= "<th>ROOM NAME</th>";
+	$html .= "<th>CUSTOM</th>";
+	$html .= "<th>DOORS</th>";
+	$html .= "<th>CNC</th>";
+	$html .= "<th>SANDING</th>";
+	$html .= "<th>ASSEMBLY</th>";
+	$html .= "<th>WRAPPING</th>";
+	$html .= "<th>SHIPPING</th>";
+	$html .= "</tr></thead><tbody>";
+	$rid = 0;
+	$checked ="checked ";
+	$sql = "SELECT orr.rid,name,(select count(1) from deptCompleted dc where orr.rid = dc.rid and dc.did=11)custom, (select count(1) from deptCompleted dc where orr.rid = dc.rid and dc.did=10)doors, (select count(1) from deptCompleted dc where orr.rid = dc.rid and dc.did=9)cnc, (select count(1) from deptCompleted dc where orr.rid = dc.rid and dc.did=8)sanding, (select count(1) from deptCompleted dc where orr.rid = dc.rid and dc.did=3)assembly, (select count(1) from deptCompleted dc where orr.rid = dc.rid and dc.did=2)wrapping, (select count(1) from deptCompleted dc where orr.rid = dc.rid and dc.did=1)shipping FROM orderRoom orr where orr.oid =".$_POST['oid'];
+	$result = opendb($sql);
+	while ($row = $result->fetch_assoc()) {
+		$html .= "<tr><td>".$row['name']."</td>";						
+		//CUSTOM
+		$html .= "<td><input onclick=\"return false;\" ";
+		if($row['custom']>0)
+			$html .= $checked;
+		$html .= "type=\"checkbox\" id=\"".$row['rid']."-11\"/></td>";
+		//DOORS
+		$html .= "<td><input onclick=\"return false;\" ";
+		if($row['doors']>0)
+			$html .= $checked;
+		$html .= "type=\"checkbox\" id=\"".$row['rid']."-10\"/></td>";
+		//CNC
+		$html .= "<td><input onclick=\"return false;\" ";
+		if($row['cnc']>0)
+			$html .= $checked;
+		$html .= "type=\"checkbox\" id=\"".$row['rid']."-9\"/></td>";
+		//SANDING
+		$html .= "<td><input onclick=\"return false;\" ";
+		if($row['sanding']>0)
+			$html .= $checked;
+		$html .= "type=\"checkbox\" id=\"".$row['rid']."-8\"/></td>";
+		//ASSEMBLY
+		$html .= "<td><input onclick=\"return false;\" ";
+		if($row['assembly']>0)
+			$html .= $checked;
+		$html .= "type=\"checkbox\" id=\"".$row['rid']."-3\"/></td>";
+		//WRAPPING
+		$html .= "<td><input onclick=\"return false;\" ";
+		if($row['wrapping']>0)
+			$html .= $checked;
+		$html .= "type=\"checkbox\" id=\"".$row['rid']."-2\"/></td>";
+		//SHIPPING
+		$html .= "<td><input onclick=\"return false;\" ";
+		if($row['shipping']>0)
+			$html .= $checked;
+		$html .= "type=\"checkbox\" id=\"".$row['rid']."-1\"/></td></tr>";	
+	}
+	echo $html;
 }
 ?>
