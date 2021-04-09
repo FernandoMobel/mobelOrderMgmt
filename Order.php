@@ -1104,9 +1104,9 @@ function copyItems(headers){
 		myData, 
 		function(data, status, jqXHR) {			
 			if(headers){
-				console.log(jqXHR);
-				//window.location.reload();//This option was replaced for copy items
-				window.location = window.location.href;
+				//console.log(jqXHR);
+				window.location.reload();
+				//window.location = window.location.href;
 			}else{
 				loadItems($("a.nav-link.roomtab.active").attr("value"));
 				$("#confCopyItemsModal").modal('hide');
