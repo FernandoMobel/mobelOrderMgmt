@@ -112,7 +112,6 @@ function saveOrder(objectID){
 					if(objectID=="CLid"){//reload page when updating Cabinet Line
 						resetOrderDefault("<?php echo $_GET["OID"] ?>",$("#"+objectID).data('val'),$("#"+objectID).val());
 						window.location.reload();
-						//window.location = window.location.href;
         	    	//$("#"+objectID).attr('title',data);
 					}
         	    }else{
@@ -194,8 +193,7 @@ function submitToMobel(){
 		myData, 
 	       function(data, status, jqXHR) {
 	    	   //console.log(jqXHR['responseText']);
-			   //window.location.reload();
-			   window.location = window.location.href;
+			   window.location.reload();
 	        });
 }
 
@@ -215,8 +213,8 @@ function addRoom(roomQty){
 			window.location.reload();
 	    }else{
 		    alert('Sorry, room could not be added.');
-		    //window.location.reload();
-			window.location = window.location.href;
+		    window.location.reload();
+			//window.location = window.location.href;
 	    }
 	});
 }
@@ -1107,7 +1105,7 @@ function copyItems(headers){
 		function(data, status, jqXHR) {			
 			if(headers){
 				console.log(jqXHR);
-				//window.location.reload();
+				//window.location.reload();//This option was replaced for copy items
 				window.location = window.location.href;
 			}else{
 				loadItems($("a.nav-link.roomtab.active").attr("value"));
@@ -1147,7 +1145,6 @@ function copyRoom(rid){
 		function(data, status, jqXHR) {
 			//console.log(jqXHR['responseText']);
 			window.location.reload();
-			//window.location = window.location.href;
 		});
 }
 
