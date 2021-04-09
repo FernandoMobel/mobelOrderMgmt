@@ -153,8 +153,8 @@ function saveStyle(col,objectID){
 	    	$("#"+objectID).css("border-color", "#00b828");
 	    	loadItems($("a.nav-link.roomtab.active").attr("value"));
 			if(col=="species" || col=="frontFinish"){
-				//location.reload();
-				window.location = window.location.href;
+				location.reload();
+				//window.location = window.location.href;
 			}
 			loadPrinting();
 	    }
