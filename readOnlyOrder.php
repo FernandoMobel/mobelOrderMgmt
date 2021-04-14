@@ -79,7 +79,7 @@ $msg = "
 		if(isset($row['note']))
 			$msg .= "<h5 class=\"font-weight-bold\">Order notes: ".$row['note']."</h5>";
 		//Rooms start here
-		$sql = "select orr.rid,orr.note,orr.name rname,sp.name spname,irf.name irfname,dd.name ddname,ff.name ffname,db.name dbname,gl.name glname,sdf.name sdfname,sh.name shname,ldf.name ldfname,h.name hname,dg.name dgname, fe.name fename
+		$sql = "select if(orr.touchUp>0,'YES','NO') touchUp,if(orr.hardware>0,'YES','NO') hardware,orr.counterTop,orr.rid,orr.note,orr.name rname,sp.name spname,irf.name irfname,dd.name ddname,ff.name ffname,db.name dbname,gl.name glname,sdf.name sdfname,sh.name shname,ldf.name ldfname,h.name hname,dg.name dgname, fe.name fename
 		from orderRoom orr,species sp,interiorFinish irf,door dd,frontFinish ff,drawerBox db,glaze gl,smallDrawerFront sdf,sheen sh,largeDrawerFront ldf,hinge h,drawerGlides dg,finishedEnd fe where orr.oid=".$mailOID." and orr.species=sp.id and orr.door=dd.id and orr.frontFinish=ff.id and orr.glaze=gl.id and orr.glaze=gl.id and orr.sheen=sh.id and orr.hinge=h.id and orr.smallDrawerFront=sdf.id and orr.largeDrawerFront=ldf.id and orr.drawerGlides=dg.id and orr.drawerBox=db.id and orr.interiorFinish=irf.id and orr.finishedEnd=fe.id order by orr.name";
 		$result = opendb($sql);
 		$totalOrder = 0;
@@ -224,10 +224,9 @@ $msg = "
 						<!--td><span title = \"" . getPrice($row2['qty'],$row2['price'],$row2['sizePrice'],$parentPrice,$row2['parentPercent'],$row2['DFactor'],$row2['IFactor'],$row2['FFactor'],$row2['GFactor'],$row2['SFactor'],$row2['EFactor'],$row2['drawerCharge'],$row2['smallDrawerCharge'],$row2['largeDrawerCharge'], $mixDoorSpeciesFactor,$row2['IApplies'],$row2['FApplies'],$row2['GApplies'],$row2['SApplies'],$row2['drawers'],$row2['smallDrawerFronts'],$row2['largeDrawerFronts'],$row2['finishLeft']+$row2['finishRight'], $row2['H'],$row2['W'],$row2['D'],$row2['minSize'],$row2['methodID'],$row2['FUpcharge'],$CLfactor,1) . "\">".$b. number_format($aPrice,2,'.','').$be."</span></td-->
 					</tr>";
 			}
-			/*$msg .= "<tr class=\"border-top border-dark\">
-						<td class=\"text-end\" colspan=\"9\"><h5>Room Total:</h5></td>
-						<td class=\"text-center\"><h5>$".$roomTotal."</h5></td>
-					</tr>";*/
+			$msg .="<tr class=\"border border-dark\"><td class=\"font-weight-bold\" colspan=\"8\">Touch Up</td><td class=\"font-weight-bold\">".$row['touchUp']."</td></tr>";
+			//hidden until more information
+			$msg .="<tr class=\"border border-dark d-none\"><td class=\"font-weight-bold\" colspan=\"8\">Hardware</td><<td class=\"font-weight-bold\">".$row['hardware']."</td></tr>";
 			$msg .="</tbody></table>";
 			if(!isset($roomFinishUpcharge))
 				$roomFinishUpcharge =0;

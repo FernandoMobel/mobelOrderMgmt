@@ -12,12 +12,15 @@ while($row = $result->fetch_assoc()) {
 }
 $depts = json_encode($dep);
 echo "const depts = JSON.parse('".$depts."');";
+echo "let schedules = ['Cutting', 'Finishing', 'Wrapping', 'Shipping'];";
 
 $sql = "select * from departments where id=".(int)$_SESSION['firstName'];
 $result = opendb($sql);
+//echo "var sql='".$sql."';";
 $row = $result->fetch_assoc();
 /* the mosUser first name should match with the department at the department table */
-if(strlen($_SESSION["firstName"])==1 && $_SESSION["account"]==2){
+if(is_numeric($_SESSION["firstName"]) && $_SESSION["account"]==2){
+	echo "var office = false;";
 	echo "const department =".(int)$_SESSION['firstName'].";";
 	echo "const dateType =".$row['dateType'].";";
 	echo "var deptDesc ='".$row['department']."';";
@@ -25,11 +28,12 @@ if(strlen($_SESSION["firstName"])==1 && $_SESSION["account"]==2){
 		   window.location.reload(1);
 		}, 600000);";
 }else{
+	echo "var office = true;";
 	/* Set default values for office user (no departament)*/
-	echo "var department =1;";
-	echo "var dateType =3;";
-	echo "var deptDesc=\"\";";
-	echo "var schDesc=\"\";";
+	echo "var department = 1;";
+	echo "var dateType = 3;";
+	echo "var deptDesc = \"\";";
+	echo "var schDesc = \"\";";
 }
 ?>
 var currentDate = getMondayCurWeek();
@@ -38,38 +42,36 @@ function loadSchWeek(date, sch){
 	if(date=='0'){
 		localStorage.setItem('date','0');
 	}
-	//What schedule are using
-	switch(sch){
-		case '3'://Shipping			
-			department = 1;		//You can find definition into departments table
+	if(office){
+		//What schedule are using
+		switch(sch){
+			case '3'://Shipping			
+				department = 1;		//You can find definition into departments table
+				dateType = sch;							
+			break;
+			case '2'://Wrapping
+				department = 2;
+				dateType = sch;
+			break;
+			case '1'://Sanding
+				department = 8;
+				dateType = sch;
+			break;
+			case '0'://Doors
+				department = 9;
+				dateType = sch;
+			break;
+		default:
+			schDesc="No schedule";
 			dateType = 3;
-			schDesc='Completion';
-			deptDesc = getDepartmentName(department);
-		break;
-		case '2'://Wrapping
-			department = 2;
-			dateType = 2;
-			schDesc="Wrapping";
-			deptDesc = getDepartmentName(department);
-		break;
-		case '1'://Sanding
-			department = 8;
-			dateType = 1;
-			schDesc="Finishing";
-			deptDesc = getDepartmentName(department);
-		break;
-		case '0'://Doors
-			department = 9;
-			dateType = 0;
-			schDesc="Cutting";
-			deptDesc = getDepartmentName(department);
-		break;
-	  default:
-	  	schDesc="Completion";
-		deptDesc = getDepartmentName(department);
-		// code block
+			// code block
+		}
 	}
-	console.clear();
+	deptDesc = getDepartmentName(department);
+	schDesc=schedules[dateType];
+	
+	//console.clear();
+	$('#scheduleName').html(deptDesc);
 	/* This is being printed to the console to be able to know more details about what informations is being displayed */
 	console.log('Week of: '+date+', Schedule View:'+schDesc+', Department:'+deptDesc+', onlyReady:'+localStorage.getItem('onlyReady')+', hideComplete:'+localStorage.getItem('displayComp')+', hideSpan:'+localStorage.getItem('hideSpan')+', onlySpan: '+localStorage.getItem('onlySpan'));
 	myData = { mode: "loadSchWeek", date: date, dateType: dateType, mydid:department, filter:localStorage.getItem('onlyReady'), displayComp:localStorage.getItem('displayComp'), hideSpan:localStorage.getItem('hideSpan'), onlySpan:localStorage.getItem('onlySpan')};
@@ -189,6 +191,7 @@ function updateOrderStatus(rid, action){
 				});	
 }
 
+/*Hide the columns from cookies */
 function loadFilters(){
 	cols = new Array();
 	if(localStorage.getItem('rmnm')=='false'){
@@ -356,6 +359,18 @@ function showStatus(oid){
 			$('#stationStatus').modal('toggle');
 			});
 }
+
+function manageSchedule(object, val, stationID ){
+	$("#"+object).css("border-color", "#00b828");
+	myData = { mode: "updateStationSch",  id:stationID, val:val};
+	console.log(myData);
+	console.log(object);
+	$.post("EmployeeMenuSettings.php",
+		myData, 
+			function(data, status, jqXHR) { 
+				$("#"+object).css("border-color", "#00ff3c");
+			});
+}
 </script> 
 <style>
   @media (max-width: 1025px) {
@@ -377,30 +392,35 @@ function showStatus(oid){
 	if(in_array($_SESSION["userid"],$superUser)){
 	?>
 	<div class="card-header d-print-none">
-		<div class="d-flex flex-row">
-			<div class="p-2">
-				<div class="custom-control custom-radio">
-					<input onchange="loadSchWeek(0,this.value)" type="radio" class="custom-control-input" id="chk3" value="3" name="defaultExampleRadios" checked>
-					<label class="custom-control-label" for="chk3">Completion</label>
+		<div class="d-flex justify-content-between">
+			<div class="d-flex flex-row">
+				<div class="p-2">
+					<div class="custom-control custom-radio">
+						<input onchange="loadSchWeek(0,this.value)" type="radio" class="custom-control-input" id="chk3" value="3" name="defaultExampleRadios" checked>
+						<label class="custom-control-label" for="chk3">Completion</label>
+					</div>
+				</div>
+				<div class="p-2">
+					<div class="custom-control custom-radio">
+						<input onchange="loadSchWeek(0,this.value)" type="radio" class="custom-control-input" id="chk2" value="2" name="defaultExampleRadios">
+						<label class="custom-control-label" for="chk2">Wrapping</label>
+					</div>
+				</div>
+				<div class="p-2">
+					<div class="custom-control custom-radio">
+						<input onchange="loadSchWeek(0,this.value)" type="radio" class="custom-control-input" id="chk1" value="1" name="defaultExampleRadios">
+						<label class="custom-control-label" for="chk1">Finishing</label>
+					</div>
+				</div>
+				<div class="p-2">
+					<div class="custom-control custom-radio">
+						<input onchange="loadSchWeek(0,this.value)" type="radio" class="custom-control-input" id="chk0" value="0" name="defaultExampleRadios">
+						<label class="custom-control-label" for="chk0">Cutting</label>
+					</div>
 				</div>
 			</div>
-			<div class="p-2">
-				<div class="custom-control custom-radio">
-					<input onchange="loadSchWeek(0,this.value)" type="radio" class="custom-control-input" id="chk2" value="2" name="defaultExampleRadios">
-					<label class="custom-control-label" for="chk2">Wrapping</label>
-				</div>
-			</div>
-			<div class="p-2">
-				<div class="custom-control custom-radio">
-					<input onchange="loadSchWeek(0,this.value)" type="radio" class="custom-control-input" id="chk1" value="1" name="defaultExampleRadios">
-					<label class="custom-control-label" for="chk1">Finishing</label>
-				</div>
-			</div>
-			<div class="p-2">
-				<div class="custom-control custom-radio">
-					<input onchange="loadSchWeek(0,this.value)" type="radio" class="custom-control-input" id="chk0" value="0" name="defaultExampleRadios">
-					<label class="custom-control-label" for="chk0">Cutting</label>
-				</div>
+			<div>
+				<button type="button"  class="btn btn-sm btn-secondary" data-toggle="modal" data-target="#manageSchModal">Manage Schedules</button>
 			</div>
 		</div>
 	</div>
@@ -408,8 +428,11 @@ function showStatus(oid){
 	}
 	?>	
 	<div class="card-body px-3 pt-1">
-		<div class="row text-center d-print-block py-3" hidden>
-			<h5 id="fromDatePrint"></h5>
+		<div class="d-print-block d-none">
+			<div class="d-flex justify-content-around py-1">
+				<h5 class="font-weight-bold" id="scheduleName"></h5>
+				<h5 class="font-weight-bold" id="fromDatePrint"></h5>
+			</div>
 		</div>
 		<div title="Order Types" class="row d-print-none ml-3">
 			<a id="popOrderTypes" tabindex="0" role="button" data-toggle="popover" data-placement="bottom" data-trigger="focus" data-container="body" data-html="true">
@@ -532,7 +555,57 @@ function showStatus(oid){
 		<tr><td class="table-primary p-0"><small><b>Span</b></small></td></tr>
 	</table>
 </div>
-<?php if(strlen($_SESSION["firstName"])==1 && $_SESSION["account"]==2) include '../includes/foot.php';?>  
+<!-- Modal Manage Schedules-->
+<div class="modal fade" id="manageSchModal" tabindex="-1" role="dialog" aria-labelledby="manageSchModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLongTitle">Manage Schedules</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+		<table class="table table-sm text-center">
+			<thead class="bg-light">
+				<tr>
+					<th>ID</th>
+					<th>DEPARTMENT</th>
+					<th>USER</th>
+					<th>SCHEDULE</th>
+				</tr>
+			</thead>
+			<tbody>
+			<?php
+				$sch = array("Cutting", "Finishing", "Wrapping", "Shipping");
+				$sql = "SELECT d.id,d.department, mu.email,d.dateType FROM departments d left join mosUser mu on mu.firstName = d.id and mu.userType = 3";
+				$result = opendb($sql);	
+				$selected = "selected ";
+				while($row = $result->fetch_assoc()){
+					echo "<tr>";
+						echo "<td>".$row['id']."</td><td>".$row['department']."</td><td>".$row['email']."</td>";
+						echo "<td><select id=\"".$row['id']."\" class=\"custom-select\" onchange=\"manageSchedule(this.id, this.value, ".$row['id'].");\">";
+						for ($x = 0; $x < 4; $x++) {
+							echo "<option value=\"".$x."\"";
+							if($row['dateType'] == $x) 
+								echo $selected;
+							echo  ">".$sch[$x]."</option>";
+						  }
+						echo "</select></td>";
+					echo "</tr>";
+				}
+			?>
+			</tbody>
+		</table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <!--button type="button" class="btn btn-primary">Save changes</button-->
+      </div>
+    </div>
+  </div>
+</div>
+<?php if(is_numeric($_SESSION["firstName"]) && $_SESSION["account"]==2) include '../includes/foot.php';?>  
 <script>
 $(document).ready(function () {
 	if(!localStorage.getItem('date')){

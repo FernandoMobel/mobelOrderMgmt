@@ -8,6 +8,13 @@ while($row = $result->fetch_assoc()) {
 	$states[] = $row;
 }
 $states = json_encode($states);
+
+//getting account types from DB
+$result = opendb("select id,accountType from accountType");
+while($row = $result->fetch_assoc()) {
+	$accType[] = $row;
+}
+$accTypes = json_encode($accType);
 ?>
 <style>
 /* Hide arrows for number inputs - start */
@@ -26,30 +33,112 @@ input[type=number] {
 </style>
 <script>
 <?php 
-//set status to display
-echo "const states = ".$states.";"?>
+//set status
+echo "const states = ".$states.";";
+//set account types
+echo "const accTypes = ".$accTypes.";";?>
 
 function updateYear(yr){
     table.destroy();
 	loadOrders(yr);
 }
 
+/* Used to update state only using same functionality from mobl only screen */
 function saveOrder(objectID,OID){
-	$("#"+objectID+OID).css("border-color", "#ba0000");
-	/*if($("#"+objectID+OID).val()==5){
-		getOrderRooms(OID);
-		getRequiredDate(OID);
-		$('#detailsModal').modal('toggle');
-	}else{*/
+	$("#"+objectID+OID).css("border-color", "#fa0000");
 	myData = { mode: "updateOrder", id: objectID, value: $("#"+objectID+OID).val(), oid: OID};
 	$.post("../OrderItem.php",
 			myData, 
 				function(data, status, jqXHR) {
+					//console.log($("#"+objectID+OID).val());
 					if(data == "success"){
-						$("#"+objectID+OID).css("border-color", "#00b828");							
+						if(objectID=='state'){
+							if($("#"+objectID+OID).val()>7){//State updated Invoiced or beyond
+								$('#dateInvoiced'+OID).prop('disabled',false);
+								if($("#"+objectID+OID).val()==8){
+									//today date
+									var today = new Date();
+									var dd = String(today.getDate()).padStart(2, '0');
+									var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+									var yyyy = today.getFullYear();
+									today = yyyy+'-'+mm+'-'+dd;
+									$('#dateInvoiced'+OID).val(today);
+								}
+							}else{
+								//State is not invoiced so date should be deleted
+								updateInvoiceDate(objectID,0,OID);
+								$('#dateInvoiced'+OID).prop('disabled',true);
+								$('#dateInvoiced'+OID).val('');
+							}
+						}
+						$("#"+objectID+OID).css("border-color", "#08fa00");							
 					}
 				});
 	//}
+}
+
+function updateInvoiceDate(obj,date,oid){
+	$("#"+obj).css("border-color", "#fa0000");		
+	myData = { mode: "updateInvoicedDate", date: date, oid: oid};
+	$.post("EmployeeMenuSettings.php",
+		myData, 
+		function(data, status, jqXHR) {
+			$("#"+obj).css("border-color", "#08fa00");		
+			//console.log(jqXHR['responseText']);
+		});
+}
+
+function calculateInv(oid){
+	let buildCabinet=Number($('#'+oid+"-buildCab").val());
+	let buildCounter=Number($('#'+oid+"-buildCou").val());
+	let buildInstall=Number($('#'+oid+"-buildIns").val());
+	let buildDeliver=Number($('#'+oid+"-buildDel").val());
+	let hst=0;
+	let amt=0;
+	hst = (buildCabinet+buildCounter+buildInstall+buildDeliver)*.13;
+	amt = buildCabinet+buildCounter+buildInstall+buildDeliver+hst;
+	$('#'+oid+"-hst").val(hst.toFixed(2));
+	$('#'+oid+"-amt").val(amt.toFixed(2));
+}
+
+function updateAcc(obj,col,val,oid){
+	$("#"+obj).css("border-color", "#fa0000");
+	myData = { mode: "updateAccounting", col: col, value: val, oid: oid};
+	$.post("EmployeeMenuSettings.php",
+		myData, 
+		function(data, status, jqXHR) {
+			console.log(jqXHR['responseText']);
+			$("#"+obj).css("border-color", "#08fa00");
+		});
+}
+
+function updateAccAmt(obj,col,val,oid){
+	$("#"+obj).css("border-color", "#fa0000");
+
+	myData = { mode: "updateAccountingAmt", col: col, value: val, oid: oid, hst: $('#'+oid+"-hst").val(), total: $('#'+oid+"-amt").val()};
+	console.log(myData);
+	$.post("EmployeeMenuSettings.php",
+		myData, 
+		function(data, status, jqXHR) {
+			console.log(jqXHR['responseText']);
+			$("#"+obj).css("border-color", "#08fa00");
+		});
+}
+
+function updateOrder(obj,col,val,oid){
+	$("#"+obj).css("border-color", "#fa0000");
+	myData = { mode: "updateOrder", col: col, value: val, oid: oid};
+	$.post("EmployeeMenuSettings.php",
+		myData, 
+		function(data, status, jqXHR) {
+			console.log(jqXHR['responseText']);
+			if(col=="dateInvoiced" && val==8){
+				$('#dateInvoiced').prop('disabled',false);				
+			}else{
+				$('#dateInvoiced').prop('disabled',true);
+			}
+			$("#"+obj).css("border-color", "#08fa00");
+		});
 }
 
 function loadOrders(yr){
@@ -68,10 +157,10 @@ function loadOrders(yr){
     		        dataSet =  JSON.parse(jqXHR['responseText']);
 					//console.log(jqXHR['responseText']);
 					table = $('#mainTable').DataTable({
-						order: [[1,2,3, "asc" ]],
+						order: [[ 0, 'asc' ], [ 1, 'asc' ]],
 						colReorder: true,
 						lengthMenu: [50, 100, 250, 500],
-						stateSave: true,
+						//stateSave: true,
 						data: dataSet,
 						columns : [
 							{
@@ -88,7 +177,7 @@ function loadOrders(yr){
 							},
 							{
                                 className: "font-weight-bold align-middle oid",
-								data : "oid",
+								data : "orderID",
 								render: function(data, type) {
 									order = data;
 									return data;									
@@ -110,88 +199,152 @@ function loadOrders(yr){
                                 className: "font-weight-normal align-middle dd",
 								data : "dateShipped"
 							},
-							{								
+							{	
+								//Retail & Contract Amount						
                                 className: "font-weight-normal align-middle rca",
-								data : "amount",
+								data : "retailContAmt",
 								render: function(data, type) {
-									return "<div class=\"input-group input-group-sm\"><div class=\"input-group-prepend\"><span class=\"input-group-text\">$</span></div><input type=\"number\" class=\"form-control\"></div>";									
+									if(data){
+										return "<div class=\"input-group input-group-sm\"><div class=\"input-group-prepend\"><span class=\"input-group-text\">$</span></div><input id=\"retailContAmt\" value=\""+data+"\" type=\"number\" class=\"form-control\" onchange=\"updateAcc(this.id,this.value,"+order+");\"></div>";									
+									}else{
+										return "<div class=\"input-group input-group-sm\"><div class=\"input-group-prepend\"><span class=\"input-group-text\">$</span></div><input id=\"retailContAmt\" type=\"number\" class=\"form-control\" onchange=\"updateAcc(this.id,this.value,"+order+");\"></div>";									
+									}
 								}
 							},
-							{								
+							{		
+								//Builders and dealers					
                                 className: "font-weight-normal align-middle bd",
-								//data : "state"
-								defaultContent: ""
+								data : "accountType",
+								render: function(data, type,row) {	
+									var html = "<select id=\"accType"+order+"\" class=\"custom-select\" onchange=\"updateOrder(this.id,'accountType',this.value,"+order+");\">";
+									if(data){
+										accTypes.forEach(function(obj) {
+											if(data == obj.id){
+												html += "<option selected value=\""+obj.id+"\">"+obj.accountType+"</option>";
+											}else{
+												html += "<option value=\""+obj.id+"\">"+obj.accountType+"</option>";
+											}
+										});
+									}else{
+										html += "<option value=\"\">Select type</option>";
+										accTypes.forEach(function(obj) {
+											html += "<option value=\""+obj.id+"\">"+obj.accountType+"</option>";
+										});
+									}							
+									html += "</select>";
+									return html;
+								}
+							},
+							{
+								//Status
+								className: "font-weight-normal align-middle",
+								data : "state",
+								render: function(data, type,row) {
+									html='<select id=\"state'+order+'\" class="custom-select" onchange="saveOrder(\'state\','+order+');">';
+									states.forEach(function(obj){	
+										html += '<option ';
+										if(obj.id == row['state'])
+											html += 'selected ';
+										html += 'value="'+obj.id+'">'+obj.name+'</option>';
+									});
+									html += '</select>';
+									return html;										
+								}			
 							},
 							{			
-								//Invoice Date - Status (when is not invoiced show status otherwise display date)					
-                                className: "font-weight-normal align-middle invdt",
-								data : "state",
-								//defaultContent: "<i>Not set</i>",
+								//Invoice Date			                                
+								className: "font-weight-normal align-middle invdt",
+								data : "dateInvoiced",
 								render: function(data, type,row) {
-									if(row['state']==8){
-										html = row['dateInvoiced'];
-											return html;																					
+									if(row['state']>7){
+										return "<input id=\"dateInvoiced"+order+"\" type=\"text\" maxlength=\"10\" data-provide=\"datepicker\" data-date-format=\"yyyy-mm-dd\" class=\"form-control datepicker\" value=\""+data+"\" onchange=\"updateInvoiceDate(this.id,this.value,"+order+");\">";
 									}else{
-										html='<select  class="custom-select" onchange="saveOrder(\'state\','+order+');">';
-										states.forEach(function(obj){	
-											html += '<option ';
-											if(obj.id == row['state'])
-												html += 'selected ';
-											html += 'value="'+obj.id+'">'+obj.name+'</option>';
-										});
-										html += '</select>';
-										return html;										
-									}			
+										return "<input disabled id=\"dateInvoiced"+order+"\" type=\"text\" maxlength=\"10\" data-provide=\"datepicker\" data-date-format=\"yyyy-mm-dd\" class=\"form-control datepicker\"  value=\"\" onchange=\"updateInvoiceDate(this.id,this.value,"+order+");\">";
+									}
 								}
 							},
 							{		
 								//Invoice Number						
                                 className: "font-weight-normal align-middle invid",
-								data : "amount",
+								data : "invId",
 								render: function(data, type) {
-									return "<div class=\"input-group input-group-sm\"><input type=\"text\" class=\"form-control\" placeholder=\"Inv ID\"></div>";									
+									if(data){
+										return "<div class=\"input-group input-group-sm\"><input id=\"invId"+order+"\" value=\""+data+"\" type=\"text\" class=\"form-control\" onchange=\"updateAcc(this.id,'invId',this.value,"+order+");\"></div>";
+									}else{
+										return "<div class=\"input-group input-group-sm\"><input id=\"invId"+order+"\" type=\"text\" class=\"form-control\" placeholder=\"Inv ID\" onchange=\"updateAcc(this.id,'invId',this.value,"+order+");\"></div>";										
+									}
 								}
 							},
-							{								
+							{		
+								//$$ Build Cabinet						
                                 className: "font-weight-normal align-middle bca",
-								data : "amount",
+								data : "cabinetAmt",
 								render: function(data, type) {
-									return "<div class=\"input-group input-group-sm\"><div class=\"input-group-prepend\"><span class=\"input-group-text\">$</span></div><input type=\"number\" class=\"form-control\"></div>";									
+									if(data){
+										return "<div class=\"input-group input-group-sm\"><div class=\"input-group-prepend\"><span class=\"input-group-text\">$</span></div><input id=\""+order+"-buildCab\" value=\""+data+"\" type=\"number\" class=\"form-control\" onkeyup=\"calculateInv("+order+");\" onchange=\"updateAccAmt(this.id,'cabinetAmt',this.value,"+order+");\"></div>";									
+									}else{
+										return "<div class=\"input-group input-group-sm\"><div class=\"input-group-prepend\"><span class=\"input-group-text\">$</span></div><input id=\""+order+"-buildCab\" type=\"number\" class=\"form-control\" onkeyup=\"calculateInv("+order+");\" onchange=\"updateAccAmt(this.id,'cabinetAmt',this.value,"+order+");\"></div>";									
+									}
 								}
 							},
-							{								
+							{	
+								//$$Build Counter							
                                 className: "font-weight-normal align-middle bcta",
-								data : "amount",
+								data : "counterAmt",
 								render: function(data, type) {
-									return "<div class=\"input-group input-group-sm\"><div class=\"input-group-prepend\"><span class=\"input-group-text\">$</span></div><input type=\"text\" class=\"form-control\"></div>";									
+									if(data){
+										return "<div class=\"input-group input-group-sm\"><div class=\"input-group-prepend\"><span class=\"input-group-text\">$</span></div><input id=\""+order+"-buildCou\" value=\""+data+"\" type=\"number\" class=\"form-control\" onkeyup=\"calculateInv("+order+");\" onchange=\"updateAccAmt(this.id,'counterAmt',this.value,"+order+");\"></div>";									
+									}else{
+										return "<div class=\"input-group input-group-sm\"><div class=\"input-group-prepend\"><span class=\"input-group-text\">$</span></div><input id=\""+order+"-buildCou\" type=\"number\" class=\"form-control\" onkeyup=\"calculateInv("+order+");\" onchange=\"updateAccAmt(this.id,'counterAmt',this.value,"+order+");\"></div>";									
+									}
 								}
 							},
-							{								
+							{			
+								//$$ Install Amount					
                                 className: "font-weight-normal align-middle bia",
-								data : "amount",
+								data : "installAmt",
 								render: function(data, type) {
-									return "<div class=\"input-group input-group-sm\"><div class=\"input-group-prepend\"><span class=\"input-group-text\">$</span></div><input type=\"text\" class=\"form-control\"></div>";									
+									if(data){
+										return "<div class=\"input-group input-group-sm\"><div class=\"input-group-prepend\"><span class=\"input-group-text\">$</span></div><input value=\""+data+"\" id=\""+order+"-buildIns\" type=\"number\" class=\"form-control\" onkeyup=\"calculateInv("+order+");\" onchange=\"updateAccAmt(this.id,'installAmt',this.value,"+order+");\"></div>";									
+									}else{
+										return "<div class=\"input-group input-group-sm\"><div class=\"input-group-prepend\"><span class=\"input-group-text\">$</span></div><input id=\""+order+"-buildIns\" type=\"number\" class=\"form-control\" onkeyup=\"calculateInv("+order+");\" onchange=\"updateAccAmt(this.id,'installAmt',this.value,"+order+");\"></div>";									
+									}
 								}
 							},
-							{								
+							{						
+								//$$ Delivery Amount		
                                 className: "font-weight-normal align-middle bda",
-								data : "amount",
+								data : "deliveryAmt",
 								render: function(data, type) {
-									return "<div class=\"input-group input-group-sm\"><div class=\"input-group-prepend\"><span class=\"input-group-text\">$</span></div><input type=\"text\" class=\"form-control\"></div>";									
+									if(data){
+										return "<div class=\"input-group input-group-sm\"><div class=\"input-group-prepend\"><span class=\"input-group-text\">$</span></div><input value=\""+data+"\" id=\""+order+"-buildDel\" type=\"number\" class=\"form-control\" onkeyup=\"calculateInv("+order+");\" onchange=\"updateAccAmt(this.id,'deliveryAmt',this.value,"+order+");\"></div>";									
+									}else{
+										return "<div class=\"input-group input-group-sm\"><div class=\"input-group-prepend\"><span class=\"input-group-text\">$</span></div><input id=\""+order+"-buildDel\" type=\"number\" class=\"form-control\" onkeyup=\"calculateInv("+order+");\" onchange=\"updateAccAmt(this.id,'deliveryAmt',this.value,"+order+");\"></div>";									
+									}
 								}
 							},
-							{								
+							{			
+								//HST Amount					
                                 className: "font-weight-normal align-middle hst",
-								data : "amount",
+								data : "hstAmt",
 								render: function(data, type) {
-									return "<div class=\"input-group input-group-sm\"><div class=\"input-group-prepend\"><span class=\"input-group-text\">$</span></div><input type=\"text\" class=\"form-control\"></div>";									
+									if(data){
+										return "<div class=\"input-group input-group-sm\"><div class=\"input-group-prepend\"><span class=\"input-group-text\">$</span></div><input value=\""+data+"\" id=\""+order+"-hst\" value=\""+data+"\" type=\"number\" class=\"form-control\" readonly></div>";									
+									}else{
+										return "<div class=\"input-group input-group-sm\"><div class=\"input-group-prepend\"><span class=\"input-group-text\">$</span></div><input id=\""+order+"-hst\" type=\"number\" class=\"form-control\" readonly></div>";									
+									}
 								}
 							},
-							{								
+							{		
+								//Total Amount						
                                 className: "font-weight-normal align-middle totamt",
-								data : "amount",
+								data : "totalAmt",
 								render: function(data, type) {
-									return "<div class=\"input-group input-group-sm\"><div class=\"input-group-prepend\"><span class=\"input-group-text\">$</span></div><input type=\"text\" class=\"form-control\"></div>";									
+									if(data){
+										return "<div class=\"input-group input-group-sm\"><div class=\"input-group-prepend\"><span class=\"input-group-text\">$</span></div><input value=\""+data+"\" id=\""+order+"-amt\" value=\""+data+"\" type=\"number\" class=\"form-control\" readonly></div>";									
+									}else{
+										return "<div class=\"input-group input-group-sm\"><div class=\"input-group-prepend\"><span class=\"input-group-text\">$</span></div><input id=\""+order+"-amt\" type=\"number\" class=\"form-control\" readonly></div>";									
+									}
 								}
 							}
 						],
@@ -207,8 +360,80 @@ function loadOrders(yr){
 								$(row).addClass('table-danger');
 						}
 					});
-    		    }
+    	},
+		complete: function () {
+			loadFilters();
+     	}
 	});
+}
+
+function loadFilters(){
+	cols = new Array();
+	if(localStorage.getItem('cst')=='false'){
+		$('.cst').hide();
+	}else{
+		cols.push('cst');
+	}
+	if(localStorage.getItem('cnt')=='false'){
+		$('.cnt').hide();
+	}else{
+		cols.push('cnt');
+	}
+	if(localStorage.getItem('sls')=='false'){
+		$('.sls').hide();
+	}else{
+		cols.push('sls');
+	}
+	if(localStorage.getItem('dd')=='false'){
+		$('.dd').hide();
+	}else{
+		cols.push('dd');
+	}
+	if(localStorage.getItem('rca')=='false'){
+		$('.rca').hide();
+	}else{
+		cols.push('rca');
+	}
+	if(localStorage.getItem('bd')=='false'){
+		$('.bd').hide();
+	}else{
+		cols.push('bd');
+	}
+	if(localStorage.getItem('invdt')=='false'){
+		$('.invdt').hide();
+	}else{
+		cols.push('invdt');
+	}
+	if(localStorage.getItem('invid')=='false'){
+		$('.invid').hide();
+	}else{
+		cols.push('invid');
+	}
+	if(localStorage.getItem('bca')=='false'){
+		$('.bca').hide();
+	}else{
+		cols.push('bca');
+	}
+	if(localStorage.getItem('bcta')=='false'){
+		$('.bcta').hide();
+	}else{
+		cols.push('bcta');
+	}
+	if(localStorage.getItem('bia')=='false'){
+		$('.bia').hide();
+	}else{
+		cols.push('bia');
+	}
+	if(localStorage.getItem('bda')=='false'){
+		$('.bda').hide();
+	}else{
+		cols.push('bda');
+	}
+	//set visible cols 
+	if(cols.length>0){
+		$("#columns").val(cols);
+		$('#columns').multiselect('refresh');
+	}
 }
 </script>
 <div class="container-fluid">
@@ -217,10 +442,9 @@ function loadOrders(yr){
             <div class="row">                
 				<div class="col-md-2 col-sm-12">
 					<select id="columns" multiple="multiple">
-						<option selected value="mth" id="chkmth">MTH</option>
+						<!--option selected value="mth" id="chkmth">MTH</option>
 						<option selected value="day" id="chkday">DAY</option>
-						<option selected value="yr" id="chkyr">YR</option>
-						<option selected value="oid" id="chkoid">OID</option>
+						<option selected value="yr" id="chkyr">YR</option-->
 						<option selected value="cst" id="chkcst">CUSTOMER</option>
 						<option selected value="cnt" id="chkcnt">CONTRACT</option>
 						<option selected value="sls" id="chksls">SALES PERSON</option>
@@ -234,8 +458,8 @@ function loadOrders(yr){
 						<option selected value="bcta" id="chkbcta">BUILD COUNTER</option>
 						<option selected value="bia" id="chkbia">BUILD INSTALL</option>
 						<option selected value="bda" id="chkbda">BUILD DELIVER</option>
-						<option selected value="hst" id="chkhst">HST</option>
-						<option selected value="totamt" id="chktotamt">AMT</option>					
+						<!--option selected value="hst" id="chkhst">HST</option>
+						<option selected value="totamt" id="chktotamt">AMT</option-->					
 					</select>
 				</div>
 				<div class="col-md-2 col-sm-8">
@@ -275,13 +499,14 @@ function loadOrders(yr){
                             <th class="font-weight-bold mth">MTH</th>
                             <th class="font-weight-bold day">DAY</th>
                             <th class="font-weight-bold yr">YR</th>
-                            <th class="font-weight-bold oid">OID</th>
+                            <th class="font-weight-bold">OID</th>
                             <th class="font-weight-bold cst">CUSTOMER</th>
                             <th class="font-weight-bold cnt">CONTRACT</th>
                             <th class="font-weight-bold sls">SALES PERSON</th>
                             <th class="font-weight-bold dd">DELIVERY DATE</th>
                             <th class="font-weight-bold rca">RETAIL & CONTRACT AMOUNT</th>
                             <th class="font-weight-bold bd">BUILDERS & DEALERS</th>
+							<th class="font-weight-bold">STATUS</th>
 							<!-- Invoice -->
 							<th class="font-weight-bold invdt">INVOICE DATE</th>
 							<th class="font-weight-bold invid">INVOICE</th>
@@ -299,13 +524,14 @@ function loadOrders(yr){
 							<th class="font-weight-bold mth">MTH</th>
 							<th class="font-weight-bold day">DAY</th>
 							<th class="font-weight-bold yr">YR</th>
-							<th class="font-weight-bold oid">OID</th>
+							<th class="font-weight-bold">OID</th>
 							<th class="font-weight-bold cst">CUSTOMER</th>
 							<th class="font-weight-bold cnt">CONTRACT</th>
 							<th class="font-weight-bold sls">SALES PERSON</th>
 							<th class="font-weight-bold dd">DELIVERY DATE</th>
 							<th class="font-weight-bold rca">RETAIL & CONTRACT AMOUNT</th>
 							<th class="font-weight-bold bd">BUILDERS & DEALERS</th>
+							<th class="font-weight-bold">STATUS</th>
 							<!-- Invoice -->
 							<th class="font-weight-bold invdt">INVOICE DATE</th>
 							<th class="font-weight-bold invid">INVOICE</th>
@@ -342,9 +568,12 @@ $(document).ready(function () {
 		dropRight: true,
 		onChange: function(option, checked) {
 			$("."+$(option).val()).toggle('display');
-			//localStorage.setItem($(option).val(), checked);//store cookie for column filter
-			//console.log(localStorage);
+			localStorage.setItem($(option).val(), checked);//store cookie for column filter
+			//console.log(localStorage);			
 		}
+	});
+
+	$('.datepicker').datepicker({
 	});
 
     /*Tooltips and Popovers use a built-in sanitizer to sanitize options which accept HTML */

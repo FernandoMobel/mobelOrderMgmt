@@ -176,7 +176,7 @@ echo "<link rel=\"stylesheet\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/
               <div class="collapse navbar-collapse" id="collapsibleNavbar">
                 <ul class="navbar-nav">
                 <?php
-                  if(strlen($_SESSION["firstName"])==1 && $_SESSION["account"]==2){
+                  if(is_numeric($_SESSION["firstName"]) && $_SESSION["account"]==2){
                     echo "<li class=\"nav-item\">";
                     echo "<a class=\"nav-link text-white\" href=\"http://".$_SERVER['SERVER_NAME'].$local."/employee/EmployeeMenu.php\">Mobel Only</a>";
                     echo "</li>";

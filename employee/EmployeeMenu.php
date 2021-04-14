@@ -79,7 +79,7 @@ input::-webkit-inner-spin-button {
 }
 </style>
 <?php
-	if(strlen($_SESSION["firstName"])==1 && $_SESSION["account"]==2){}else{
+	if(is_numeric($_SESSION["firstName"]) && $_SESSION["account"]==2){}else{
 ?>
 		<div class="container-fluid  d-print-none">
 			<?php
@@ -175,7 +175,7 @@ input::-webkit-inner-spin-button {
 		</div>
 <?php 
 	}
-if(strlen($_SESSION["firstName"])==1 && $_SESSION["account"]==2){
+if(is_numeric($_SESSION["firstName"]) && $_SESSION["account"]==2){
 	echo "<div id=\"scheduleTab\" style=\"display:block\">";
 	include 'schedule.php';
 	echo "</div>";

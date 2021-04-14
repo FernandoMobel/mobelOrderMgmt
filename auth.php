@@ -99,7 +99,7 @@ if($_SESSION["attp"]>2){
 					//$_SESSION['siteMode'] = $row['siteMode'];
 				}
 			}
-			if(strlen($_SESSION["firstName"])==1 && $_SESSION["account"]==2){
+			if(is_numeric($_SESSION["firstName"]) && $_SESSION["account"]==2){
 				header("Location: ".$local."/employee/EmployeeMenu.php");
 			}else{
 				header("Location: viewOrder.php");

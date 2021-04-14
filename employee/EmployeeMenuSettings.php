@@ -72,15 +72,16 @@ if($_POST['mode']=="getOrders"){
 }
 
 if($_POST['mode']=="getOrdersAccounting"){
-	$sql = "select CAST(dateInvoiced as DATE) dateInvoiced,state,'$' amount,isPriority,isWarranty,CLid, month(dateSubmitted) mth, day(dateSubmitted) day, year(dateSubmitted) yr, oid, account,(select a.busName from account a where a.id = mo.account)busName, concat( tagName,if(po<>'',concat(' - ',po),'')) contract, (select concat(mu.firstName,' ',mu.lastName) from mosUser mu where mu.id = mo.mosUser )sales, deliveryDate, CAST(dateShipped AS DATE) dateShipped from mosOrder mo where year(dateSubmitted) = ".$_POST['year']." and state > 1 and CLid <> 3 order by dateSubmitted";
+	$sql = "select accountType,CAST(dateInvoiced as DATE) dateInvoiced,state,'$' amount,isPriority,isWarranty,CLid, month(dateSubmitted) mth, day(dateSubmitted) day, year(dateSubmitted) yr, mo.oid orderID, account,(select a.busName from account a where a.id = mo.account)busName, concat( tagName,if(po<>'',concat(' - ',po),'')) contract, (select concat(mu.firstName,' ',mu.lastName) from mosUser mu where mu.id = mo.mosUser )sales, deliveryDate, CAST(dateShipped AS DATE) dateShipped, a.* from mosOrder mo left join accounting a on mo.oid = a.oid where year(dateSubmitted) = ".$_POST['year']." and state > 1 and CLid <> 3 order by dateSubmitted";
 	$result = opendb($sql);
 	$dbdata = array();
 	while($row = $result->fetch_assoc()){
 		$data['mth'] = $row['mth'];
 		$data['day'] = $row['day'];
 		$data['yr'] = $row['yr'];
-		$data['oid'] = $row['oid'];
+		$data['orderID'] = $row['orderID'];
 		$data['busName'] = $row['busName'];
+		$data['accountType'] = $row['accountType'];
 		$data['contract'] = $row['contract'];
 		$data['sales'] = $row['sales'];
 		$data['dateShipped'] = $row['dateShipped'];
@@ -90,6 +91,15 @@ if($_POST['mode']=="getOrdersAccounting"){
 		$data['amount'] = $row['amount'];
 		$data['state'] = $row['state'];
 		$data['dateInvoiced'] = $row['dateInvoiced'];
+		//Account table
+		$data['invId'] = $row['invId'];
+		$data['retailContAmt'] = $row['retailContAmt'];		
+		$data['cabinetAmt'] = $row['cabinetAmt'];
+		$data['counterAmt'] = $row['counterAmt'];
+		$data['installAmt'] = $row['installAmt'];
+		$data['deliveryAmt'] = $row['deliveryAmt'];
+		$data['hstAmt'] = $row['hstAmt'];
+		$data['totalAmt'] = $row['totalAmt'];
 		array_push($dbdata, $data);
 	}
 	echo json_encode($dbdata);
@@ -745,5 +755,59 @@ if($_POST['mode']=='getStationStatus'){
 		$html .= "type=\"checkbox\" id=\"".$row['rid']."-1\"/></td></tr>";	
 	}
 	echo $html;
+}
+
+if($_POST['mode']=='updateStationSch'){
+	$sql = "update departments set dateType = ".$_POST['val']." where id =".$_POST['id'];
+	opendb($sql);
+}
+
+if($_POST['mode']=='updateAccounting'){
+	$s = "'";
+	if(is_numeric($_POST['value']))
+		$s = "";
+	//insert if no records yet
+	opendb("select 1 from accounting where oid=".$_POST['oid']);
+	if($GLOBALS['$result']->num_rows == 0){
+		$insert = "insert into accounting (oid,userId,updateDate) values(".$_POST['oid'].",".$_SESSION["userid"].",now())";
+		echo $insert;
+		opendb($insert);
+	}
+	//update value
+	$sql = "update accounting set updateDate=now(),userId= ".$_SESSION["userid"].",".$_POST['col']." = ".$s.$_POST['value'].$s." where oid =".$_POST['oid'];
+	echo $sql;
+	opendb($sql);
+}
+
+if($_POST['mode']=='updateAccountingAmt'){
+	//insert if no records yet
+	opendb("select 1 from accounting where oid=".$_POST['oid']);
+	if($GLOBALS['$result']->num_rows == 0){
+		$insert = "insert into accounting (oid,userId,updateDate) values(".$_POST['oid'].",".$_SESSION["userid"].",now())";
+		echo $insert;
+		opendb($insert);
+	}
+	//update value
+	$sql = "update accounting set updateDate=now(),userId= ".$_SESSION["userid"].",".$_POST['col']."=".$_POST['value'].", hstAmt=".$_POST['hst'].",totalAmt=".$_POST['total']." where oid =".$_POST['oid'];
+	echo $sql;
+	opendb($sql);
+}
+
+if($_POST['mode']=='updateOrder'){
+	$s = "'";
+	if(is_numeric($_POST['value']))
+		$s = "";
+	$sql = "update mosOrder set ".$_POST['col']." = ".$s.$_POST['value'].$s." where oid =".$_POST['oid'];
+	echo $sql;
+	opendb($sql);
+}
+
+if($_POST['mode']=='updateInvoicedDate'){
+	if($_POST['date']!=0){
+		$sql = "update mosOrder set dateInvoiced = '".$_POST['date']."' where oid =".$_POST['oid'];
+	}else{
+		$sql = "update mosOrder set dateInvoiced = null where oid =".$_POST['oid'];
+	}	
+	opendb($sql);
 }
 ?>

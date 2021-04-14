@@ -259,13 +259,16 @@ function loadItems(rid){
 						alert('One or more items are not compatible, please remove them');
 					}else{
 						$("#roomTotal").html("<b>Room Total: $" + $('#TotalPrice').val() + "<br>pre HST & pre delivery ");
-					}	
-					//set printing properties				
+					}
+					//set extra options(Touch up & Hardware)
+					setExtraOptions(rid);
+					//load print view
 					loadPrinting();
 				}else{//One or more headers aren't selected, prices and item list will not be displayed
 					$('#items').append("<h5 class=\"mx-auto\">Please ensure all the above options (Species, Finish, etc) are selected</h5>");
 					$(".borderless").css('border-top','0px');
 					$("#roomTotal").html("<b>Room Total: undefined </b>");
+					$('#extra').multiselect('disable');
 				}
 			},
 			error: function (request, error) {
@@ -534,7 +537,7 @@ function saveEditedItem(objectID,col){
 	}else{
 		myData = { column:col, id: $("#"+objectID).val(), itemID: $('#editOrderItemID').val(), mode: myMode, rid: $("a.nav-link.roomtab.active").attr("value"), value: $("#"+objectID).val(), oid: "<?php echo $_GET["OID"] ?>", cline:$("#CLid").val()};
 	}
-	console.log(myData);
+	//console.log(myData);
 	$.post("save.php",myData,function(data, status, jqXHR) {
 		if(status == "success"){
 	    	$("#"+objectID).css("border-color", "#00b828");
@@ -1257,6 +1260,64 @@ function loadPrinting(){
 				printPrice();
 			}
 	});	
+}
+
+/*-------------------------------------------------------
+This function is triggered from loaditems function.
+Touch up and Hardware
+------------------------------------------------------ */
+function setExtraOptions(rid){	
+	//species not selected
+	if($('#species'+rid).val()==0){
+		$('#extra option[value="touchUp"]').prop('disabled',false);
+		$('#extra').multiselect('disable');
+		myData = {mode: "setExtras", rid:rid, column:'touchUp',val:false};
+		$.ajax({
+		url: 'OrderItem.php',
+		type: 'POST',
+		data: myData
+		});
+	}else{
+		$('#extra').multiselect('enable');
+		//MDF and Wood species
+		var list = [1,2,3,4,8];
+		//Touch up only available for MDF and Wood
+		if(list.includes(Number($('#species'+rid).val()))){
+			//enable Touch up option
+			$('#extra option[value="touchUp"]').prop('disabled',false);			
+		}else{
+			$('#extra option[value="touchUp"]').prop('disabled',true);
+			$('#extra option[value="touchUp"]').prop('selected',false);
+			myData = {mode: "setExtras", rid:rid, column:'touchUp',val:false};
+			$.ajax({
+			url: 'OrderItem.php',
+			type: 'POST',
+			data: myData
+			});			
+		}
+		//Get data from DB
+		var dataExtras;
+		myData = {mode: "getExtras", rid:rid};
+		$.ajax({
+		url: 'OrderItem.php',
+		type: 'POST',
+		data: myData,
+		success: function(data, status, jqXHR) {
+				dataExtras =  JSON.parse(jqXHR['responseText']);
+				//Touch Up
+				var touchUp = false;
+				if(dataExtras['touchUp']>0)
+					touchUp = true;
+				$('#extra option[value="touchUp"]').prop('selected',touchUp);	
+				//Hardware
+				var hardware = false;
+				if(dataExtras['hardware']>0)
+					hardware = true;
+				$('#extra option[value="hardware"]').prop('selected',hardware);
+				$('#extra').multiselect('refresh');	
+				}
+		});	
+	}
 }
 </script>
 
@@ -2088,16 +2149,19 @@ function loadPrinting(){
 
 
 <div  class="container tab-pane float-left col-12 d-print-none">
-
     <hr/>
-    
-    <!-- Trigger the modal with a button -->
     <?php 
     if ($roomCount >0){
     ?>
     <div class="d-flex justify-content-between">
-		<button type="button" onClick="cleanEdit('add');" class="btn btn-primary" data-toggle="modal" data-target="#editItemModal">Add Item<span class="ui-icon ui-icon-plus"></span></button>
-		<span class="ml-auto d-print-none" id="roomTotal"></span>
+		<div><button type="button" onClick="cleanEdit('add');" class="btn btn-primary" data-toggle="modal" data-target="#editItemModal">Add Item<span class="ui-icon ui-icon-plus"></span></button></div>	
+		<div class="my-auto">
+			<select class="custom-select" id="extra" multiple>
+				<option value="touchUp">Touch Up</option>
+				<!-- hidden until more information -->
+				<option class="d-none" value="hardware">Hardware</option>
+				<!--option value="3">Counter Top</option--></select></div>
+		<div><span class="ml-auto d-print-none" id="roomTotal"></span></div>
 	</div>
 	
 	<div id="divPrintPrice">
@@ -2667,7 +2731,29 @@ $(document).ready(function(){
 		echo "$('#roomTotal').hide();";
 	}
 	?>
-	loadPrinting();	
+	//get print view
+	loadPrinting();		
+
+	$('#extra').multiselect({
+		allSelectedText: 'All options selected',
+		buttonWidth: '250px',
+		dropRight: true,
+		onChange: function(option, checked) {
+			myData = {mode: "setExtras", rid:$("a.nav-link.roomtab.active").attr("value"), column:option[0].value,val:checked};
+			$.ajax({
+			url: 'OrderItem.php',
+			type: 'POST',
+			data: myData,
+			success: function(){
+				loadPrinting();
+			}
+			});
+		}
+	});
+
+	//set options(Touch up, Hardware)
+	//setExtraOptions($("a.nav-link.roomtab.active").attr("value"));
+
 	<?php
 	if(isset($_POST['orderTypeNew'])){
 		if($_POST['orderTypeNew']==1)
