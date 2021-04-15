@@ -374,7 +374,6 @@ function loadFilters(){
 	cols = new Array();
 	if(localStorage.getItem('cst')=='false'){
 		$('.cst').hide();
-		$( table.column( 2 ).header() ).addClass( 'never' );
 	}else{
 		cols.push('cst');
 	}
