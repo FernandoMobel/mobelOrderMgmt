@@ -157,9 +157,12 @@ function loadOrders(yr){
     		        dataSet =  JSON.parse(jqXHR['responseText']);
 					//console.log(jqXHR['responseText']);
 					table = $('#mainTable').DataTable({
+						//"sDom": '<"top"i>rt<"bottom"flp><"clear">',
 						order: [[ 0, 'asc' ], [ 1, 'asc' ]],
-						colReorder: true,
-						lengthMenu: [50, 100, 250, 500],
+						ordering: false,
+						//colReorder: false,
+						//lengthMenu: [500,1000],
+						paging: false,
 						//stateSave: true,
 						data: dataSet,
 						columns : [
@@ -358,8 +361,8 @@ function loadOrders(yr){
 								$(row).addClass('table-warning');
 							if(data['isWarranty']==1)
 								$(row).addClass('table-danger');
-						}
-					});
+						}						
+					});					
     	},
 		complete: function () {
 			loadFilters();
@@ -371,6 +374,7 @@ function loadFilters(){
 	cols = new Array();
 	if(localStorage.getItem('cst')=='false'){
 		$('.cst').hide();
+		$( table.column( 2 ).header() ).addClass( 'never' );
 	}else{
 		cols.push('cst');
 	}
