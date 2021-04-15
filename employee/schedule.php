@@ -12,7 +12,7 @@ while($row = $result->fetch_assoc()) {
 }
 $depts = json_encode($dep);
 echo "const depts = JSON.parse('".$depts."');";
-echo "let schedules = ['Cutting', 'Finishing', 'Wrapping', 'Shipping'];";
+echo "let schedules = ['Cutting', 'Finishing', 'Completion', 'Shipping'];";
 
 $sql = "select * from departments where id=".(int)$_SESSION['firstName'];
 $result = opendb($sql);
@@ -53,7 +53,7 @@ function loadSchWeek(date, sch){
 				department = 2;
 				dateType = sch;
 			break;
-			case '1'://Sanding
+			case '1'://Finishing
 				department = 8;
 				dateType = sch;
 			break;
@@ -71,7 +71,7 @@ function loadSchWeek(date, sch){
 	schDesc=schedules[dateType];
 	
 	//console.clear();
-	$('#scheduleName').html(deptDesc);
+	$('#scheduleName').html(schDesc);
 	/* This is being printed to the console to be able to know more details about what informations is being displayed */
 	console.log('Week of: '+date+', Schedule View:'+schDesc+', Department:'+deptDesc+', onlyReady:'+localStorage.getItem('onlyReady')+', hideComplete:'+localStorage.getItem('displayComp')+', hideSpan:'+localStorage.getItem('hideSpan')+', onlySpan: '+localStorage.getItem('onlySpan'));
 	myData = { mode: "loadSchWeek", date: date, dateType: dateType, mydid:department, filter:localStorage.getItem('onlyReady'), displayComp:localStorage.getItem('displayComp'), hideSpan:localStorage.getItem('hideSpan'), onlySpan:localStorage.getItem('onlySpan')};
@@ -397,13 +397,13 @@ function manageSchedule(object, val, stationID ){
 				<div class="p-2">
 					<div class="custom-control custom-radio">
 						<input onchange="loadSchWeek(0,this.value)" type="radio" class="custom-control-input" id="chk3" value="3" name="defaultExampleRadios" checked>
-						<label class="custom-control-label" for="chk3">Completion</label>
+						<label class="custom-control-label" for="chk3">Shipping</label>
 					</div>
 				</div>
 				<div class="p-2">
 					<div class="custom-control custom-radio">
 						<input onchange="loadSchWeek(0,this.value)" type="radio" class="custom-control-input" id="chk2" value="2" name="defaultExampleRadios">
-						<label class="custom-control-label" for="chk2">Wrapping</label>
+						<label class="custom-control-label" for="chk2">Completion</label>
 					</div>
 				</div>
 				<div class="p-2">
@@ -577,7 +577,7 @@ function manageSchedule(object, val, stationID ){
 			</thead>
 			<tbody>
 			<?php
-				$sch = array("Cutting", "Finishing", "Wrapping", "Shipping");
+				$sch = array("Cutting", "Finishing", "Completion", "Shipping");
 				$sql = "SELECT d.id,d.department, mu.email,d.dateType FROM departments d left join mosUser mu on mu.firstName = d.id and mu.userType = 3";
 				$result = opendb($sql);	
 				$selected = "selected ";

@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		  },
 		customButtons: {
 		    completion: {
-		      	text: 'Completion',
+		      	text: 'Shipping',
 		      	click: function(arg, a) {
 		      		schedule = 3;
 		        	$(arg['path'][1]['childNodes']).removeClass('active');
@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		      	}
 		    },
 		    wrapping: {
-		      	text: 'Wrapping',
+		      	text: 'Completion',
 		      	click: function(arg, a) {
 		      		schedule = 2;
 		        	$(arg['path'][1]['childNodes']).removeClass('active');
@@ -245,7 +245,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						}
 				});	
 			}else{
-				alert('Completion date is fixed, you cannot update it.');
+				alert('Shipping date is fixed, you cannot update it.');
 				info.revert();
 			}
 		},
@@ -561,8 +561,8 @@ document.addEventListener('DOMContentLoaded', function() {
 					<div class="row">
 						<div class="col bg-stage1">CUTTING</div>
 						<div class="col bg-stage2">FINISHING</div>
-						<div class="col bg-stage3">WRAPPING</div>
-						<div class="col bg-stage4">COMPLETION</div>
+						<div class="col bg-stage3">COMPLETION</div>
+						<div class="col bg-stage4">SHIPPING</div>
 					</div>
 				</div>
 			</div>
