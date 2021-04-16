@@ -374,7 +374,7 @@ if($_POST['mode'] == "submitToMobel"){
     </html>";
     //echo $msg;
     sendmail("fernando@mobel.ca; orders@mobel.ca; ".$_SESSION['email'], "Order ".$mailOID." Submitted - ".$accountName, $msg);
-    createORDX($_POST['oid'],$accountId);//Call function to create ordx file
+    //createORDX($_POST['oid'],$accountId);//Call function to create ordx file
 }
 
 function roomTable($species,$interiorFinish,$door,$frontFinish,$drawerBox,$glaze,$smallDrawerFront,$sheen,$largeDrawerFront,$hinge,$drawerGlides,$finishedEnd){
