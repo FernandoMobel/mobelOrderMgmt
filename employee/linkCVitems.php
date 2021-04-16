@@ -268,7 +268,7 @@ function linkCVtoMOS(){
 							</div>
 						</div>
 						<div class="col-md-2 mx-auto">
-							<button class="btn btn-sm btn-secondary" onclick="btnReset();">Reset List</button>
+							<button class="btn btn-sm btn-secondary" onclick="btnReset();">Clear List</button>
 							<button id="bnSubmit" class="btn btn-sm btn-success" onclick="linkCVtoMOS();">Submit</button>
 						</div>	
 					</div>
