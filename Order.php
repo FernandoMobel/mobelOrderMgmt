@@ -149,7 +149,7 @@ function submitToMobel(){
 	$.post("save.php",
 		myData, 
 	       function(data, status, jqXHR) {
-	    	   //console.log(jqXHR['responseText']);
+	    	   console.log(jqXHR['responseText']);
 			   window.location.reload();
 	        });
 }
