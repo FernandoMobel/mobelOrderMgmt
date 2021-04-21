@@ -70,36 +70,30 @@ if($_POST['mode'] == "saveEditedItem"){
         //header("HTTP/1.1 500 Internal Server Error");
     }else{
         if(strcmp($_POST['column'],'position')==0){
-            $sql = "select position,(select max(position) from orderItem oi2 where oi2.rid =". $_POST['rid'] . ") maxPos from orderItem oi where id = '" . $_POST['itemID'] . "' and rid = '". $_POST['rid'] . "'";
-            
+            //set new position to the item
+            opendb("update orderItem set position=".$_POST['value']." where id=".$_POST['itemID']);
+            //rearrange positions for room
+            $sql = "select * from orderItem oi where rid =". $_POST['rid']." and id not in(".$_POST['itemID'].") order by position";
             $result = opendb($sql);
-            $row = $result->fetch_assoc();
-            //update position for all the items after item
-            $maxPos = $row['maxPos'];
-            $curPos = $row['position'];
-            $op = "+";
-            $pos = $_POST['id'];
-            if($pos<$curPos){
-                $op = "+";
-                $range = $pos." and ".$curPos;
-            }else{
-                $op = "-";
-                $range = $curPos." and ".$pos;
-            }       
-            $sql = "update orderItem oi set oi.position = oi.position".$op."1 where oi.position between ".$range." and rid=".$_POST['rid'];
-            opendb($sql);
-            
-            //end update items and mods
-        }
-        $value = str_replace("'","\'",$_POST['id']);
-        if(is_numeric($_POST['id'])){
-            $sql = "update orderItem set ". $_POST['column'] . " = " .$value. " where id = '" . $_POST['itemID'] . "' and rid = '". $_POST['rid'] . "'";
+            $i=1;
+            while($row = $result->fetch_assoc()){
+                if(intval($_POST['value'])==$i)
+                    $i++;
+                opendb("update orderItem set position=".$i." where id=".$row['id']);
+                $i++;                                
+            }
+            //recalculate position for all mods based on their parents
+            $sql2 = "update orderItemMods oi set oi.position = (select oi2.position from orderItem oi2 where oi2.id = oi.pid) where rid=".$_POST['rid'];
+            opendb($sql2);            
         }else{
-            $sql = "update orderItem set ". $_POST['column'] . " = '".$value."' where id = '" . $_POST['itemID'] . "' and rid = '". $_POST['rid'] . "'";
+            $value = str_replace("'","\'",$_POST['id']);
+            if(is_numeric($_POST['id'])){
+                $sql = "update orderItem set ". $_POST['column'] . " = " .$value. " where id = '" . $_POST['itemID'] . "' and rid = '". $_POST['rid'] . "'";
+            }else{
+                $sql = "update orderItem set ". $_POST['column'] . " = '".$value."' where id = '" . $_POST['itemID'] . "' and rid = '". $_POST['rid'] . "'";
+            }
+            opendb($sql);
         }
-        opendb($sql);
-        $sql2 = "update orderItemMods oi set oi.position = (select oi2.position from orderItem oi2 where oi2.id = oi.pid) where rid=".$_POST['rid'];
-        opendb($sql2);
     }
 }
 
@@ -140,167 +134,6 @@ if($_POST['mode'] == "setCurrentLeadtime"){
 	echo $newDate;
 }
 
-if($_POST['mode'] == "submitToMobelold"){
-    $CLid = 1;
-    $sql = "update mosOrder set dateSubmitted = now(), submittedBy=".$_SESSION["userid"].", state = '2', leadTime = (select currentLeadtime from settings) where oid = '" . $_POST['oid'] . "' and state = 1";
-    opendb($sql);
-    //$sql = "select * from mosOrder o, accountAddress aA, account a, mosUser mu where o.mosUser = mu.id and o.account = a.id and o.shipAddress = aA.id and o.oid = '" . $_POST['oid'] . "'";
-	$sql = "select * ,(select concat(unit,' ',street,' ',city,' ',province,' ',country,' ',postalCode)  from accountAddress aA where aA.id =o.shipAddress) shipTo from mosOrder o, mosUser mu, account a where o.mosUser = mu.id and o.account = a.id and o.oid = '" . $_POST['oid'] . "'";
-    opendb($sql);
-    $msg = "<html><body><H1>Thank you for your order. </H1><p>We have recieved your order and will be sending back a confirmation soon.</p>";
-    if($GLOBALS['$result']->num_rows > 0){
-        $msg .= "<p>";
-    }
-        foreach ($GLOBALS['$result'] as $row) {
-			$mailOID = $row['oid'];
-            $msg .= "Order ID: " . $row['oid'] . "<br/>";
-            $msg .= "Submitted by: " . $row['firstName'] . " " . $row['lastName'] . " from " . $row['busDBA'] . "<br/>";
-            $msg .= "Phone Number: " . $row['phone'] . "<br/>";
-            $msg .= "Date Submitted: " . substr($row['dateSubmitted'],0,10) . "<br/>";
-            $msg .= "Date Required: " . substr($row['dateRequired'],0,10) . "<br/>";
-            $msg .= "Tag Name: " . $row['tagName'] . "<br/>";
-            //$msg .= "PO: " . $row['po'] . "<br/>";
-			if(strlen($row['shipTo'])>0){
-				$msg .= "Ship To: " . $row['shipTo']. "<br/>";
-			}else{
-				$msg .= "Ship To: Please add a shipping address <br/>";
-			}
-			$CLid = $row['CLid'];
-			$accountName = $row['busDBA'];
-        }
-    
-    $msg .= "<br/>";
-    $SQL = "select * from (SELECT oi.note, orr.rid as rid, orr.name as roomName, oi.id as item, 0 as sid, oi.qty, oi.name, oi.price, oi.sizePrice, 0 as 'parentPercent', ds.factor as 'DFactor', irf.factor as 'IFactor', ff.factor as 'FFactor', ff.upcharge as 'FUpcharge', sh.factor as 'SFactor', gl.factor as 'GFactor', sp.finishedEndSizePrice as 'EFactor', (db.upcharge + dg.upcharge) as 'drawerCharge', sdf.upcharge as 'smallDrawerCharge', ldf.upcharge as 'largeDrawerCharge', oi.doorFactor as 'DApplies', oi.interiorFactor as 'IApplies', oi.finishFactor as 'FApplies', oi.sheenFactor as 'SApplies', oi.glazeFactor as 'GApplies',oi.drawers, oi.smallDrawerFronts, oi.largeDrawerFronts, oi.H, oi.W, oi.D, oi.minSize, it.pricingMethod as methodID, oi.hingeLeft,oi.hingeRight,oi.finishLeft,oi.finishRight,orr.species,orr.interiorFinish,orr.door,orr.frontFinish,orr.drawerBox,orr.glaze,orr.smallDrawerFront,orr.sheen,orr.largeDrawerFront,orr.hinge,orr.drawerGlides,orr.finishedEnd 
-    FROM  orderItem oi, orderRoom orr, doorSpecies ds, interiorFinish irf, item it, sheen sh, glaze gl, frontFinish ff,drawerBox db, drawerGlides dg, smallDrawerFront sdf, largeDrawerFront ldf, species sp
-    WHERE it.id = oi.iid and oi.rid = orr.rid and orr.species = ds.sid and orr.door = ds.did and orr.interiorFinish = irf.id and orr.oid = '" .$_POST['oid']. "' and orr.species = sp.id and orr.sheen = sh.id and orr.glaze = gl.id and orr.frontFinish = ff.id and orr.drawerBox = db.id and orr.drawerGlides = dg.id and orr.smallDrawerFront = sdf.id and orr.largeDrawerFront = ldf.id and it.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$CLid.")
-    union all
-                           SELECT oi.note, orr.rid as rid, orr.name as roomName, oi.pid as item, oi.id as sid, oi.qty, oi.name, oi.price, oi.sizePrice, 0 as 'parentPercent', ds.factor as 'DFactor', irf.factor as 'IFactor', ff.factor as 'FFactor', ff.upcharge as 'FUpcharge', sh.factor as 'SFactor', gl.factor as 'GFactor', sp.finishedEndSizePrice as 'EFactor', (db.upcharge + dg.upcharge) as 'drawerCharge', sdf.upcharge as 'smallDrawerCharge', ldf.upcharge as 'largeDrawerCharge', oi.doorFactor as 'DApplies', oi.interiorFactor as 'IApplies', oi.finishFactor as 'FApplies', oi.sheenFactor as 'SApplies', oi.glazeFactor as 'GApplies',oi.drawers, oi.smallDrawerFronts, oi.largeDrawerFronts, oi.H, oi.W, oi.D, oi.minSize, it.pricingMethod as methodID, oi.hingeLeft,oi.hingeRight,oi.finishLeft,oi.finishRight,orr.species,orr.interiorFinish,orr.door,orr.frontFinish,orr.drawerBox,orr.glaze,orr.smallDrawerFront,orr.sheen,orr.largeDrawerFront,orr.hinge,orr.drawerGlides,orr.finishedEnd
-    FROM  orderItemMods oi, orderRoom orr, doorSpecies ds, interiorFinish irf, itemMods it, sheen sh, glaze gl, frontFinish ff,drawerBox db, drawerGlides dg, smallDrawerFront sdf, largeDrawerFront ldf, species sp
-    WHERE it.id = oi.mid and oi.rid = orr.rid and orr.species = ds.sid and orr.door = ds.did and orr.interiorFinish = irf.id and orr.oid = '" .$_POST['oid']. "' and orr.species = sp.id and orr.sheen = sh.id and orr.glaze = gl.id and orr.frontFinish = ff.id and orr.drawerBox = db.id and orr.drawerGlides = dg.id and orr.smallDrawerFront = sdf.id and orr.largeDrawerFront = ldf.id and it.CLGroup in(select clg.CLGid FROM cabinetLineGroups clg where clg.CLid = ".$CLid.")) as T1 order by roomName,item,sid";
-   
-    opendb($SQL);
-    
-    $roomID = -1;
-    $roomchanged = 0;
- 
-    if($GLOBALS['$result']->num_rows > 0){
-        
-        foreach ($GLOBALS['$result'] as $row) {
-            
-            if(!($roomID == $row['rid'])){
-                
-                if($roomchanged > 0){
-                    $msg .=  "</table><br/>";
-                }
-                $msg .=  "<style>td{text-align:center;}</style>";
-                $msg .= "<div><b>" . $row['roomName'] . "</b><br/> " . roomTable($row['species'],$row['interiorFinish'],$row['door'],$row['frontFinish'],$row['drawerBox'],$row['glaze'],$row['smallDrawerFront'],$row['sheen'],$row['largeDrawerFront'],$row['hinge'],$row['drawerGlides'],$row['finishedEnd']) . "</div>";
-                $msg .=  "<br/><table id=\"example\" class=\"table table-striped table-sm\" style=\"width:100%\">";
-                $msg .=  "<thead>";
-                $msg .=  "      <tr>";
-                //$msg .=  "        <th class=\"font-weight-bold\">Room</th>";
-                $msg .=  "        <th class=\"font-weight-bold\">Item#</th>";
-                $msg .=  "        <th class=\"font-weight-bold\">Description</th>";
-                $msg .=  "        <th class=\"font-weight-bold\">H</th>";
-                $msg .=  "        <th class=\"font-weight-bold\">W</th>";
-                $msg .=  "        <th class=\"font-weight-bold\">D</th>";
-                $msg .=  "        <th class=\"font-weight-bold\">Qty</th>";
-                $msg .=  "        <th class=\"font-weight-bold\">Hinged</th>";
-                $msg .=  "        <th class=\"font-weight-bold\">F.E.</th>";
-                if($_SESSION["userType"]>1){
-                    $msg .=  "<th class=\"font-weight-bold\">Price</th>";
-                }
-                $msg .=  "<th></th>";
-                $msg .=  "</tr>";
-                $msg .=  "</thead>";
-                $msg .=  "<tbody class=\"col-sm-12\">";
-                $i = 1;
-                $si= 0;
-                opendb2("select price from item where id = (select iid from orderitem where id = " . $row['item'] . ")");
-                foreach($GLOBALS['$result2'] as $row2){
-                    $parentPrice = $row2['price'];
-                }
-                //$parentPrice = 0;
-                $parentID = -1;
-                $isParent = -1;
-                $roomchanged = 1;
-                $roomID = $row['rid'];
-            }
-            
-            
-            
-            if($parentID !== $row['item']){ //new parent item
-                $parentID = $row['item'];
-                $isParent = 1;
-                $parentPrice = 0;
-                $si = 0;
-            }else{
-                $isParent = 0;
-                $si = $si + 1;
-                $i = $i - 1;
-            }
-            $msg .=  "";
-            $tdStyle = "<td class=\"borderless\">";
-            if($isParent===1){
-                $msg .=  "<tr class=\"font-weight-bold\">";
-                $tdStyle = "<td class=\"font-weight-bold\">";
-            }else{
-                $msg .=  "<tr class=\"table-sm\">";
-            }
-            
-            //$msg .=  $tdStyle . $row['orr.rid'] . "</td>";
-            $msg .=  $tdStyle . $i . "." . $si . "</td>";
-            $msg .=  $tdStyle . $row['name'] . "</td>";
-            $msg .=  $tdStyle . (float)$row['H'] . "</td>";
-            $msg .=  $tdStyle . (float)$row['W'] . "</td>";
-            $msg .=  $tdStyle . (float)$row['D'] . "</td>";
-            $msg .=  $tdStyle . (float)$row['qty'] . "</td>";
-            
-            $hinging = "";
-            if($row['hingeLeft']==1){
-                $hinging = "L";
-            }
-            if($row['hingeRight']=="1"){
-                $hinging = "R";
-            }
-            if($row['hingeLeft']=="1" && $row['hingeRight'] =="1"){
-                $hinging = "B";
-            }
-            //echo $tdStyle . $hinging . "</td>";
-            $finishedEnds = "";
-            if($row['finishLeft']=="1"){
-                $finishedEnds = "L";
-            }
-            if($row['finishRight']=="1"){
-                $finishedEnds = "R";
-            }
-            if($row['finishLeft']=="1" && $row['finishRight']=="1"){
-                $finishedEnds = "B";
-            }
-            //echo $tdStyle . $finishedEnds . "</td>";
-            
-            
-            $msg .=  $tdStyle . $hinging . "</td>";
-            $msg .=  $tdStyle . $finishedEnds . "</td>";
-            $aPrice = //getPrice($row['qty'],$row['price'],$row['sizePrice'],$parentPrice,$row['parentPercent'],$row['DFactor'],$row['IFactor'],$row['DApplies'],$row['IApplies'],$row['H'],$row['W'],$row['D'],$row['minSize'],$row['methodID']);
-            getPrice($row['qty'],$row['price'],$row['sizePrice'],$parentPrice,$row['parentPercent'],$row['DFactor'],$row['IFactor'],$row['FFactor'],$row['GFactor'],$row['SFactor'],$row['EFactor'],$row['drawerCharge'],$row['smallDrawerCharge'],$row['largeDrawerCharge'],  $row['DApplies'],$row['IApplies'],$row['FApplies'],$row['GApplies'],$row['SApplies'],$row['drawers'],$row['smallDrawerFronts'],$row['largeDrawerFronts'],$row['finishLeft']+$row['finishRight'], $row['H'],$row['W'],$row['D'],$row['minSize'],$row['methodID'],$row['FUpcharge'],0);
-            if($isParent === 1){
-                $parentPrice = $aPrice;
-            }
-            if($_SESSION["userType"]>1){
-                $msg .=  $tdStyle . number_format($aPrice,2,'.','') . "</td>";            
-            }
-            $msg .=  "</tr>";
-            $i = $i + 1;
-        }
-        $msg .=  "</tbody></table>";
-    }
-    
-    $msg .= "</p><p>Thanks,</p><p>Mobel</p></body></html>";
-    //testNewEmailLayout();
-	//sendmail("fernando@mobel.ca; orders@mobel.ca", "Order ".$mailOID." Submitted - ".$accountName, $msg);
-	//echo $msg;
-}
-
 if($_POST['mode'] == "submitToMobel"){
     $CLid = 1;
     //Update status
@@ -311,6 +144,7 @@ if($_POST['mode'] == "submitToMobel"){
     $result = opendb($sql);
     $row = $result->fetch_assoc();
     $accountName = $row['busDBA'];
+    $accountId = $row['account'];
     $mailOID = $row['oid'];
     $CLfactor = $row['factor'];
     $orderType="";
@@ -538,9 +372,9 @@ if($_POST['mode'] == "submitToMobel"){
         <script src=\"https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js\" integrity=\"sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW\" crossorigin=\"anonymous\"></script>
     </body>
     </html>";
-    echo $msg;
+    //echo $msg;
     sendmail("fernando@mobel.ca; orders@mobel.ca; ".$_SESSION['email'], "Order ".$mailOID." Submitted - ".$accountName, $msg);
-    createORDX($_POST['oid']);//Call function to create ordx file
+    //createORDX($_POST['oid'],$accountId);//Call function to create ordx file
 }
 
 function roomTable($species,$interiorFinish,$door,$frontFinish,$drawerBox,$glaze,$smallDrawerFront,$sheen,$largeDrawerFront,$hinge,$drawerGlides,$finishedEnd){
@@ -625,7 +459,7 @@ function itemUpdateConstraintsOK($table){
         when i.maxD <> 0 and " . $_POST['id'] . " > i.maxD then \"Sorry, this depth is beyond the maximum.\"
         else \"ok\" end as allowed from " . $table . " i where i.id = " . $_POST['itemID'] . ";";
     }
-    if(strcmp($_POST['column'],"qty")==0 && $table!="orderItemMods"){
+    if(strcmp($_POST['column'],"qty")==0 && $table!="orderItemMods" && $_POST['cline'] != 3){//cline allow cabinets more than 1 since for Span this doen't apply
         $sql = "select case
         when " . $_POST['id'] . " <> 1 and isCabinet = 1 then \"Sorry, the quantity of a cabinet must be 1 and more than 0.\"
         else \"ok\" end as allowed from " . $table . " i, item ii where i.id = " . $_POST['itemID'] . " and ii.id = i.iid;";

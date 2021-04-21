@@ -7,7 +7,7 @@ echo "<style>
 	  .print {display:block!important;}	  
 	  body {font-size: 1.3em !important;}
 	  table td {overflow:hidden !important;font-size: .8em !important;overflow: visible !important;}
-	  table th {font-size: .8em !important;overflow: visible !important;}
+	  table th {font-size: .9em !important;overflow: visible !important;}
 	}
 	</style>";
 //$_POST['oid'] = 179;
@@ -18,7 +18,7 @@ $accountName = $row['busDBA'];
 $mailOID = $row['oid'];
 $CLfactor = $row['factor'];
 $orderType="";
-$orderTypeDesc="Dealer";
+$orderTypeDesc="";
 if($row['CLid']==3){
 	$orderType="table-primary";
 	$orderTypeDesc = "Span Medical";
@@ -32,57 +32,54 @@ if($row['isPriority']==1){
 	$orderTypeDesc = "Service";
 }
 if($row['isWarranty']==1){
-	$orderType="table-danger";
+	//$orderType="table-danger";
 	$orderTypeDesc = "Service w/warranty";
 }
 $msg = "
 <body>
-	<div class=\"bg-white container-fluid\">
-		<div class=\"row\">
-			<div class=\"col-3\">
-				<div class=\"row\">
-					<div class=\"col-sm-10 mx-3\">
-						<img id=\"logo\" alt=\"logo\" src=\"https://mobel.ca/wp-content/uploads/2019/01/Logo.png\"/>
-					</div>
-				</div>
-				<div class=\"row\">
-					<div class=\"col-sm-10 mx-3\">
-						<h3>Order ID: <b>".$mailOID."</b></h3>
-					</div>
-				</div>
-			</div>
-			<div class=\"col-9\">
+	<div class=\"bg-white container-fluid pb-3\">
+		<div class=\"row d-flex justify-content-around align-items-center $orderType\">
+			<img id=\"logo\" alt=\"logo\" src=\"https://mobel.ca/wp-content/uploads/2019/01/Logo.png\"/>
+			<h1>MOS: &nbsp;<b>".$mailOID."</b></h1>
+		</div>
+		<div class=\"row\">			
+			<div class=\"col-12\">
 				<table class=\"table table-sm my-auto mx-5\">
 					<tr>
-						<td class=\"border-0\"><b>Customer:</b></td>
-						<td class=\"border-0\">". $row['busName']."</td>
-						<td class=\"border-0\"><b>Submitted by:</b></td>
-						<td class=\"border-0\">". $row['whoSubmit'] ."</td>						
-					</tr>
-					<tr>
-						<td class=\"border-0\"><b>Order Type:</b></td>
-						<td class=\"border-0\">". $orderTypeDesc ."</td>
-						<td class=\"border-0\"><b>Invoice to:</b></td>
-						<td class=\"border-0\">". $row['invoiceTo'] ."</td>
-					</tr>
-					<tr>
-						<td class=\"border-0\"><b>Date Submitted:</b></td>
-						<td class=\"border-0\">". substr($row['dateSubmitted'],0,10) ."</td>
-						<td class=\"border-0\"><b>Tag Name / PO</b></td>
-						<td class=\"border-0\">".$row['tagName']." - ". $row['po'] ."</td>
+						<td class=\"border-0 text-right\"><h5>Customer:</h5></td>
+						<td class=\"border-0 text-left\"><h5 class=\"font-weight-bold\">". $row['busName']."</h5></td>
+						<td class=\"border-0 text-right\"><h5>Submitted by:</h5></td>
+						<td class=\"border-0 text-left\"><h5>". $row['whoSubmit'] ."</h5></td>						
+					</tr>";
+	if($_SESSION["userType"]==3){
+		if(!empty($orderTypeDesc)){
+			$msg .= "<tr>
+						<td class=\"border-0 text-right $orderType\"><h5>Order Type:</h5></td>
+						<td class=\"border-0 text-left $orderType\"><h5 class=\"font-weight-bold\">". $orderTypeDesc ."</h5></td>
+						<td class=\"border-0 text-right\"><h5>Invoice to:</h5></td>
+						<td class=\"border-0 text-left\"><h5>". $row['invoiceTo'] ."</h5></td>
+					</tr>";
+		}
+	}
+	$msg .= "			<tr>
+						<td class=\"border-0 text-right\"><h5>Date Submitted:</h5></td>
+						<td class=\"border-0 text-left\"><h5>". substr($row['dateSubmitted'],0,10) ."</h5></td>
+						<td class=\"border-0 text-right\"><h5>Tag Name / PO:</h5></td>
+						<td class=\"border-0 text-left\"><h5 class=\"font-weight-bold\">".$row['tagName']." - ". $row['po'] ."</h5></td>
 					</tr>
 					<tr>						
-						<td class=\"border-0\"><b>Ship to:</b></td>
-						<td colspan=\"5\" class=\"border-0\">". $row['shipTo'] ."</td>
+						<td class=\"border-0 text-right\"><h5>Ship to:</td>
+						<td colspan=\"5\" class=\"border-0 text-left\"><h5>". $row['shipTo'] ."</h5></td>
 					</tr>
 				</table>
 			</div>
+		<!--/div-->
 		</div>
 		<div style=\"height: 7px\" class=\"bg-dark\">&nbsp</div>";
 		if(isset($row['note']))
-			$msg .= "<h5>Order notes: ".$row['note']."</h5>";
+			$msg .= "<h5 class=\"font-weight-bold\">Order notes: ".$row['note']."</h5>";
 		//Rooms start here
-		$sql = "select orr.rid,orr.note,orr.name rname,sp.name spname,irf.name irfname,dd.name ddname,ff.name ffname,db.name dbname,gl.name glname,sdf.name sdfname,sh.name shname,ldf.name ldfname,h.name hname,dg.name dgname, fe.name fename
+		$sql = "select if(orr.touchUp>0,'YES','NO') touchUp,if(orr.hardware>0,'YES','NO') hardware,orr.counterTop,orr.rid,orr.note,orr.name rname,sp.name spname,irf.name irfname,dd.name ddname,ff.name ffname,db.name dbname,gl.name glname,sdf.name sdfname,sh.name shname,ldf.name ldfname,h.name hname,dg.name dgname, fe.name fename
 		from orderRoom orr,species sp,interiorFinish irf,door dd,frontFinish ff,drawerBox db,glaze gl,smallDrawerFront sdf,sheen sh,largeDrawerFront ldf,hinge h,drawerGlides dg,finishedEnd fe where orr.oid=".$mailOID." and orr.species=sp.id and orr.door=dd.id and orr.frontFinish=ff.id and orr.glaze=gl.id and orr.glaze=gl.id and orr.sheen=sh.id and orr.hinge=h.id and orr.smallDrawerFront=sdf.id and orr.largeDrawerFront=ldf.id and orr.drawerGlides=dg.id and orr.drawerBox=db.id and orr.interiorFinish=irf.id and orr.finishedEnd=fe.id order by orr.name";
 		$result = opendb($sql);
 		$totalOrder = 0;
@@ -90,8 +87,8 @@ $msg = "
     		$roomTotal = 0;
 	    	$msg .="<table class=\"table table-sm mt-1 mb-0 border border-dark\">
 				<tr class=\"table-secondary\">
-					<td class=\"text-start py-1 my-auto\"><h5><b>Room: ".$row['rname']."</b></h5></td>
-					<td class=\"text-start py-1 my-auto\" colspan=\"3\"><b>Room notes: ".$row['note']."</b></td>
+					<td class=\"text-start py-1 my-auto\"><h5 class=\"font-weight-bold\">Room: ".$row['rname']."</h5></td>
+					<td class=\"font-weight-bold text-start py-1 my-auto\" colspan=\"3\">Room notes: ".$row['note']."</td>
 				</tr>
 				<tr>
 					<td class=\"text-right py-0 font-weight-bold\">Species:</td>
@@ -215,23 +212,24 @@ $msg = "
                 }
                 $roomTotal += $aPrice;
 			    $msg .="<tr>
-						<td class=\"border text-center border-dark\">".$b.$i.".".$si.$be."</td>
-						<td class=\"border border-dark\">".$b.$row2['name']." - ".$row2['description'].$be."</td>
-						<td class=\"border text-center border-dark\">".$b.(float)$row2['W'].$be."</td>
-						<td class=\"border text-center border-dark\">".$b.(float)$row2['H'].$be."</td>
-						<td class=\"border text-center border-dark\">".$b.(float)$row2['D'].$be."</td>
-						<td class=\"border text-center border-dark\">".$b.(float)$row2['qty'].$be."</td>
-						<td class=\"border text-center border-dark\">".$b.$hinging.$be."</td>
-						<td class=\"border text-center border-dark\">".$b.$finishedEnds.$be."</td>
-						<td class=\"border border-dark\" style=\"max-width: 450px;\">".$row2['note']."</td>
+						<td class=\"border text-center border-dark font-weight-bold\">".$b.$i.".".$si.$be."</td>
+						<td class=\"border border-dark font-weight-bold\">".$b.$row2['name']." - ".$row2['description'].$be."</td>
+						<td class=\"border text-center border-dark font-weight-bold\">".$b.(float)$row2['W'].$be."</td>
+						<td class=\"border text-center border-dark font-weight-bold\">".$b.(float)$row2['H'].$be."</td>
+						<td class=\"border text-center border-dark font-weight-bold\">".$b.(float)$row2['D'].$be."</td>
+						<td class=\"border text-center border-dark font-weight-bold\">".$b.(float)$row2['qty'].$be."</td>
+						<td class=\"border text-center border-dark font-weight-bold\">".$b.$hinging.$be."</td>
+						<td class=\"border text-center border-dark font-weight-bold\">".$b.$finishedEnds.$be."</td>
+						<td class=\"border border-dark font-weight-bold\" style=\"max-width: 450px;\">".$row2['note']."</td>
 						<!--td><span title = \"" . getPrice($row2['qty'],$row2['price'],$row2['sizePrice'],$parentPrice,$row2['parentPercent'],$row2['DFactor'],$row2['IFactor'],$row2['FFactor'],$row2['GFactor'],$row2['SFactor'],$row2['EFactor'],$row2['drawerCharge'],$row2['smallDrawerCharge'],$row2['largeDrawerCharge'], $mixDoorSpeciesFactor,$row2['IApplies'],$row2['FApplies'],$row2['GApplies'],$row2['SApplies'],$row2['drawers'],$row2['smallDrawerFronts'],$row2['largeDrawerFronts'],$row2['finishLeft']+$row2['finishRight'], $row2['H'],$row2['W'],$row2['D'],$row2['minSize'],$row2['methodID'],$row2['FUpcharge'],$CLfactor,1) . "\">".$b. number_format($aPrice,2,'.','').$be."</span></td-->
 					</tr>";
 			}
-			/*$msg .= "<tr class=\"border-top border-dark\">
-						<td class=\"text-end\" colspan=\"9\"><h5>Room Total:</h5></td>
-						<td class=\"text-center\"><h5>$".$roomTotal."</h5></td>
-					</tr>";*/
+			$msg .="<tr class=\"border border-dark\"><td class=\"font-weight-bold\" colspan=\"8\">Touch Up</td><td class=\"font-weight-bold\">".$row['touchUp']."</td></tr>";
+			//hidden until more information
+			$msg .="<tr class=\"border border-dark d-none\"><td class=\"font-weight-bold\" colspan=\"8\">Hardware</td><<td class=\"font-weight-bold\">".$row['hardware']."</td></tr>";
 			$msg .="</tbody></table>";
+			if(!isset($roomFinishUpcharge))
+				$roomFinishUpcharge =0;
 			$totalOrder += $roomTotal+$roomFinishUpcharge;
 		}
 	//$msg .= "<div><h4 class=\"text-center\">Total Order: $$totalOrder pre HST & pre delivery</h4></div>";

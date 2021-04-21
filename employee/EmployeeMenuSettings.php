@@ -7,6 +7,7 @@ if(strcmp($_SERVER['SERVER_NAME'],"localhost")==0 || strcmp($_SERVER['SERVER_NAM
 	$local = "/mobelOrderMgmt";
 }
 session_start();
+
 if($_POST['mode']=="getOrders"){
 	$result = opendb("select mainMenuDefaultStateFilter as state, clFilter, servFilter from employeeSettings where mosUser = " .$_SESSION["userid"]);
 	$row = $result -> fetch_assoc();
@@ -64,10 +65,43 @@ if($_POST['mode']=="getOrders"){
 		$data['CLid'] = $row['CLid'];
 		$data['deliveryDate'] = $row['deliveryDate'];
 		$data['dateShipped'] = $row['dateShipped'];
-		//$dbdata[]=$row;
 		array_push($dbdata, $data);
 	}
 	//this returns a json with the data
+	echo json_encode($dbdata);
+}
+
+if($_POST['mode']=="getOrdersAccounting"){
+	$sql = "select accountType,CAST(dateInvoiced as DATE) dateInvoiced,state,'$' amount,isPriority,isWarranty,CLid, month(dateSubmitted) mth, day(dateSubmitted) day, year(dateSubmitted) yr, mo.oid orderID, account,(select a.busName from account a where a.id = mo.account)busName, concat( tagName,if(po<>'',concat(' - ',po),'')) contract, (select concat(mu.firstName,' ',mu.lastName) from mosUser mu where mu.id = mo.mosUser )sales, deliveryDate, CAST(dateShipped AS DATE) dateShipped, a.* from mosOrder mo left join accounting a on mo.oid = a.oid where year(dateSubmitted) = ".$_POST['year']." and state > 1 and CLid <> 3 order by dateSubmitted";
+	$result = opendb($sql);
+	$dbdata = array();
+	while($row = $result->fetch_assoc()){
+		$data['mth'] = $row['mth'];
+		$data['day'] = $row['day'];
+		$data['yr'] = $row['yr'];
+		$data['orderID'] = $row['orderID'];
+		$data['busName'] = $row['busName'];
+		$data['accountType'] = $row['accountType'];
+		$data['contract'] = $row['contract'];
+		$data['sales'] = $row['sales'];
+		$data['dateShipped'] = $row['dateShipped'];
+		$data['CLid'] = $row['CLid'];
+		$data['isPriority'] = $row['isPriority'];
+		$data['isWarranty'] = $row['isWarranty'];
+		$data['amount'] = $row['amount'];
+		$data['state'] = $row['state'];
+		$data['dateInvoiced'] = $row['dateInvoiced'];
+		//Account table
+		$data['invId'] = $row['invId'];
+		$data['retailContAmt'] = $row['retailContAmt'];		
+		$data['cabinetAmt'] = $row['cabinetAmt'];
+		$data['counterAmt'] = $row['counterAmt'];
+		$data['installAmt'] = $row['installAmt'];
+		$data['deliveryAmt'] = $row['deliveryAmt'];
+		$data['hstAmt'] = $row['hstAmt'];
+		$data['totalAmt'] = $row['totalAmt'];
+		array_push($dbdata, $data);
+	}
 	echo json_encode($dbdata);
 }
 
@@ -312,7 +346,7 @@ if($_POST['mode']=="loadSchWeek"){
 
 	switch ($_POST['dateType']) {
 	/******************************************************************************************************************************************************************************
-	*	Completition date (Given when order status is changed to "Detailed and production ready")
+	*	Completion date (Given when order status is changed to "Detailed and production ready")
 	*******************************************************************************************************************************************************************************/
     case 3:
     	//Show all jobs when date = 0, or only one week.
@@ -323,13 +357,13 @@ if($_POST['mode']=="loadSchWeek"){
 		}
     	//Filter means: Hide jobs not ready on previous station
 		if(strcmp($_POST['filter'],"true")==0){
-			$sql = "select tagName,po,if(mo.shipAddress<2,'Pick up at Mobel', (select concat(coalesce(unit,' '),' ',street,', ',city,', ',province,' ',country,', ',postalCode) from accountAddress aA where aA.id =mo.shipAddress)) shipTo,(select busDBA from account aa where aa.id = mo.account) account,mo.oid, orr.rid, (select sum(cc) from orderRoom orr2, mosOrder mo2 where orr2.oid = mo2.oid and mo2.oid = mo.oid and mo2.deliveryDate = mo2.deliveryDate and exists (select 1 from deptCompleted dc2 where dc2.did =(select deptId from deptReqd dr2 where dr2.myDeptId = ".$_POST['mydid'].") and orr2.rid = dc2.rid)) boxCurQty, (SELECT count(orr2.rid) from orderRoom orr2, mosOrder mo2 where orr2.oid = mo2.oid and mo2.CLid".$clFilter." and mo2.deliveryDate = mo.deliveryDate and exists (select 1 from deptCompleted dc2 where dc2.did =(select deptId from deptReqd dr2 where dr2.myDeptId = ".$_POST['mydid'].") and orr2.rid = dc2.rid)) jobsDay, (select count(1) from orderRoom orr2 where orr2.oid = orr.oid and exists (select 1 from deptCompleted dc2 where dc2.did =(select deptId from deptReqd dr2 where dr2.myDeptId = ".$_POST['mydid'].") and orr2.rid = dc2.rid)) as rooms,  (select name from species s where s.id = orr.species) material, (select name from door d where d.id = orr.door) doorStyle, (select name from frontFinish f where f.id = orr.frontFinish) finish, orr.name roomName, cc,fronts, pieces, (SELECT if(count(1)>0,'true','false') exist FROM deptCompleted dc where dc.rid = orr.rid and did = ".$_POST['mydid'].") as completed, deliveryDate myDate FROM mosOrder mo, orderRoom orr,deptCompleted dc where mo.oid = orr.oid and orr.rid = dc.rid and state in(5,6) and deliveryDate is not null and dc.did = (select deptId from deptReqd dr where dr.myDeptId = ".$_POST['mydid'].") ".$dateFilter.$compF.$clFilter." order by myDate asc, mo.oid asc";
+			$sql = "select date(dateDetailed) updateDate,isPriority,CLid,tagName,po,if(mo.shipAddress<2,'Pick up at Mobel', (select concat(coalesce(unit,' '),' ',street,', ',city,', ',province,' ',country,', ',postalCode) from accountAddress aA where aA.id =mo.shipAddress)) shipTo,(select busDBA from account aa where aa.id = mo.account) account,mo.oid, orr.rid, (select sum(cc) from orderRoom orr2, mosOrder mo2 where orr2.oid = mo2.oid and mo2.oid = mo.oid and mo2.deliveryDate = mo2.deliveryDate and exists (select 1 from deptCompleted dc2 where dc2.did =(select deptId from deptReqd dr2 where dr2.myDeptId = ".$_POST['mydid'].") and orr2.rid = dc2.rid)) boxCurQty, (SELECT count(orr2.rid) from orderRoom orr2, mosOrder mo2 where orr2.oid = mo2.oid and mo2.CLid".$clFilter." and mo2.deliveryDate = mo.deliveryDate and exists (select 1 from deptCompleted dc2 where dc2.did =(select deptId from deptReqd dr2 where dr2.myDeptId = ".$_POST['mydid'].") and orr2.rid = dc2.rid)) jobsDay, (select count(1) from orderRoom orr2 where orr2.oid = orr.oid and exists (select 1 from deptCompleted dc2 where dc2.did =(select deptId from deptReqd dr2 where dr2.myDeptId = ".$_POST['mydid'].") and orr2.rid = dc2.rid)) as rooms,  (select name from species s where s.id = orr.species) material, (select name from door d where d.id = orr.door) doorStyle, (select name from frontFinish f where f.id = orr.frontFinish) finish, orr.name roomName, cc,fronts, pieces, (SELECT if(count(1)>0,'true','false') exist FROM deptCompleted dc where dc.rid = orr.rid and did = ".$_POST['mydid'].") as completed, deliveryDate myDate FROM mosOrder mo, orderRoom orr,deptCompleted dc where mo.oid = orr.oid and orr.rid = dc.rid and state in(5,6) and deliveryDate is not null and dc.did = (select deptId from deptReqd dr where dr.myDeptId = ".$_POST['mydid'].") ".$dateFilter.$compF." and mo.CLid".$clFilter." order by myDate asc, mo.oid asc";
 		}else{
-			$sql = "select tagName,po,if(mo.shipAddress<2,'Pick up at Mobel', (select concat(coalesce(unit,' '),' ',street,', ',city,', ',province,' ',country,', ',postalCode) from accountAddress aA where aA.id =mo.shipAddress)) shipTo,(select busDBA from account aa where aa.id = mo.account) account,mo.oid, orr.rid, (select sum(cc) from orderRoom orr2 where orr2.oid in (select mo3.oid from mosOrder mo3 where orr2.oid = mo3.oid and mo.deliveryDate = mo3.deliveryDate and mo3.state in(5,6))) boxCurQty, (SELECT count(1) from orderRoom orr2, mosOrder mo2 where orr2.oid = mo2.oid and mo2.CLid".$clFilter." and mo2.deliveryDate = mo.deliveryDate and state in(5,6) ".$compF2.") jobsDay, (select count(1) from orderRoom orr2 where orr2.oid = orr.oid ".$compF2.") as rooms, (select name from species s where s.id = orr.species) material, (select name from door d where d.id = orr.door) doorStyle, (select name from frontFinish f where f.id = orr.frontFinish) finish, orr.name roomName, cc, fronts, pieces, (SELECT if(count(1)>0,'true','false') exist FROM deptCompleted dc where dc.rid = orr.rid and did = ".$_POST['mydid'].") completed, deliveryDate myDate FROM mosOrder mo, orderRoom orr where mo.oid = orr.oid and state in(5,6) ".$dateFilter.$compF." and mo.CLid".$clFilter." order by myDate asc, mo.oid asc";
+			$sql = "select date(dateDetailed) updateDate,isPriority,CLid,tagName,po,if(mo.shipAddress<2,'Pick up at Mobel', (select concat(coalesce(unit,' '),' ',street,', ',city,', ',province,' ',country,', ',postalCode) from accountAddress aA where aA.id =mo.shipAddress)) shipTo,(select busDBA from account aa where aa.id = mo.account) account,mo.oid, orr.rid, (select sum(cc) from orderRoom orr2 where orr2.oid in (select mo3.oid from mosOrder mo3 where orr2.oid = mo3.oid and mo.deliveryDate = mo3.deliveryDate and mo3.state in(5,6))) boxCurQty, (SELECT count(1) from orderRoom orr2, mosOrder mo2 where orr2.oid = mo2.oid and mo2.CLid".$clFilter." and mo2.deliveryDate = mo.deliveryDate and state in(5,6) ".$compF2.") jobsDay, (select count(1) from orderRoom orr2 where orr2.oid = orr.oid ".$compF2.") as rooms, (select name from species s where s.id = orr.species) material, (select name from door d where d.id = orr.door) doorStyle, (select name from frontFinish f where f.id = orr.frontFinish) finish, orr.name roomName, cc, fronts, pieces, (SELECT if(count(1)>0,'true','false') exist FROM deptCompleted dc where dc.rid = orr.rid and did = ".$_POST['mydid'].") completed, deliveryDate myDate FROM mosOrder mo, orderRoom orr where mo.oid = orr.oid and state in(5,6) ".$dateFilter.$compF." and mo.CLid".$clFilter." order by myDate asc, mo.oid asc";
 		}
         break;
     /******************************************************************************************************************************************************************************
-	*	Completition date minus 1 week (Wrapping schedule = Completition date - 5 business days)
+	*	Completion date minus 1 week (Wrapping schedule = Completion date - 5 business days)
 	*******************************************************************************************************************************************************************************/
     case 2:
     	//Show all jobs when date = 0, or only one week.
@@ -337,13 +371,13 @@ if($_POST['mode']=="loadSchWeek"){
 				$dateFilter = "and wrapping between '".$_POST['date']."' and '".date('Y-m-d', strtotime($_POST['date']. ' + 6 days'))."' ";
 		//Filter means: Hide jobs not ready on previous station
 		if(strcmp($_POST['filter'],"true")==0){
-			$sql = "select tagName,po,if(mo.shipAddress<2,'Pick up at Mobel', (select concat(coalesce(unit,' '),' ',street,', ',city,', ',province,' ',country,', ',postalCode) from accountAddress aA where aA.id =mo.shipAddress)) shipTo,(select busDBA from account aa where aa.id = mo.account) account,mo.oid, orr.rid, (select sum(cc) from orderRoom orr2, schedule s2, mosOrder mo3 where mo3.oid = orr2.oid and mo3.state = 5 and orr2.rid = s2.rid and s2.wrapping = s.wrapping and exists (select 1 from deptCompleted dc2 where dc2.did =(select deptId from deptReqd dr2 where dr2.myDeptId = ".$_POST['mydid'].") and orr2.rid = dc2.rid)) boxCurQty, (select count(1) from schedule s2 where s2.wrapping = s.wrapping and s2.rid in (select dc2.rid from deptCompleted dc2, orderRoom orr2, mosOrder mo2 where dc2.rid = orr2.rid and orr2.oid = mo2.oid and mo2.CLid".$clFilter." and mo2.state = 5 and dc2.did =(select dr2.deptId from deptReqd dr2 where dr2.myDeptId = ".$_POST['mydid']."))) jobsDay, (select count(1) from orderRoom orr2 where orr2.oid = orr.oid and orr2.rid and exists (select 1 from deptCompleted dc2 where dc2.did =(select deptId from deptReqd dr2 where dr2.myDeptId =".$_POST['mydid'].") and orr2.rid = dc2.rid)) as rooms, (select name from species s where s.id = orr.species) material, (select name from door d where d.id = orr.door) doorStyle, (select name from frontFinish f where f.id = orr.frontFinish) finish, orr.name roomName, cc, fronts, pieces, (SELECT if(count(1)>0,'true','false') exist FROM deptCompleted dc2 where dc2.rid = orr.rid and dc2.did = dr.myDeptId) as completed, wrapping myDate, s.updateDate FROM mosOrder mo, orderRoom orr,deptCompleted dc,schedule s,deptReqd dr where mo.oid = orr.oid and orr.rid = s.rid and orr.rid = dc.rid and state = 5 and dr.myDeptId = ".$_POST['mydid']." and dc.did = dr.deptId ".$dateFilter.$compF." and mo.CLid".$clFilter." order by myDate asc, mo.oid asc";
+			$sql = "select isPriority,CLid,tagName,po,if(mo.shipAddress<2,'Pick up at Mobel', (select concat(coalesce(unit,' '),' ',street,', ',city,', ',province,' ',country,', ',postalCode) from accountAddress aA where aA.id =mo.shipAddress)) shipTo,(select busDBA from account aa where aa.id = mo.account) account,mo.oid, orr.rid, (select sum(cc) from orderRoom orr2, schedule s2, mosOrder mo3 where mo3.oid = orr2.oid and mo3.state = 5 and orr2.rid = s2.rid and s2.wrapping = s.wrapping and exists (select 1 from deptCompleted dc2 where dc2.did =(select deptId from deptReqd dr2 where dr2.myDeptId = ".$_POST['mydid'].") and orr2.rid = dc2.rid)) boxCurQty, (select count(1) from schedule s2 where s2.wrapping = s.wrapping and s2.rid in (select dc2.rid from deptCompleted dc2, orderRoom orr2, mosOrder mo2 where dc2.rid = orr2.rid and orr2.oid = mo2.oid and mo2.CLid".$clFilter." and mo2.state = 5 and dc2.did =(select dr2.deptId from deptReqd dr2 where dr2.myDeptId = ".$_POST['mydid']."))) jobsDay, (select count(1) from orderRoom orr2 where orr2.oid = orr.oid and orr2.rid and exists (select 1 from deptCompleted dc2 where dc2.did =(select deptId from deptReqd dr2 where dr2.myDeptId =".$_POST['mydid'].") and orr2.rid = dc2.rid)) as rooms, (select name from species s where s.id = orr.species) material, (select name from door d where d.id = orr.door) doorStyle, (select name from frontFinish f where f.id = orr.frontFinish) finish, orr.name roomName, cc, fronts, pieces, (SELECT if(count(1)>0,'true','false') exist FROM deptCompleted dc2 where dc2.rid = orr.rid and dc2.did = dr.myDeptId) as completed, wrapping myDate, s.updateDate FROM mosOrder mo, orderRoom orr,deptCompleted dc,schedule s,deptReqd dr where mo.oid = orr.oid and orr.rid = s.rid and orr.rid = dc.rid and state = 5 and dr.myDeptId = ".$_POST['mydid']." and dc.did = dr.deptId ".$dateFilter.$compF." and mo.CLid".$clFilter." order by myDate asc, mo.oid asc";
 		}else{
-			$sql = "select tagName,po,if(mo.shipAddress<2,'Pick up at Mobel', (select concat(coalesce(unit,' '),' ',street,', ',city,', ',province,' ',country,', ',postalCode) from accountAddress aA where aA.id =mo.shipAddress)) shipTo,(select busDBA from account aa where aa.id = mo.account) account,mo.oid, orr.rid, (select sum(cc) from orderRoom orr2, mosOrder mo3 where mo3.oid = orr2.oid and mo3.state = 5 and orr2.rid in (select ss.rid from schedule ss where ss.wrapping = s.wrapping)) boxCurQty, (SELECT count(1) roomsDay FROM mosOrder mo3, orderRoom orr2, schedule ss where mo3.oid = orr2.oid and mo3.state = mo.state and mo3.CLid".$clFilter." and orr2.rid = ss.rid and ss.wrapping = s.wrapping ".$compF2.") jobsDay, (select count(1) from orderRoom orr2 where orr2.oid = orr.oid ".$compF2.") as rooms, (select name from species s where s.id = orr.species) material, (select name from door d where d.id = orr.door) doorStyle, (select name from frontFinish f where f.id = orr.frontFinish) finish, orr.name roomName, cc, fronts, pieces, (SELECT if(count(1)>0,'true','false') exist FROM deptCompleted dc where dc.rid = orr.rid and did = ".$_POST['mydid'].") completed, deliveryDate, wrapping myDate, s.updateDate FROM mosOrder mo, orderRoom orr, schedule s where mo.oid = orr.oid and state = 5 and orr.rid = s.rid ".$dateFilter.$compF." and mo.CLid".$clFilter." order by myDate asc, mo.oid asc";
+			$sql = "select isPriority,CLid,tagName,po,if(mo.shipAddress<2,'Pick up at Mobel', (select concat(coalesce(unit,' '),' ',street,', ',city,', ',province,' ',country,', ',postalCode) from accountAddress aA where aA.id =mo.shipAddress)) shipTo,(select busDBA from account aa where aa.id = mo.account) account,mo.oid, orr.rid, (select sum(cc) from orderRoom orr2, mosOrder mo3 where mo3.oid = orr2.oid and mo3.state = 5 and orr2.rid in (select ss.rid from schedule ss where ss.wrapping = s.wrapping)) boxCurQty, (SELECT count(1) roomsDay FROM mosOrder mo3, orderRoom orr2, schedule ss where mo3.oid = orr2.oid and mo3.state = mo.state and mo3.CLid".$clFilter." and orr2.rid = ss.rid and ss.wrapping = s.wrapping ".$compF2.") jobsDay, (select count(1) from orderRoom orr2 where orr2.oid = orr.oid ".$compF2.") as rooms, (select name from species s where s.id = orr.species) material, (select name from door d where d.id = orr.door) doorStyle, (select name from frontFinish f where f.id = orr.frontFinish) finish, orr.name roomName, cc, fronts, pieces, (SELECT if(count(1)>0,'true','false') exist FROM deptCompleted dc where dc.rid = orr.rid and did = ".$_POST['mydid'].") completed, deliveryDate, wrapping myDate, s.updateDate FROM mosOrder mo, orderRoom orr, schedule s where mo.oid = orr.oid and state = 5 and orr.rid = s.rid ".$dateFilter.$compF." and mo.CLid".$clFilter." order by myDate asc, mo.oid asc";
 		}
         break;
     /******************************************************************************************************************************************************************************
-	*	Completition date minus 3-5 business days(Finishing schedule = Wrapping date - 3 to 5 business days)
+	*	Completion date minus 3-5 business days(Finishing schedule = Wrapping date - 3 to 5 business days)
 	*******************************************************************************************************************************************************************************/
     case 1:
     	//Show all jobs when date = 0, or only one week.
@@ -351,13 +385,13 @@ if($_POST['mode']=="loadSchWeek"){
 			$dateFilter = "and finishing between '".$_POST['date']."' and '".date('Y-m-d', strtotime($_POST['date']. ' + 6 days'))."' ";
 		//Filter means: Hide jobs not ready on previous station
 		if(strcmp($_POST['filter'],"true")==0){
-			$sql = "select tagName,po,if(mo.shipAddress<2,'Pick up at Mobel', (select concat(coalesce(unit,' '),' ',street,', ',city,', ',province,' ',country,', ',postalCode) from accountAddress aA where aA.id =mo.shipAddress)) shipTo,(select busDBA from account aa where aa.id = mo.account) account,mo.oid, orr.rid, (select sum(cc) from orderRoom orr2, schedule s2, mosOrder mo3 where mo3.oid = orr2.oid and mo3.state = 5 and orr2.rid = s2.rid and s2.finishing = s.finishing and exists (select 1 from deptCompleted dc2 where dc2.did =(select deptId from deptReqd dr2 where dr2.myDeptId = ".$_POST['mydid'].") and orr2.rid = dc2.rid)) boxCurQty, (select count(1) from schedule s2 where s2.finishing = s.finishing and s2.rid in (select dc2.rid from deptCompleted dc2, orderRoom orr2, mosOrder mo2 where dc2.rid = orr2.rid and orr2.oid = mo2.oid and mo2.CLid".$clFilter." and mo2.state = 5 and dc2.did =(select dr2.deptId from deptReqd dr2 where dr2.myDeptId = ".$_POST['mydid']."))) jobsDay, (select count(1) from orderRoom orr2 where orr2.oid = orr.oid and orr2.rid and exists (select 1 from deptCompleted dc2 where dc2.did =(select deptId from deptReqd dr2 where dr2.myDeptId =".$_POST['mydid'].") and orr2.rid = dc2.rid)) as rooms, (select name from species s where s.id = orr.species) material, (select name from door d where d.id = orr.door) doorStyle, (select name from frontFinish f where f.id = orr.frontFinish) finish, orr.name roomName, cc, fronts, pieces, (SELECT if(count(1)>0,'true','false') exist FROM deptCompleted dc2 where dc2.rid = orr.rid and dc2.did = dr.myDeptId) as completed, finishing myDate, s.updateDate FROM mosOrder mo, orderRoom orr, deptCompleted dc, schedule s, deptReqd dr where mo.oid = orr.oid and orr.rid = s.rid and orr.rid = dc.rid and state = 5 and dr.myDeptId = ".$_POST['mydid']." and dc.did = dr.deptId ".$dateFilter.$compF." and mo.CLid".$clFilter." order by myDate asc, mo.oid asc";
+			$sql = "select isPriority,CLid,tagName,po,if(mo.shipAddress<2,'Pick up at Mobel', (select concat(coalesce(unit,' '),' ',street,', ',city,', ',province,' ',country,', ',postalCode) from accountAddress aA where aA.id =mo.shipAddress)) shipTo,(select busDBA from account aa where aa.id = mo.account) account,mo.oid, orr.rid, (select sum(cc) from orderRoom orr2, schedule s2, mosOrder mo3 where mo3.oid = orr2.oid and mo3.state = 5 and orr2.rid = s2.rid and s2.finishing = s.finishing and exists (select 1 from deptCompleted dc2 where dc2.did =(select deptId from deptReqd dr2 where dr2.myDeptId = ".$_POST['mydid'].") and orr2.rid = dc2.rid)) boxCurQty, (select count(1) from schedule s2 where s2.finishing = s.finishing and s2.rid in (select dc2.rid from deptCompleted dc2, orderRoom orr2, mosOrder mo2 where dc2.rid = orr2.rid and orr2.oid = mo2.oid and mo2.CLid".$clFilter." and mo2.state = 5 and dc2.did =(select dr2.deptId from deptReqd dr2 where dr2.myDeptId = ".$_POST['mydid']."))) jobsDay, (select count(1) from orderRoom orr2 where orr2.oid = orr.oid and orr2.rid and exists (select 1 from deptCompleted dc2 where dc2.did =(select deptId from deptReqd dr2 where dr2.myDeptId =".$_POST['mydid'].") and orr2.rid = dc2.rid)) as rooms, (select name from species s where s.id = orr.species) material, (select name from door d where d.id = orr.door) doorStyle, (select name from frontFinish f where f.id = orr.frontFinish) finish, orr.name roomName, cc, fronts, pieces, (SELECT if(count(1)>0,'true','false') exist FROM deptCompleted dc2 where dc2.rid = orr.rid and dc2.did = dr.myDeptId) as completed, finishing myDate, s.updateDate FROM mosOrder mo, orderRoom orr, deptCompleted dc, schedule s, deptReqd dr where mo.oid = orr.oid and orr.rid = s.rid and orr.rid = dc.rid and state = 5 and dr.myDeptId = ".$_POST['mydid']." and dc.did = dr.deptId ".$dateFilter.$compF." and mo.CLid".$clFilter." order by myDate asc, mo.oid asc";
 		}else{
-			$sql = "select tagName,po,if(mo.shipAddress<2,'Pick up at Mobel', (select concat(coalesce(unit,' '),' ',street,', ',city,', ',province,' ',country,', ',postalCode) from accountAddress aA where aA.id =mo.shipAddress)) shipTo,(select busDBA from account aa where aa.id = mo.account) account,mo.oid, orr.rid, (select sum(cc) from orderRoom orr2 where orr2.rid in (select ss.rid from schedule ss where ss.finishing = s.finishing)) boxCurQty, (SELECT count(1) roomsDay FROM mosOrder mo3, orderRoom orr2, schedule ss where mo3.oid = orr2.oid and mo3.CLid".$clFilter." and mo3.state = mo.state and orr2.rid = ss.rid and ss.finishing = s.finishing ".$compF2.") jobsDay, (select count(1) from orderRoom orr2 where orr2.oid = orr.oid and orr2.rid in (select ss.rid from schedule ss where ss.finishing = s.finishing) ".$compF2.") as rooms, (select name from species s where s.id = orr.species) material, (select name from door d where d.id = orr.door) doorStyle, (select name from frontFinish f where f.id = orr.frontFinish) finish, orr.name roomName, cc, fronts, pieces, (SELECT if(count(1)>0,'true','false') exist FROM deptCompleted dc where dc.rid = orr.rid and did = ".$_POST['mydid'].") completed, deliveryDate, finishing myDate, s.updateDate FROM mosOrder mo, orderRoom orr, schedule s where mo.oid = orr.oid and orr.rid = s.rid and state = 5 ".$dateFilter.$compF." and mo.CLid".$clFilter." order by myDate asc, mo.oid asc";
+			$sql = "select isPriority,CLid,tagName,po,if(mo.shipAddress<2,'Pick up at Mobel', (select concat(coalesce(unit,' '),' ',street,', ',city,', ',province,' ',country,', ',postalCode) from accountAddress aA where aA.id =mo.shipAddress)) shipTo,(select busDBA from account aa where aa.id = mo.account) account,mo.oid, orr.rid, (select sum(cc) from orderRoom orr2 where orr2.rid in (select ss.rid from schedule ss where ss.finishing = s.finishing)) boxCurQty, (SELECT count(1) roomsDay FROM mosOrder mo3, orderRoom orr2, schedule ss where mo3.oid = orr2.oid and mo3.CLid".$clFilter." and mo3.state = mo.state and orr2.rid = ss.rid and ss.finishing = s.finishing ".$compF2.") jobsDay, (select count(1) from orderRoom orr2 where orr2.oid = orr.oid and orr2.rid in (select ss.rid from schedule ss where ss.finishing = s.finishing) ".$compF2.") as rooms, (select name from species s where s.id = orr.species) material, (select name from door d where d.id = orr.door) doorStyle, (select name from frontFinish f where f.id = orr.frontFinish) finish, orr.name roomName, cc, fronts, pieces, (SELECT if(count(1)>0,'true','false') exist FROM deptCompleted dc where dc.rid = orr.rid and did = ".$_POST['mydid'].") completed, deliveryDate, finishing myDate, s.updateDate FROM mosOrder mo, orderRoom orr, schedule s where mo.oid = orr.oid and orr.rid = s.rid and state = 5 ".$dateFilter.$compF." and mo.CLid".$clFilter." order by myDate asc, mo.oid asc";
 		}
         break;
     /******************************************************************************************************************************************************************************
-	*	Completition date minus 3 weeks(Cutting schedule = Finishing date - 5 business days)
+	*	Completion date minus 3 weeks(Cutting schedule = Finishing date - 5 business days)
 	*******************************************************************************************************************************************************************************/
     case 0:
     	//Show all jobs when date = 0, or only one week.
@@ -365,9 +399,9 @@ if($_POST['mode']=="loadSchWeek"){
 			$dateFilter = "and cutting between '".$_POST['date']."' and '".date('Y-m-d', strtotime($_POST['date']. ' + 6 days'))."' ";
 		//Filter means: Hide jobs not ready on previous station
 		if(strcmp($_POST['filter'],"true")==0){
-			$sql = "select tagName,po,if(mo.shipAddress<2,'Pick up at Mobel', (select concat(coalesce(unit,' '),' ',street,', ',city,', ',province,' ',country,', ',postalCode) from accountAddress aA where aA.id =mo.shipAddress)) shipTo,(select busDBA from account aa where aa.id = mo.account) account,mo.oid, orr.rid, (select sum(cc) from orderRoom orr2, schedule s2, mosOrder mo3 where mo3.oid = orr2.oid and mo3.state = 5 and orr2.rid = s2.rid and s2.cutting = s.cutting and exists (select 1 from deptCompleted dc2 where dc2.did =(select deptId from deptReqd dr2 where dr2.myDeptId = ".$_POST['mydid'].") and orr2.rid = dc2.rid)) boxCurQty, (select count(1) from schedule s2 where s2.cutting = s.cutting and s2.rid in (select dc2.rid from deptCompleted dc2, orderRoom orr2, mosOrder mo2 where dc2.rid = orr2.rid and orr2.oid = mo2.oid and mo2.CLid".$clFilter." and mo2.state = 5 and dc2.did =(select dr2.deptId from deptReqd dr2 where dr2.myDeptId = ".$_POST['mydid']."))) jobsDay, (select count(1) from orderRoom orr2 where orr2.oid = orr.oid and orr2.rid and exists (select 1 from deptCompleted dc2 where dc2.did =(select deptId from deptReqd dr2 where dr2.myDeptId =".$_POST['mydid'].") and orr2.rid = dc2.rid)) as rooms, (select name from species s where s.id = orr.species) material, (select name from door d where d.id = orr.door) doorStyle, (select name from frontFinish f where f.id = orr.frontFinish) finish, orr.name roomName, cc, fronts, pieces, (SELECT if(count(1)>0,'true','false') exist FROM deptCompleted dc2 where dc2.rid = orr.rid and dc2.did = dr.myDeptId) as completed, cutting myDate, s.updateDate FROM mosOrder mo, orderRoom orr, deptCompleted dc, schedule s, deptReqd dr where mo.oid = orr.oid and orr.rid = s.rid and orr.rid = dc.rid and state = 5 and dr.myDeptId = ".$_POST['mydid']." and dc.did = dr.deptId ".$dateFilter.$compF." and mo.CLid".$clFilter." order by myDate asc, mo.oid asc";
+			$sql = "select isPriority,CLid,tagName,po,if(mo.shipAddress<2,'Pick up at Mobel', (select concat(coalesce(unit,' '),' ',street,', ',city,', ',province,' ',country,', ',postalCode) from accountAddress aA where aA.id =mo.shipAddress)) shipTo,(select busDBA from account aa where aa.id = mo.account) account,mo.oid, orr.rid, (select sum(cc) from orderRoom orr2, schedule s2, mosOrder mo3 where mo3.oid = orr2.oid and mo3.state = 5 and orr2.rid = s2.rid and s2.cutting = s.cutting and exists (select 1 from deptCompleted dc2 where dc2.did =(select deptId from deptReqd dr2 where dr2.myDeptId = ".$_POST['mydid'].") and orr2.rid = dc2.rid)) boxCurQty, (select count(1) from schedule s2 where s2.cutting = s.cutting and s2.rid in (select dc2.rid from deptCompleted dc2, orderRoom orr2, mosOrder mo2 where dc2.rid = orr2.rid and orr2.oid = mo2.oid and mo2.CLid".$clFilter." and mo2.state = 5 and dc2.did =(select dr2.deptId from deptReqd dr2 where dr2.myDeptId = ".$_POST['mydid']."))) jobsDay, (select count(1) from orderRoom orr2 where orr2.oid = orr.oid and orr2.rid and exists (select 1 from deptCompleted dc2 where dc2.did =(select deptId from deptReqd dr2 where dr2.myDeptId =".$_POST['mydid'].") and orr2.rid = dc2.rid)) as rooms, (select name from species s where s.id = orr.species) material, (select name from door d where d.id = orr.door) doorStyle, (select name from frontFinish f where f.id = orr.frontFinish) finish, orr.name roomName, cc, fronts, pieces, (SELECT if(count(1)>0,'true','false') exist FROM deptCompleted dc2 where dc2.rid = orr.rid and dc2.did = dr.myDeptId) as completed, cutting myDate, s.updateDate FROM mosOrder mo, orderRoom orr, deptCompleted dc, schedule s, deptReqd dr where mo.oid = orr.oid and orr.rid = s.rid and orr.rid = dc.rid and state = 5 and dr.myDeptId = ".$_POST['mydid']." and dc.did = dr.deptId ".$dateFilter.$compF." and mo.CLid".$clFilter." order by myDate asc, mo.oid asc";
 		}else{
-			$sql = "select tagName,po,if(mo.shipAddress<2,'Pick up at Mobel', (select concat(coalesce(unit,' '),' ',street,', ',city,', ',province,' ',country,', ',postalCode) from accountAddress aA where aA.id =mo.shipAddress)) shipTo,(select busDBA from account aa where aa.id = mo.account) account,mo.oid, orr.rid, (select sum(cc) from orderRoom orr2 where orr2.rid in (select ss.rid from schedule ss where ss.cutting = s.cutting)) boxCurQty, (SELECT count(1) roomsDay FROM mosOrder mo3, orderRoom orr3, schedule ss where mo3.oid = orr3.oid and mo2.CLid".$clFilter." and mo3.state = mo.state and orr3.rid = ss.rid and ss.cutting = s.cutting) jobsDay, (select count(1) from orderRoom orr2 where orr2.oid = orr.oid and orr2.rid in (select ss.rid from schedule ss where ss.cutting = s.cutting)) as rooms, (select name from species s where s.id = orr.species) material, (select name from door d where d.id = orr.door) doorStyle, (select name from frontFinish f where f.id = orr.frontFinish) finish, orr.name roomName, cc, fronts, pieces, (SELECT if(count(1)>0,'true','false') exist FROM deptCompleted dc where dc.rid = orr.rid and did = ".$_POST['mydid'].") completed, deliveryDate, cutting myDate, s.updateDate FROM mosOrder mo, orderRoom orr, schedule s where mo.oid = orr.oid and orr.rid = s.rid and state = 5 ".$dateFilter.$compF." and mo.CLid".$clFilter." order by myDate asc, mo.oid asc";
+			$sql = "select isPriority,CLid,tagName,po,if(mo.shipAddress<2,'Pick up at Mobel', (select concat(coalesce(unit,' '),' ',street,', ',city,', ',province,' ',country,', ',postalCode) from accountAddress aA where aA.id =mo.shipAddress)) shipTo,(select busDBA from account aa where aa.id = mo.account) account,mo.oid, orr.rid, (select sum(cc) from orderRoom orr2 where orr2.rid in (select ss.rid from schedule ss where ss.cutting = s.cutting)) boxCurQty, (SELECT count(1) roomsDay FROM mosOrder mo3, orderRoom orr2, schedule ss where mo3.oid = orr2.oid and mo3.CLid".$clFilter." and mo3.state = mo.state and orr2.rid = ss.rid and ss.cutting = s.cutting ".$compF2.") jobsDay, (select count(1) from orderRoom orr2 where orr2.oid = orr.oid and orr2.rid in (select ss.rid from schedule ss where ss.cutting = s.cutting) ".$compF2.") as rooms, (select name from species s where s.id = orr.species) material, (select name from door d where d.id = orr.door) doorStyle, (select name from frontFinish f where f.id = orr.frontFinish) finish, orr.name roomName, cc, fronts, pieces, (SELECT if(count(1)>0,'true','false') exist FROM deptCompleted dc where dc.rid = orr.rid and did = ".$_POST['mydid'].") completed, deliveryDate, cutting myDate, s.updateDate FROM mosOrder mo, orderRoom orr, schedule s where mo.oid = orr.oid and orr.rid = s.rid and state = 5 ".$dateFilter.$compF." and mo.CLid".$clFilter." order by myDate asc, mo.oid asc";
 		}
         break;
 	default:
@@ -380,6 +414,8 @@ if($_POST['mode']=="loadSchWeek"){
 	Classes for every column are used to hide or display on the view. New columns will need new custom classes and options in the view.
 	This layout displays jobs grouped by day and order. Every room is a row.
 	-----------------------------------------------------------------*/
+	
+
 	if($GLOBALS['$result']->num_rows > 0){
         foreach ($GLOBALS['$result'] as $row) {
 			/*if(strcmp($_POST['displayComp'],"true")!=0 && $row['completed']=='true')
@@ -388,8 +424,15 @@ if($_POST['mode']=="loadSchWeek"){
 			$completed = "";
 			if($row['completed']=='true')
 				$completed = "checked";//mark as completed				
-			/*if($row['updateDate']==date("Y-m-d",time() - 3600*24))
-				$updated = "table-info";*/
+			/*Here the color code is defined. At the end the services are defined to overwrite the previous ones. Last one is for orders updated today */
+			if($row['CLid']==3)
+				$updated = "table-primary";
+			if($row['CLid']==2)
+				$updated = "table-info";
+			if($row['isPriority']==1)
+				$updated = "table-warning";
+			if($row['updateDate']==date("Y-m-d",time() - 3600*24))
+				$updated = "table-danger";
 			if(strcmp($oid, $row['oid'])==0 && strcmp($day,$row['myDate'])==0){//displaying new room same order
 				echo "<tr><td class=\"rmnm align-middle $updated\" scope=\"row\">".$row['roomName']."</td>";//header row room 
 				echo "<td class=\"box align-middle $updated\">".$row['cc']."</td>";
@@ -398,12 +441,17 @@ if($_POST['mode']=="loadSchWeek"){
 				echo "<td class=\"mat align-middle $updated\">".$row['material']."</td>";					
 				echo "<td class=\"drs align-middle $updated\">".$row['doorStyle']."</td>";					
 				echo "<td class=\"fns align-middle $updated\">".$row['finish']."</td>";	
-				echo "<td class=\"align-middle\"><div id=\"uptRoom".$row['rid']."\" class=\"custom-control custom-checkbox\"><input ".$completed." onchange=\"completeRoom(".$row['rid'].")\" type=\"checkbox\" class=\"custom-control-input\" id=\"chkDone".$row['rid']."\"><label class=\"custom-control-label\" for=\"chkDone".$row['rid']."\"></label></div></td></tr>";				
+				echo "<td class=\"align-middle $updated\"><div id=\"uptRoom".$row['rid']."\" class=\"custom-control custom-checkbox\"><input ".$completed." onchange=\"completeRoom(".$row['rid'].")\" type=\"checkbox\" class=\"custom-control-input\" id=\"chkDone".$row['rid']."\"><label class=\"custom-control-label\" for=\"chkDone".$row['rid']."\"></label></div></td></tr>";				
 			}else if(strcmp($day,$row['myDate'])==0 && strcmp($oid, $row['oid'])!=0){
 				$oid = $row['oid'];
-				echo "<th id=\"".$row['oid']."\" class=\"align-middle $updated\" rowspan=\"".$row['rooms']."\" scope=\"rowgroup\"><p>".$row['oid']."</p></br><small><b>".$row['account']."</b></small></th>";//Order id header
-				echo "<th class=\"tag align-middle $updated\" rowspan=\"".$row['rooms']."\">".$row['tagName']." - ". $row['po'] ."</th>";
-				echo "<th class=\"sht align-middle $updated\" rowspan=\"".$row['rooms']."\">&nbsp".$row['shipTo']."</th>";
+				if(strlen($_SESSION["firstName"])==1 && $_SESSION["account"]==2){
+					$btnStatus="";
+				}else{
+					$btnStatus="<a class=\"btn btn-sm btn-link text-primary\" onclick=\"showStatus(".$oid.")\">Status</a>";
+				}
+				echo "<th id=\"".$row['oid']."\" class=\"align-middle $updated\" rowspan=\"".$row['rooms']."\" scope=\"rowgroup\">".$btnStatus."<p onclick=\"viewOrder(".$row['oid'].");\">".$row['oid']."</p></br><small onclick=\"viewOrder(".$row['oid'].");\"><b>".$row['account']."</b></small></th>";//Order id header
+				echo "<th class=\"tag align-middle $updated\" rowspan=\"".$row['rooms']."\" onclick=\"viewOrder(".$row['oid'].");\">".$row['tagName']." - ". $row['po'] ."</th>";
+				echo "<th class=\"sht align-middle $updated\" rowspan=\"".$row['rooms']."\" onclick=\"viewOrder(".$row['oid'].");\">&nbsp".$row['shipTo']."</th>";
 				echo "<td class=\"rmnm align-middle $updated\" scope=\"row\">".$row['roomName']."</td>";//header row room
 				echo "<td class=\"box align-middle $updated\">".$row['cc']."</td>";
 				echo "<td class=\"frt align-middle $updated\">".$row['fronts']."</td>";
@@ -411,15 +459,20 @@ if($_POST['mode']=="loadSchWeek"){
 				echo "<td class=\"mat align-middle $updated\">".$row['material']."</td>";					
 				echo "<td class=\"drs align-middle $updated\">".$row['doorStyle']."</td>";
 				echo "<td class=\"fns align-middle $updated\">".$row['finish']."</td>";	
-				echo "<td class=\"align-middle\"><div id=\"uptRoom".$row['rid']."\" class=\"custom-control custom-checkbox\"><input ".$completed." onchange=\"completeRoom(".$row['rid'].")\" type=\"checkbox\" class=\"custom-control-input\" id=\"chkDone".$row['rid']."\"><label class=\"custom-control-label\" for=\"chkDone".$row['rid']."\"></label></div></td></tr>";
+				echo "<td class=\"align-middle $updated\"><div id=\"uptRoom".$row['rid']."\" class=\"custom-control custom-checkbox\"><input ".$completed." onchange=\"completeRoom(".$row['rid'].")\" type=\"checkbox\" class=\"custom-control-input\" id=\"chkDone".$row['rid']."\"><label class=\"custom-control-label\" for=\"chkDone".$row['rid']."\"></label></div></td></tr>";
 			}else{
 				$day = $row['myDate'];//new day
 				$oid = $row['oid'];//new order
+				if(strlen($_SESSION["firstName"])==1 && $_SESSION["account"]==2){
+					$btnStatus="";
+				}else{
+					$btnStatus="<a class=\"btn btn-sm btn-link text-primary\" onclick=\"showStatus(".$oid.")\">Status</a>";
+				}
 				echo "<tr>";
 				echo "<th class=\"align-middle\" rowspan=\"".$row['jobsDay']."\" scope=\"rowgroup\"><p>".date("l M j",strtotime($day))."</p><small class=\"d-print-none\">Total boxes: ".$row['boxCurQty']."</small></th>";
-				echo "<th id=\"".$row['oid']."\" class=\"align-middle $updated\" rowspan=\"".$row['rooms']."\" scope=\"rowgroup\"><p>".$row['oid']."</p><small><b>".$row['account']."</b></small></th>";//Order id header
-				echo "<th class=\"tag align-middle $updated\" rowspan=\"".$row['rooms']."\">".$row['tagName']." - ". $row['po'] ."</th>";
-				echo "<th class=\"sht align-middle $updated\" rowspan=\"".$row['rooms']."\">".$row['shipTo']."</th>";
+				echo "<th id=\"".$row['oid']."\" class=\"align-middle $updated\" rowspan=\"".$row['rooms']."\" scope=\"rowgroup\">".$btnStatus."<p onclick=\"viewOrder(".$row['oid'].");\">".$row['oid']."</p><small onclick=\"viewOrder(".$row['oid'].");\"><b>".$row['account']."</b></small></th>";//Order id header
+				echo "<th class=\"tag align-middle $updated\" rowspan=\"".$row['rooms']."\" onclick=\"viewOrder(".$row['oid'].");\">".$row['tagName']." - ". $row['po'] ."</th>";
+				echo "<th class=\"sht align-middle $updated\" rowspan=\"".$row['rooms']."\" onclick=\"viewOrder(".$row['oid'].");\">".$row['shipTo']."</th>";
 				echo "<td class=\"rmnm align-middle $updated\" scope=\"row\">".$row['roomName']."</td>";//header row room
 				echo "<td class=\"box align-middle $updated\">".$row['cc']."</td>";
 				echo "<td class=\"frt align-middle $updated\">".$row['fronts']."</td>";
@@ -427,7 +480,7 @@ if($_POST['mode']=="loadSchWeek"){
 				echo "<td class=\"mat align-middle $updated\">".$row['material']."</td>";					
 				echo "<td class=\"drs align-middle $updated\">".$row['doorStyle']."</td>";
 				echo "<td class=\"fns align-middle $updated\">".$row['finish']."</td>";					
-				echo "<td class=\"align-middle\"><div id=\"uptRoom".$row['rid']."\" class=\"custom-control custom-checkbox\"><input ".$completed." onchange=\"completeRoom(".$row['rid'].")\" type=\"checkbox\" class=\"custom-control-input\" id=\"chkDone".$row['rid']."\"><label class=\"custom-control-label\" for=\"chkDone".$row['rid']."\"></label></div></td></tr>";
+				echo "<td class=\"align-middle $updated\"><div id=\"uptRoom".$row['rid']."\" class=\"custom-control custom-checkbox\"><input ".$completed." onchange=\"completeRoom(".$row['rid'].")\" type=\"checkbox\" class=\"custom-control-input\" id=\"chkDone".$row['rid']."\"><label class=\"custom-control-label\" for=\"chkDone".$row['rid']."\"></label></div></td></tr>";
 			}	
 		}
 	}else{
@@ -502,11 +555,11 @@ if($_POST['mode']=="updateOrderStatus"){
 }
 
 if($_POST['mode']=="countBoxesxDay"){
-	$sql = "select coalesce(sum(cc),0) total from orderRoom orr where orr.oid in (select mo.oid from mosOrder mo where mo.oid = orr.oid and mo.deliveryDate = '".$_POST['date']."' and mo.state = 5)";
+	$sql = "select coalesce(sum(cc),0) cc, coalesce(sum(fronts),0) fronts, coalesce(sum(pieces),0) pieces from orderRoom orr where orr.oid in (select mo.oid from mosOrder mo where mo.oid = orr.oid and mo.deliveryDate = '".$_POST['date']."' and mo.state = 5)";
 	//echo $sql;
 	$query = opendb($sql);
 	$row = $query->fetch_assoc();
-	echo $row['total'];
+	echo json_encode($row);
 }
 
 if($_POST['mode']=="getRequiredDate"){
@@ -563,7 +616,18 @@ if($_POST['mode']=="getCategories"){
 }
 
 if($_POST['mode']=="getItemRow"){
-	$sql = "select i.id, i.name, i.description, ROUND(i.W, 2) W, ROUND(i.H, 2) H, ROUND(i.D, 2) D, coalesce(il.cvName,'No Item Code') cvCode, coalesce(il.cvLName,'No Item Code') cvLCode, coalesce(il.cvRName,'No Item Code') cvRCode FROM item i left join itemsLink il on i.id = il.itemId where id=".$_POST['item'];
+	//$sql = "select i.id, i.name, i.description, ROUND(i.W, 2) W, ROUND(i.H, 2) H, ROUND(i.D, 2) D, coalesce(il.cvName,'-----') cvCode, coalesce(il.cvLName,'-----') cvLCode, coalesce(il.cvRName,'-----') cvRCode FROM item i left join itemsLink il on i.id = il.itemId where id=".$_POST['item'];
+	$sql = "select i.id, i.name, i.description, ROUND(i.W, 2) W, ROUND(i.H, 2) H, ROUND(i.D, 2) D, coalesce((select cvi.name from cvItem cvi where cvi.id = il.cvId),'-----') cvCode, coalesce((select cvi.name from cvItem cvi where cvi.id = il.cvLId),'-----') cvLCode, coalesce(il.cvRId,'-----') cvRCode FROM item i left join itemsLink il on i.id = il.itemId where id=".$_POST['item'];
+	$result = opendb($sql);
+	$item = array();
+	while ($row = $result->fetch_assoc()) {
+		$item[] = $row;
+	}
+	echo json_encode($item);
+}
+
+if($_POST['mode']=="reloadTable"){
+	$sql = "select i.id, i.name, i.description, ROUND(i.W, 2) W, ROUND(i.H, 2) H, ROUND(i.D, 2) D, coalesce((select cvi.name from cvItem cvi where cvi.id = il.cvId),'-----') cvCode, coalesce((select cvi.name from cvItem cvi where cvi.id = il.cvLId),'-----') cvLCode, coalesce((select cvi.name from cvItem cvi where cvi.id = il.cvRId),'-----') cvRCode FROM item i left join itemsLink il on i.id = il.itemId where id in(".implode(',',$_POST['items']).")";
 	$result = opendb($sql);
 	$item = array();
 	while ($row = $result->fetch_assoc()) {
@@ -573,7 +637,7 @@ if($_POST['mode']=="getItemRow"){
 }
 
 if($_POST['mode']=="getMultipleItemsRows"){
-	$sql = "select i.id, i.name, i.description, ROUND(i.W, 2) W, ROUND(i.H, 2) H, ROUND(i.D, 2) D, coalesce(il.cvName,'No Item Code') cvCode, coalesce(il.cvLName,'No Item Code') cvLCode, coalesce(il.cvRName,'No Item Code') cvRCode FROM item i left join itemsLink il on i.id = il.itemId where id in(".implode(',',$_POST['items']).")";
+	$sql = "select i.id, i.name, i.description, ROUND(i.W, 2) W, ROUND(i.H, 2) H, ROUND(i.D, 2) D, coalesce((select cvi.name from cvItem cvi where cvi.id = il.cvId),'-----') cvCode, coalesce((select cvi.name from cvItem cvi where cvi.id = il.cvLId),'-----') cvLCode, coalesce((select cvi.name from cvItem cvi where cvi.id = il.cvRId),'-----') cvRCode FROM item i left join itemsLink il on i.id = il.itemId where id in(".implode(',',$_POST['items']).")";
 	$result = opendb($sql);
 	$item = array();
 	while ($row = $result->fetch_assoc()) {
@@ -586,27 +650,164 @@ if($_POST['mode']=="linkItems"){
 
 	switch ($_POST['door']) {
 		case 'B': //No Door or double door
-			$column = "cvName";
+			$column = "cvId";
 			break;
 		
 		case 'L': //Left Door
-			$column = "cvLName";
+			$column = "cvLId";
 			break;
 
 		case 'R': //Right Door
-			$column = "cvRName";
+			$column = "cvRId";
 			break;
 	}
-	//First update items
-	$update = "update itemsLink set ".$column."='".strtoupper($_POST['cv'])."' where itemId in(".implode(',',$_POST['items']).")";
-	$resultU = opendb($update);
-	//Insert items not present on the list
+	$itemId = 0;
+	//If CV item doesn't exist, must be created 
+	$sql = "select id from cvItem where name ='".strtoupper($_POST['cv'])."'";
+	$result = opendb($sql);
+	if($GLOBALS['$result']->num_rows == 0){
+		$sql = "insert into cvItem(name, category, catDescription) VALUES ('".strtoupper($_POST['cv'])."','".$_POST['cvCat']."',(select distinct cv2.catDescription from cvItem cv2 where cv2.category = '".$_POST['cvCat']."'));";
+		opendb($sql);
+		$itemId =  $GLOBALS['$conn']->insert_id;
+	}else{
+		$row =  $result->fetch_assoc();
+		$itemId = $row['id'];
+	}
+
+	//If link doesn't exist a new row should be inserted
+	//This query returns all the items which not exists on the table. These items will be inserted into the table where CV and MOS items are linked
 	$sql = "select id from (select id from item ii where ii.id in(".implode(',',$_POST['items']).")) i where not exists(select 1 from itemsLink il where i.id = il.itemId)";
 	$insert = "";
 	$result = opendb($sql);
+	if($GLOBALS['$result']->num_rows > 0){
+		while ($row = $result->fetch_assoc()) {
+			$insert .= "insert into itemsLink(itemId,".$column.") values(".$row['id'].",".$itemId."); ";
+		}	
+		opendbmulti($insert);
+	}
+
+	//update items for which exist
+	$update = "update itemsLink set ".$column."=".$itemId." where itemId in(".implode(',',$_POST['items']).")";
+	$resultU = opendb($update);
+}
+
+if($_POST['mode']=='getCVcodes'){
+	$item = array();
+	$sql = "select name from cvItem where category ='".$_POST['cat']."'";
+	$result = opendb($sql);
 	while ($row = $result->fetch_assoc()) {
-		$insert .= "insert into itemsLink(itemId,".$column.") values(".$row['id'].",'".strtoupper($_POST['cv'])."'); ";
+		$item[] = $row['name'];
+	}
+	echo json_encode($item);
+}
+
+if($_POST['mode']=='getStationStatus'){
+	$html = "<table class=\"table text-center\"><thead class=\"thead-light\"><tr>";
+	$html .= "<th>ROOM NAME</th>";
+	$html .= "<th>CUSTOM</th>";
+	$html .= "<th>DOORS</th>";
+	$html .= "<th>CNC</th>";
+	$html .= "<th>SANDING</th>";
+	$html .= "<th>ASSEMBLY</th>";
+	$html .= "<th>WRAPPING</th>";
+	$html .= "<th>SHIPPING</th>";
+	$html .= "</tr></thead><tbody>";
+	$rid = 0;
+	$checked ="checked ";
+	$sql = "SELECT orr.rid,name,(select count(1) from deptCompleted dc where orr.rid = dc.rid and dc.did=11)custom, (select count(1) from deptCompleted dc where orr.rid = dc.rid and dc.did=10)doors, (select count(1) from deptCompleted dc where orr.rid = dc.rid and dc.did=9)cnc, (select count(1) from deptCompleted dc where orr.rid = dc.rid and dc.did=8)sanding, (select count(1) from deptCompleted dc where orr.rid = dc.rid and dc.did=3)assembly, (select count(1) from deptCompleted dc where orr.rid = dc.rid and dc.did=2)wrapping, (select count(1) from deptCompleted dc where orr.rid = dc.rid and dc.did=1)shipping FROM orderRoom orr where orr.oid =".$_POST['oid'];
+	$result = opendb($sql);
+	while ($row = $result->fetch_assoc()) {
+		$html .= "<tr><td>".$row['name']."</td>";						
+		//CUSTOM
+		$html .= "<td><input onclick=\"return false;\" ";
+		if($row['custom']>0)
+			$html .= $checked;
+		$html .= "type=\"checkbox\" id=\"".$row['rid']."-11\"/></td>";
+		//DOORS
+		$html .= "<td><input onclick=\"return false;\" ";
+		if($row['doors']>0)
+			$html .= $checked;
+		$html .= "type=\"checkbox\" id=\"".$row['rid']."-10\"/></td>";
+		//CNC
+		$html .= "<td><input onclick=\"return false;\" ";
+		if($row['cnc']>0)
+			$html .= $checked;
+		$html .= "type=\"checkbox\" id=\"".$row['rid']."-9\"/></td>";
+		//SANDING
+		$html .= "<td><input onclick=\"return false;\" ";
+		if($row['sanding']>0)
+			$html .= $checked;
+		$html .= "type=\"checkbox\" id=\"".$row['rid']."-8\"/></td>";
+		//ASSEMBLY
+		$html .= "<td><input onclick=\"return false;\" ";
+		if($row['assembly']>0)
+			$html .= $checked;
+		$html .= "type=\"checkbox\" id=\"".$row['rid']."-3\"/></td>";
+		//WRAPPING
+		$html .= "<td><input onclick=\"return false;\" ";
+		if($row['wrapping']>0)
+			$html .= $checked;
+		$html .= "type=\"checkbox\" id=\"".$row['rid']."-2\"/></td>";
+		//SHIPPING
+		$html .= "<td><input onclick=\"return false;\" ";
+		if($row['shipping']>0)
+			$html .= $checked;
+		$html .= "type=\"checkbox\" id=\"".$row['rid']."-1\"/></td></tr>";	
+	}
+	echo $html;
+}
+
+if($_POST['mode']=='updateStationSch'){
+	$sql = "update departments set dateType = ".$_POST['val']." where id =".$_POST['id'];
+	opendb($sql);
+}
+
+if($_POST['mode']=='updateAccounting'){
+	$s = "'";
+	if(is_numeric($_POST['value']))
+		$s = "";
+	//insert if no records yet
+	opendb("select 1 from accounting where oid=".$_POST['oid']);
+	if($GLOBALS['$result']->num_rows == 0){
+		$insert = "insert into accounting (oid,userId,updateDate) values(".$_POST['oid'].",".$_SESSION["userid"].",now())";
+		echo $insert;
+		opendb($insert);
+	}
+	//update value
+	$sql = "update accounting set updateDate=now(),userId= ".$_SESSION["userid"].",".$_POST['col']." = ".$s.$_POST['value'].$s." where oid =".$_POST['oid'];
+	echo $sql;
+	opendb($sql);
+}
+
+if($_POST['mode']=='updateAccountingAmt'){
+	//insert if no records yet
+	opendb("select 1 from accounting where oid=".$_POST['oid']);
+	if($GLOBALS['$result']->num_rows == 0){
+		$insert = "insert into accounting (oid,userId,updateDate) values(".$_POST['oid'].",".$_SESSION["userid"].",now())";
+		echo $insert;
+		opendb($insert);
+	}
+	//update value
+	$sql = "update accounting set updateDate=now(),userId= ".$_SESSION["userid"].",".$_POST['col']."=".$_POST['value'].", hstAmt=".$_POST['hst'].",totalAmt=".$_POST['total']." where oid =".$_POST['oid'];
+	echo $sql;
+	opendb($sql);
+}
+
+if($_POST['mode']=='updateOrder'){
+	$s = "'";
+	if(is_numeric($_POST['value']))
+		$s = "";
+	$sql = "update mosOrder set ".$_POST['col']." = ".$s.$_POST['value'].$s." where oid =".$_POST['oid'];
+	echo $sql;
+	opendb($sql);
+}
+
+if($_POST['mode']=='updateInvoicedDate'){
+	if($_POST['date']!=0){
+		$sql = "update mosOrder set dateInvoiced = '".$_POST['date']."' where oid =".$_POST['oid'];
+	}else{
+		$sql = "update mosOrder set dateInvoiced = null where oid =".$_POST['oid'];
 	}	
-	opendbmulti($insert);
+	opendb($sql);
 }
 ?>

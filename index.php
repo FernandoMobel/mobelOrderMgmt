@@ -16,15 +16,20 @@ if(!isset($_SESSION["attp"]))
             <form class="form-signin" action="auth.php" method="post">
               <div class="floating-label">
               <label for="inputEmail">Email address/username:</label>
-                <input name="email" type="email" id="inputEmail" class="form-control" placeholder="Email address" required autofocus>
+                <input name="email" type="email" id="inputEmail" class="form-control" placeholder="Email address" required autofocus>                
               </div><br>
               <div class="floating-label">
               	<label for="inputPassword">Password:</label>
-                <input name="password" type="password" id="inputPassword" class="form-control" placeholder="Password" required>
-              </div>
-              <div class="custom-control custom-checkbox mb-3">
-                <input type="checkbox" class="custom-control-input" id="customCheck1">
-                <label class="custom-control-label" for="customCheck1">Remember password</label>
+                <input name="password" type="password" id="inputPassword" class="form-control" placeholder="Password" required>                
+              </div>              
+              <div class="d-flex justify-content-between my-3">
+                <div class="custom-control custom-checkbox">
+                  <input type="checkbox" class="custom-control-input" id="customCheck1">
+                  <label class="custom-control-label" for="customCheck1">Remember password</label>
+                </div>
+                <div>
+                  <span toggle="#inputPassword" class="fa fa-fw fa-eye field_icon toggle-password"></span>
+                </div>                  
               </div>
               <button class="btn btn-lg btn-primary btn-block text-uppercase" type="submit">Sign in</button>
 			  <?php

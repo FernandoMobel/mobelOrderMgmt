@@ -4,60 +4,84 @@
 	#tbSchedule td{font-weight: 450;}
 </style>
 <script>
-var currentDate = getMondayCurWeek();
 <?php
+$sql = "select * from departments";
+$result = opendb($sql);
+while($row = $result->fetch_assoc()) {
+	$dep[] = $row;
+}
+$depts = json_encode($dep);
+echo "const depts = JSON.parse('".$depts."');";
+echo "let schedules = ['Cutting', 'Finishing', 'Completion', 'Shipping'];";
+
 $sql = "select * from departments where id=".(int)$_SESSION['firstName'];
 $result = opendb($sql);
+//echo "var sql='".$sql."';";
 $row = $result->fetch_assoc();
-if(strlen($_SESSION["firstName"])==1 && $_SESSION["account"]==2){
+/* the mosUser first name should match with the department at the department table */
+if(is_numeric($_SESSION["firstName"]) && $_SESSION["account"]==2){
+	echo "var office = false;";
 	echo "const department =".(int)$_SESSION['firstName'].";";
 	echo "const dateType =".$row['dateType'].";";
+	echo "var deptDesc ='".$row['department']."';";
 	echo "setTimeout(function(){
 		   window.location.reload(1);
 		}, 600000);";
 }else{
-	/*echo "const department =1;";
-	echo "const dateType =3;";*/
-	echo "var department =1;";
-	echo "var dateType =3;";
+	echo "var office = true;";
+	/* Set default values for office user (no departament)*/
+	echo "var department = 1;";
+	echo "var dateType = 3;";
+	echo "var deptDesc = \"\";";
+	echo "var schDesc = \"\";";
 }
 ?>
+var currentDate = getMondayCurWeek();
 
-function loadSchWeek(date, dept){	
+function loadSchWeek(date, sch){	
 	if(date=='0'){
 		localStorage.setItem('date','0');
 	}
-	//What schedule are using
-	switch (dept){
-		case '3'://Shipping
-			department = 1;		
-			dateType = 3;	
-		break;
-		case '2'://Wrapping
-			department = 2;
-			dateType = 2;
-		break;
-		case '1'://Sanding
-			department = 8;
-			dateType = 1;
-		break;
-		case '0'://Doors
-			department = 9;
-			dateType = 0;
-		break;
-	  default:
-		// code block
+	if(office){
+		//What schedule are using
+		switch(sch){
+			case '3'://Shipping			
+				department = 1;		//You can find definition into departments table
+				dateType = sch;							
+			break;
+			case '2'://Wrapping
+				department = 2;
+				dateType = sch;
+			break;
+			case '1'://Finishing
+				department = 8;
+				dateType = sch;
+			break;
+			case '0'://Doors
+				department = 9;
+				dateType = sch;
+			break;
+		default:
+			schDesc="No schedule";
+			dateType = 3;
+			// code block
+		}
 	}
-
-	console.log('Date:'+localStorage.getItem('date')+' dateType:'+dateType+' Department:'+department+' onlyReady:'+localStorage.getItem('onlyReady')+' hideComplete:'+localStorage.getItem('displayComp')+' hideSpan:'+localStorage.getItem('hideSpan')+' onlySpan:'+localStorage.getItem('onlySpan'));
-	myData = { mode: "loadSchWeek", date: date/*localStorage.getItem('date')*/, dateType: dateType, mydid:department, filter:localStorage.getItem('onlyReady'), displayComp:localStorage.getItem('displayComp'), hideSpan:localStorage.getItem('hideSpan'), onlySpan:localStorage.getItem('onlySpan')};
+	deptDesc = getDepartmentName(department);
+	schDesc=schedules[dateType];
+	
+	//console.clear();
+	$('#scheduleName').html(schDesc);
+	/* This is being printed to the console to be able to know more details about what informations is being displayed */
+	console.log('Week of: '+date+', Schedule View:'+schDesc+', Department:'+deptDesc+', onlyReady:'+localStorage.getItem('onlyReady')+', hideComplete:'+localStorage.getItem('displayComp')+', hideSpan:'+localStorage.getItem('hideSpan')+', onlySpan: '+localStorage.getItem('onlySpan'));
+	myData = { mode: "loadSchWeek", date: date, dateType: dateType, mydid:department, filter:localStorage.getItem('onlyReady'), displayComp:localStorage.getItem('displayComp'), hideSpan:localStorage.getItem('hideSpan'), onlySpan:localStorage.getItem('onlySpan')};
 	
 	$.ajax({
 			url: 'EmployeeMenuSettings.php',
 			type: 'POST',
 			data: myData})
 	  .done(function(data, status, jqXHR) {
-			console.log(jqXHR['responseText']);
+			//console.log(jqXHR['responseText']);
 			$('#scheduleWeek').empty();
 			$('#scheduleWeek').append(data);
 			if(date==0){
@@ -76,6 +100,18 @@ function loadSchWeek(date, dept){
 		  console.log(xhr);
 		  console.log(error);
 	})
+}
+
+function getDepartmentName(dptID){
+	var desc;
+	depts.every(obj=>{
+		if(obj.id == dptID){
+			desc = obj.department;
+			return false;
+		}
+		return true;
+	});
+	return desc;
 }
 
 function getNewWeek(nextWeek){
@@ -155,6 +191,7 @@ function updateOrderStatus(rid, action){
 				});	
 }
 
+/*Hide the columns from cookies */
 function loadFilters(){
 	cols = new Array();
 	if(localStorage.getItem('rmnm')=='false'){
@@ -305,6 +342,35 @@ function getWithExpiry(key) {
 	}
 	return item.value
 }
+
+function viewOrder(oid){
+	$('#inputOID').val(oid);
+	window.open('', 'TheWindow');
+  	$('#formViewFullOID').submit();
+}
+
+function showStatus(oid){
+	$('#stationsBody').empty();
+	myData = { mode: "getStationStatus",  oid:oid};
+	$.post("EmployeeMenuSettings.php",
+		myData, 
+			function(data, status, jqXHR) { 
+			$('#stationsBody').append(jqXHR["responseText"]);
+			$('#stationStatus').modal('toggle');
+			});
+}
+
+function manageSchedule(object, val, stationID ){
+	$("#"+object).css("border-color", "#00b828");
+	myData = { mode: "updateStationSch",  id:stationID, val:val};
+	console.log(myData);
+	console.log(object);
+	$.post("EmployeeMenuSettings.php",
+		myData, 
+			function(data, status, jqXHR) { 
+				$("#"+object).css("border-color", "#00ff3c");
+			});
+}
 </script> 
 <style>
   @media (max-width: 1025px) {
@@ -314,38 +380,47 @@ function getWithExpiry(key) {
   }
   
   td{padding:5px !important}
+
+  th:hover{
+  	background-color: #eaf4fb;
+  }
 </style>
 
 <div class="card card-signin my-3 mx-0">
 	<?php
-	$superUser = array(11,30,32);
+	$superUser = array(1,2,11,28,30,32);
 	if(in_array($_SESSION["userid"],$superUser)){
 	?>
 	<div class="card-header d-print-none">
-		<div class="d-flex flex-row">
-			<div class="p-2">
-				<div class="custom-control custom-radio">
-					<input onchange="loadSchWeek(0,this.value)" type="radio" class="custom-control-input" id="chk3" value="3" name="defaultExampleRadios" checked>
-					<label class="custom-control-label" for="chk3">Completition</label>
+		<div class="d-flex justify-content-between">
+			<div class="d-flex flex-row">
+				<div class="p-2">
+					<div class="custom-control custom-radio">
+						<input onchange="loadSchWeek(0,this.value)" type="radio" class="custom-control-input" id="chk3" value="3" name="defaultExampleRadios" checked>
+						<label class="custom-control-label" for="chk3">Shipping</label>
+					</div>
+				</div>
+				<div class="p-2">
+					<div class="custom-control custom-radio">
+						<input onchange="loadSchWeek(0,this.value)" type="radio" class="custom-control-input" id="chk2" value="2" name="defaultExampleRadios">
+						<label class="custom-control-label" for="chk2">Completion</label>
+					</div>
+				</div>
+				<div class="p-2">
+					<div class="custom-control custom-radio">
+						<input onchange="loadSchWeek(0,this.value)" type="radio" class="custom-control-input" id="chk1" value="1" name="defaultExampleRadios">
+						<label class="custom-control-label" for="chk1">Finishing</label>
+					</div>
+				</div>
+				<div class="p-2">
+					<div class="custom-control custom-radio">
+						<input onchange="loadSchWeek(0,this.value)" type="radio" class="custom-control-input" id="chk0" value="0" name="defaultExampleRadios">
+						<label class="custom-control-label" for="chk0">Cutting</label>
+					</div>
 				</div>
 			</div>
-			<div class="p-2">
-				<div class="custom-control custom-radio">
-					<input onchange="loadSchWeek(0,this.value)" type="radio" class="custom-control-input" id="chk2" value="2" name="defaultExampleRadios">
-					<label class="custom-control-label" for="chk2">Wrapping</label>
-				</div>
-			</div>
-			<div class="p-2">
-				<div class="custom-control custom-radio">
-					<input onchange="loadSchWeek(0,this.value)" type="radio" class="custom-control-input" id="chk1" value="1" name="defaultExampleRadios">
-					<label class="custom-control-label" for="chk1">Finishing</label>
-				</div>
-			</div>
-			<div class="p-2">
-				<div class="custom-control custom-radio">
-					<input onchange="loadSchWeek(0,this.value)" type="radio" class="custom-control-input" id="chk0" value="0" name="defaultExampleRadios">
-					<label class="custom-control-label" for="chk0">Cutting</label>
-				</div>
+			<div>
+				<button type="button"  class="btn btn-sm btn-secondary" data-toggle="modal" data-target="#manageSchModal">Manage Schedules</button>
 			</div>
 		</div>
 	</div>
@@ -353,8 +428,19 @@ function getWithExpiry(key) {
 	}
 	?>	
 	<div class="card-body px-3 pt-1">
-		<div class="row text-center d-print-block py-3" hidden>
-			<h5 id="fromDatePrint"></h5>
+		<div class="d-print-block d-none">
+			<div class="d-flex justify-content-around py-1">
+				<h5 class="font-weight-bold" id="scheduleName"></h5>
+				<h5 class="font-weight-bold" id="fromDatePrint"></h5>
+			</div>
+		</div>
+		<div title="Order Types" class="row d-print-none ml-3">
+			<a id="popOrderTypes" tabindex="0" role="button" data-toggle="popover" data-placement="bottom" data-trigger="focus" data-container="body" data-html="true">
+				<svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-palette" viewBox="0 0 16 16">
+					<path d="M8 5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm4 3a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM5.5 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm.5 6a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/>
+					<path d="M16 8c0 3.15-1.866 2.585-3.567 2.07C11.42 9.763 10.465 9.473 10 10c-.603.683-.475 1.819-.351 2.92C9.826 14.495 9.996 16 8 16a8 8 0 1 1 8-8zm-8 7c.611 0 .654-.171.655-.176.078-.146.124-.464.07-1.119-.014-.168-.037-.37-.061-.591-.052-.464-.112-1.005-.118-1.462-.01-.707.083-1.61.704-2.314.369-.417.845-.578 1.272-.618.404-.038.812.026 1.16.104.343.077.702.186 1.025.284l.028.008c.346.105.658.199.953.266.653.148.904.083.991.024C14.717 9.38 15 9.161 15 8a7 7 0 1 0-7 7z"/>
+				</svg>
+			</a>
 		</div>
 		<div class="row d-print-none">
 			<div class="d-flex justify-content-start col-sm-4 col-md-6 col-lg-2">
@@ -440,9 +526,86 @@ function getWithExpiry(key) {
 		</div>
 	</div>
 </div>
-
-
-<?php if(strlen($_SESSION["firstName"])==1 && $_SESSION["account"]==2) include '../includes/foot.php';?>  
+<!-- Modal Order Station Status-->
+<div class="modal fade bd-example-modal-lg" id="stationStatus" tabindex="-1" role="dialog" aria-labelledby="stationStatusTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLongTitle">Order Status</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" id="stationsBody">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+<form id="formViewFullOID" method="post" action="../readOnlyOrder.php" target="TheWindow">
+<input id="inputOID" type="hidden" name="oid"/>
+</form>
+<div id="popovercolors" hidden>
+	<table class="table border-0 table-sm mx-auto text-center py-2">
+		<tr><td class="table-danger p-0"><small><b>Scheduled<24h</b></small></td></tr>
+		<tr><td class="table-warning p-0"><small><b>Service</b></small></td></tr>
+		<tr><td class="table-info p-0"><small><b>Builders</b></small></td></tr>
+		<tr><td class="table-primary p-0"><small><b>Span</b></small></td></tr>
+	</table>
+</div>
+<!-- Modal Manage Schedules-->
+<div class="modal fade" id="manageSchModal" tabindex="-1" role="dialog" aria-labelledby="manageSchModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLongTitle">Manage Schedules</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+		<table class="table table-sm text-center">
+			<thead class="bg-light">
+				<tr>
+					<th>ID</th>
+					<th>DEPARTMENT</th>
+					<th>USER</th>
+					<th>SCHEDULE</th>
+				</tr>
+			</thead>
+			<tbody>
+			<?php
+				$sch = array("Cutting", "Finishing", "Completion", "Shipping");
+				$sql = "SELECT d.id,d.department, mu.email,d.dateType FROM departments d left join mosUser mu on mu.firstName = d.id and mu.userType = 3";
+				$result = opendb($sql);	
+				$selected = "selected ";
+				while($row = $result->fetch_assoc()){
+					echo "<tr>";
+						echo "<td>".$row['id']."</td><td>".$row['department']."</td><td>".$row['email']."</td>";
+						echo "<td><select id=\"".$row['id']."\" class=\"custom-select\" onchange=\"manageSchedule(this.id, this.value, ".$row['id'].");\">";
+						for ($x = 0; $x < 4; $x++) {
+							echo "<option value=\"".$x."\"";
+							if($row['dateType'] == $x) 
+								echo $selected;
+							echo  ">".$sch[$x]."</option>";
+						  }
+						echo "</select></td>";
+					echo "</tr>";
+				}
+			?>
+			</tbody>
+		</table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <!--button type="button" class="btn btn-primary">Save changes</button-->
+      </div>
+    </div>
+  </div>
+</div>
+<?php if(is_numeric($_SESSION["firstName"]) && $_SESSION["account"]==2) include '../includes/foot.php';?>  
 <script>
 $(document).ready(function () {
 	if(!localStorage.getItem('date')){
@@ -460,6 +623,21 @@ $(document).ready(function () {
 			localStorage.setItem($(option).val(), checked);//store cookie for column filter
 			//console.log(localStorage);
 		}
+	});
+
+	/*Tooltips and Popovers use a built-in sanitizer to sanitize options which accept HTML */
+	$.fn.popover.Constructor.Default.whiteList.table = [];
+    $.fn.popover.Constructor.Default.whiteList.tr = [];
+    $.fn.popover.Constructor.Default.whiteList.td = [];
+    $.fn.popover.Constructor.Default.whiteList.th = [];
+    $.fn.popover.Constructor.Default.whiteList.div = [];
+    $.fn.popover.Constructor.Default.whiteList.tbody = [];
+    $.fn.popover.Constructor.Default.whiteList.thead = [];
+	$("#popOrderTypes").popover({
+    	html: true, 
+		content: function() {
+        	return $('#popovercolors').html();
+        }
 	});
 });
 </script>

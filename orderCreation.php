@@ -25,8 +25,8 @@ function createORDX($oid,$account){
 	}
 	
 	//Getting all rooms
-	$sql = "select orr.rid,orr.name rname,orr.note,(SELECT sum(W) FROM orderItem where rid = orr.rid)length,sp.name spname,irf.name irfname,dd.name ddname,ff.name ffname,db.name dbname,gl.name glname,sdf.name sdfname,sh.name shname,ldf.name ldfname,h.name hname,dg.name dgname, fe.name fename
-            from orderRoom orr,species sp,interiorFinish irf,door dd,frontFinish ff,drawerBox db,glaze gl,smallDrawerFront sdf,sheen sh,largeDrawerFront ldf,hinge h,drawerGlides dg,finishedEnd fe where orr.oid=".$oid." and orr.species=sp.id and orr.door=dd.id and orr.frontFinish=ff.id and orr.glaze=gl.id and orr.glaze=gl.id and orr.sheen=sh.id and orr.hinge=h.id and orr.smallDrawerFront=sdf.id and orr.largeDrawerFront=ldf.id and orr.drawerGlides=dg.id and orr.drawerBox=db.id and orr.interiorFinish=irf.id and orr.finishedEnd=fe.id order by orr.name";
+	$sql = "select (select a.busDBA from account a where a.id = mo.account)busName, mo.po, mo.tagName, orr.rid,orr.name rname,orr.note,(SELECT sum(W) FROM orderItem where rid = orr.rid)length,sp.name spname,irf.name irfname,dd.name ddname,ff.name ffname,db.name dbname,gl.name glname,sdf.name sdfname,sh.name shname,ldf.name ldfname,h.name hname,dg.name dgname, fe.name fename
+            from mosOrder mo, orderRoom orr,species sp,interiorFinish irf,door dd,frontFinish ff,drawerBox db,glaze gl,smallDrawerFront sdf,sheen sh,largeDrawerFront ldf,hinge h,drawerGlides dg,finishedEnd fe where mo.oid = orr.oid and orr.oid=".$oid." and orr.species=sp.id and orr.door=dd.id and orr.frontFinish=ff.id and orr.glaze=gl.id and orr.glaze=gl.id and orr.sheen=sh.id and orr.hinge=h.id and orr.smallDrawerFront=sdf.id and orr.largeDrawerFront=ldf.id and orr.drawerGlides=dg.id and orr.drawerBox=db.id and orr.interiorFinish=irf.id and orr.finishedEnd=fe.id order by orr.name";
     $result = opendb($sql);
     //Loop over all the rooms
     while($row = $result->fetch_assoc()){
@@ -42,7 +42,7 @@ function setRoom($row, $fileName,$path){
 
 	//Link section
 	$txt = "[Link]
-	PCDate=\"".date("Y-m-d")."\"
+    PCDate=\"".date("Y-m-d")."\"
 	CreateBy=\"MOS System\"";
 
 	//Header section
@@ -53,10 +53,10 @@ function setRoom($row, $fileName,$path){
 	Version=1
 	Unit=0
 	Name=\"".$row['rname']."\"
-	Description=\"".$row['note']."\"
-	PurchaseOrder=\"".$row['note']."\"
+	Description=\"".$row['tagName']."\"
+	PurchaseOrder=\"".$row['po']."\"
 	Comment=\"\"
-	Customer=\"".$row['note']."\"
+	Customer=\"".$row['busName']."\"
 	Contact=\"\"
 	Address1=\"\"
 	City=\"\"
@@ -142,18 +142,24 @@ function setRoom($row, $fileName,$path){
 	*	14 			String 		Modify Code
 	***********************************************************************************************/
 	//***************************Parameters*********************************************************
-	$sql2 = "SELECT * FROM orderItem where rid = ".$row['rid']." order by position asc";
+	//$sql2 = "select * FROM orderItem oi left join itemsLink il on oi.iid = il.itemId where rid = ".$row['rid']." order by position asc";
+	$sql2 = "select * FROM orderItem oi left join (select il.itemId, (select cvi.category from cvitem cvi where cvi.id = COALESCE(il.cvId,il.cvRId,il.cvLId)) category, (select cvi.suffix from cvitem cvi where cvi.id = COALESCE(il.cvId,il.cvRId,il.cvLId)) suffix, (select cvi.name from cvitem cvi where cvi.id = il.cvId) cvItemD, (select cvi.name from cvitem cvi where cvi.id = il.cvRId) cvItemR,(select cvi.name from cvitem cvi where cvi.id = il.cvLId) cvItemL from itemsLink il ) cvt on oi.iid = cvt.itemId where rid = ".$row['rid']." order by position asc";
 	$result2 = opendb($sql2);
 
 	$x = 0.00000;//X axis position
 	$i = 1;//item count
     //Loop over all the rooms
     while($item = $result2->fetch_assoc()){
-
+		$category = "DEFAULT";
+		if($item['category'])
+			$category = $item['category'];
+		$suffix = "";
+		if($item['suffix'])
+			$suffix = $item['suffix'];
 		$txt ="\n
 		[Parameters]
-		Note=\"NOTE1\",\"NOTE\",\"text\",\"FDB\"
-		Note=\"NOTE2\",\"NOTE2\",\"text\",\"\"
+		Note=\"NOTE1\",\"NOTE\",\"text\",\"".$category."\" 
+		Note=\"NOTE2\",\"NOTE2\",\"text\",\"".$suffix."\"
 		Note=\"NOTE3\",\"NOTE3\",\"text\",\"SEE SAMPLE-PAINT\"
 		Note=\"NOTE4\",\"NOTE4\",\"text\",\"SEE SAMPLE-PAINT\"
 		Note=\"NOTE5\",\"NOTE5\",\"text\",\"Standard\"
@@ -181,9 +187,29 @@ function setRoom($row, $fileName,$path){
 		*	17 			String 		Cabinet ID - ID for CW or CV to identify
 		*	18 			String 		Modify Code
 		************************************************************************************************/
+		/*CV Item code Selection*/
+		$cvItem = "";
+		$hinge = "*";//Undefined
+		//Select left or right hinge
+		if($item['hingeLeft']==1 && $item['hingeRight']==0){//Cabinet is left hinged
+			$cvItem = $item['cvItemL'];//Cabinet is left hinged
+			$hinge = "L";
+		}elseif($item['hingeLeft']==0 && $item['hingeRight']==1){//Cabinet is right hinged
+			$cvItem = $item['cvItemR'];
+			$hinge = "R";
+		}else{//2 Doors or no doors
+			$cvItem = $item['cvItemD'];
+			if($item['hingeLeft']==1 && $item['hingeRight']==1)//Cabinet has a pair of doors
+				$hinge = "P";
+		}
+		//When no item linked we use a default item
+		if(empty($cvItem)){
+			$cvItem = "DEFAULT";
+		}
+
 		$txt ="\n
 		[Cabinets]
-		".$i.",\"B42-\",".$item['W'].",".$item['H'].",".$item['D'].",\"*\",\"N\",1,\"".$item['note']."\",\"1-F\",".$x.",0.0000,0.0000,2,0,\"1V|T\",\"1\",\"S\"";
+		".$i.",\"".$cvItem."\",".floatval($item['W']).",".floatval($item['H']).",".floatval($item['D']).",\"".$hinge."\",\"N\",1,\"".$item['note']."\",\"1-F\",".$x.",0.0000,0.0000,2,0,\"1V|T\",\"1\",\"S\"";
 		fwrite($myfile, $txt);
 		$x += floatval($item['W']);	
 		$i++;

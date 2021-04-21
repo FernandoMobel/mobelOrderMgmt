@@ -1,5 +1,6 @@
 <?php include '../includes/nav.php';?>
 <?php include '../includes/db.php';?>
+
 <script>
 
 /*Navigation tabs and views functionality*/
@@ -78,11 +79,11 @@ input::-webkit-inner-spin-button {
 }
 </style>
 <?php
-	if(strlen($_SESSION["firstName"])==1 && $_SESSION["account"]==2){}else{
+	if(is_numeric($_SESSION["firstName"]) && $_SESSION["account"]==2){}else{
 ?>
 		<div class="container-fluid  d-print-none">
 			<?php
-			if(!in_array($_SESSION["userid"],[34,35])){
+			if(!in_array($_SESSION["userid"],[31,34,35])){
 			?>
 			<ul id="empTabs" class="nav nav-tabs">
 				  <li class="nav-item border rounded-top">
@@ -130,7 +131,7 @@ input::-webkit-inner-spin-button {
 					</a>
 				  </li>
 				  <?php 
-				  if(in_array($_SESSION["userid"],[11,30,32])){
+				  if(in_array($_SESSION["userid"],[1,2,11,30,32])){
 				  ?>
 				  <li class="nav-item border rounded-top">
 					<a class="nav-link" id="adjustScheduleView" onclick="navtab(this.id)">
@@ -144,7 +145,7 @@ input::-webkit-inner-spin-button {
 				  </li>
 				  <?php 
 				  }
-				  if(in_array($_SESSION["userid"],[11,30,32])){
+				  if(in_array($_SESSION["userid"],[1,2,11,30,32])){
 				  ?>
 				   <!--li class="nav-item border rounded-top">
 					<a class="nav-link" id="reportView" onclick="navtab(this.id)">
@@ -174,7 +175,7 @@ input::-webkit-inner-spin-button {
 		</div>
 <?php 
 	}
-if(strlen($_SESSION["firstName"])==1 && $_SESSION["account"]==2){
+if(is_numeric($_SESSION["firstName"]) && $_SESSION["account"]==2){
 	echo "<div id=\"scheduleTab\" style=\"display:block\">";
 	include 'schedule.php';
 	echo "</div>";

@@ -107,12 +107,12 @@ $GLOBALS['$result'] = "";
       if($GLOBALS['$result']->num_rows > 0){
           foreach ($GLOBALS['$result'] as $row) {
               if($mod == 0 || strcmp($mod,"Y")){
-                  if(row['sid']==$id){
-                      return row['itemNum'];
+                  if($row['sid']==$id){
+                      return $row['itemNum'];
                   }
               }else{
-                  if(row['item']==$id){
-                      return row['itemNum'];
+                  if($row['item']==$id){
+                      return $row['itemNum'];
                   }
               }
           }
@@ -175,7 +175,7 @@ $GLOBALS['$result'] = "";
       $Itfactor = $factor-$Itfactor;
       $Ftfactor = $factor;
       if($FApplies>0){
-          $factor *= (1+$FFactor);
+          $factor *= (1+$FFactor);          
       }
       $Ftfactor = $factor - $Ftfactor;
       $Gtfactor = $factor;
@@ -193,7 +193,7 @@ $GLOBALS['$result'] = "";
       $reason = $reason . "Interior Finish Factor: ". $Itfactor . " and added value: " . $Itfactor * $price . "\n";
       $reason = $reason . "Finish Factor: ". $Ftfactor . " and added value: " . $Ftfactor * $price . "\n";
       $reason = $reason . "Gloss Factor: ". $Gtfactor . " and added value: " . $Gtfactor * $price . "\n";
-      $reason = $reason . "Species Factor: ". $Stfactor . " and added value: " . $Stfactor * $price . "\n";
+      $reason = $reason . "Sheen Factor: ". $Stfactor . " and added value: " . $Stfactor * $price . "\n";
       $reason = $reason . "Cabinet Line Factor: ". round($CLfactor,2) . " and added value: " . $CLfactor * $price . "\n\n";
       
       $upcharge = $drawerCharge * $drawers + $smallDrawerCharge*$smallDrawerFronts + $largeDrawerCharge*$largeDrawerFronts + $EFactor*$finishedEnds*$H*$D;
