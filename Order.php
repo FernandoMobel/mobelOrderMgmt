@@ -1038,7 +1038,7 @@ function displayCopyBtn(obj){
 }
 
 function clearModal(){
-	//$('#copyItemList').empty();
+	$('#copyItemList').empty();
 	$('#copyItemList input:checkbox').prop('checked',false);
 	$('#selAllChk').prop('checked',false);
 	$('#btnCopyItems').hide();
