@@ -365,7 +365,7 @@ if($_POST['mode']=="getItems"){
 		<!-- display nowrap table-striped table-hover -->
         <thead>
               <tr>
-                <th class="font-weight-bold">Item</th>
+                <th style="width: 93px;" class="font-weight-bold">Item</th>
                 <th style="width: 250px;" class="font-weight-bold">Description</th>
                 <th style="width: 60px;" class="font-weight-bold" title="Width">W</th>
                 <th class="font-weight-bold" title="Height">H</th>
@@ -423,7 +423,13 @@ if($_POST['mode']=="getItems"){
                 }else{
                     echo "<tr class=\"table-sm".$warning."\">";
                 }
-			    echo $tdStyle . $i . "." . $si . "</td>";
+			    if($isParent===1){
+                    echo $tdStyle . "<select id=\"Position".$i."\" class=\"form-control\" onchange=\"$('#editOrderItemID').val(".$row['item']."); saveEditedItem('Position".$i."','position');\">";
+                    echo getSelectControl($_POST['rid'], $i);
+                    echo "</select></td>";
+                }else{
+                    echo $tdStyle . $i . "." . $si . "</td>";
+                }
 			    echo $tdStyle . "<span title=\"". str_replace("\"","inch",$row['description'])."\">" . $row['name']; 
                 if($_SESSION["userType"]<3)
                      echo "<label class=\"print\">".str_replace("\"","inch",$row['description'])."</label>"; 
@@ -594,7 +600,7 @@ if($_POST['mode'] == "editItem"){
     opendb($sql);
     if($GLOBALS['$result']->num_rows > 0){
         foreach ($GLOBALS['$result'] as $row) {
-            $sql = "update orderItem set iid=" . "".$_POST['id'].",position=" . "0,rid=" . $_POST['rid'] . ", name='" . $row['name'] . "', 
+            $sql = "update orderItem set iid=" . "".$_POST['id'].",rid=" . $_POST['rid'] . ", name='" . $row['name'] . "', 
 description='" . $row['description'] . "', qty=" . "1" . " ,price= " . $row['price'] . ",sizePrice= " . $row['sizePrice'] . ",
 minSize= " . $row['minSize'] . ",W= " . $row['W'] . ",H=" . $row['H'] . " ,D=" . $row['D'] . " ,W2=" . $row['W2'] . " ,H2=" . $row['H2'] . " ,
 D2=" . $row['D2'] . " ,minW= " . $row['minW'] .",minH= " . $row['minH'] .",minD= " . $row['minD'] .",maxW= " . $row['maxW'] .",maxH= " . $row['maxH'] .",
@@ -621,7 +627,7 @@ if($_POST['mode'] == "editMod"){
               //                               (" . "".$_POST['pid']. "," . $_POST['id']."," . "0," . $_POST['rid'] . ",'" . $row['name'] . "','" . $row['description'] . "'," . "1" . "," . $row['price'] . "," . $row['sizePrice'] . ",'" . $row['minSize'] . "'," . $row['W'] . "," . $row['H'] . "," . $row['D'] . "," . $row['W2'] . "," . "0" ."," . "0" ."," . $row['minW'] ."," . "0" ."," . "0" ."," . "0" ."," . "0" ."," . "0" ."," . $row['doorFactor'] ."," . $row['speciesFactor'] ."," . $row['finishFactor'] . "," . $row['interiorFactor'] ."," . $row['sheenFactor'] ."," . $row['glazeFactor'] ."," . $row['drawers'] ."," . $row['smallDrawerFronts'] ."," . $row['largeDrawerFronts'] . "," . "0" . "," . "0" . "," . "0" . "," . "0" . ")";
             
             
-            $sql = "update orderItemMods set pid = " . $_POST['pid'] . ", mid=" . "".$_POST['id'].",position=" . "0,rid=" . $_POST['rid'] . ", name='" . $row['name'] . "',
+            $sql = "update orderItemMods set pid = " . $_POST['pid'] . ", mid=" . "".$_POST['id'].",rid=" . $_POST['rid'] . ", name='" . $row['name'] . "',
 description='" . $row['description'] . "', qty=" . "1" . " ,price= " . $row['price'] . ",sizePrice= " . $row['sizePrice'] . ",
 minSize= " . $row['minSize'] . ",W= " . $row['W'] . ",H=" . $row['H'] . " ,D=" . $row['D'] . " ,W2=" . $row['W2'] . " ,H2=" . $row['H2'] . " ,
 D2=" . $row['D2'] . " ,minW= " . $row['minW'] .",minH= " . $row['minH'] .",minD= " . $row['minD'] .",maxW= " . $row['maxW'] .",maxH= " . $row['maxH'] .",
@@ -1586,6 +1592,8 @@ function fieldList($tableName){
 
 /*------------------------------------------------------------
 * Update position column
+* This function was created to update the old orders items position since old orders positions were not created
+* After some time this function can(should) be not longer called.
 ------------------------------------------------------------*/
 function updatePos($rid){
     $sql = "select t.item, t.sid from (select oi.id as item, 0 as sid from orderItem oi where oi.rid =".$rid." union all select oim.pid, oim.id from orderItemMods oim where oim.rid =".$rid.") t order by t.item,t.sid asc";
@@ -1607,4 +1615,22 @@ function updatePos($rid){
         opendb2($sql2);
     }
 }
+
+/*---------------------------------------------------------------------------------------
+* Create position options for every item
+ ---------------------------------------------------------------------------------------*/
+function getSelectControl($rid, $id){
+    $result = opendb("select count(1) itemQty from orderItem where rid =".$rid);
+    $row = $result->fetch_assoc();
+    $selectHTML ="";
+    for($i=1; $i<=$row['itemQty']; $i++){        
+        if($i == $id){
+            $selected = "selected";
+        }else{
+            $selected = "";
+        }        
+        $selectHTML .= "<option ".$selected." value=\"".$i."\">".$i.".0</option>";
+    }   
+     return $selectHTML;  
+ }
 ?>

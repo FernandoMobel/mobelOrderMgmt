@@ -323,12 +323,7 @@ function editItems(itemID, mod){
 		$('#Position').hide();
 		$('#lblPosition').hide();
 	}
-	//document.getElementById("#editItemSearch").innerHTML="";
-	//allItems('allItemsEdit','editItems',itemID, mod);
     cleanEdit();
-	//$("#editItemModal").empty();
-	//$('.bs-searchbox').attr("onkeyup=\"showResult(this.value)\"");
-	
 	myData = { mode: "editItemGetDetails", mod: mod, oid: "<?php echo $_GET["OID"] ?>", itemID: itemID};
 	$.post("OrderItem.php",
 			myData, 
@@ -517,7 +512,7 @@ function saveEditedItem(objectID,col){
 		}
 		$('#Qty').val(Math.round($('#Qty').val()));
 	}
-	if(objectID=="Position"){
+	if(col=="position"){
 		refresh = 1;
 	}
 	var myMode = "";
@@ -540,9 +535,7 @@ function saveEditedItem(objectID,col){
 	//console.log(myData);
 	$.post("save.php",myData,function(data, status, jqXHR) {
 		if(status == "success"){
-	    	$("#"+objectID).css("border-color", "#00b828");
 	    	if(refresh>0){
-		    	//console.log(jqXHR['responseText']);
 		    	loadItems($("a.nav-link.roomtab.active").attr("value"));
 		    	refresh = 0;
 	    	}
@@ -550,7 +543,7 @@ function saveEditedItem(objectID,col){
 	    		$("#"+objectID).css("border-color", "#ba0000");
 				alert(data);
 	    	}
-	    	//return 1;
+			$("#"+objectID).css("border-color", "#00b828");
 	    }
 	});
 }
@@ -1441,7 +1434,7 @@ function setExtraOptions(rid){
 					<a class="dropdown-item" data-toggle="modal" data-target="#copyItemsModal" onclick="clearModal();">Copy Items From Order</a>
 				</div>                							
 				<?php
-				echo "<b><a  class=\"btn btn-primary px-3 py-1 mr-0 float-right d-print-none\" target=\"_blank\" ";
+				echo "<b><a class=\"btn btn-primary px-3 py-1 mr-0 float-right d-print-none\" target=\"_blank\" ";
 				if($mosOrderTB['CLid']==3){
 					echo "href=\"header/SPANSTYLES.pdf\">Span Catalogue</a></b>
 			</div>"; 
