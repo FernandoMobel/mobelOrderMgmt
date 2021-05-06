@@ -497,7 +497,7 @@ async function setSizes(W,H,D,W2,H2,D2,name,desc,catid) {
 	document.getElementById("livesearch").innerHTML=name;	
 	if($('#editItemTitle').text() != "Edit/Delete Mod")
 		getImage(catid,false);
-	//loadItems($("a.nav-link.roomtab.active").attr("value"));
+	loadItems($("a.nav-link.roomtab.active").attr("value"));
 }
 
 function saveEditedItem(objectID,col){
@@ -2751,7 +2751,10 @@ $(document).ready(function(){
 	$("#editItemModal").on('shown.bs.modal', function(){
         $('#editItemSearch').focus();
     });
-
+	$("#editItemModal").on('hide.bs.modal', function(){
+		//console.log('hidding now...');
+		loadItems($("a.nav-link.roomtab.active").attr("value"))
+	});
 	//set options(Touch up, Hardware)
 	//setExtraOptions($("a.nav-link.roomtab.active").attr("value"));
 

@@ -233,7 +233,7 @@ if($_POST['mode']=="getNewItem"){
     if($GLOBALS['$result']->num_rows > 0){
         foreach ($GLOBALS['$result'] as $row){
             //the id returned is the id from the mod or items table (not the orders table)
-            echo "<option class = \"highlight\" onClick=\"setSizes(".$row['w'].",".$row['h'].",".$row['d'].",".$row['w2'].",".$row['h2'].",".$row['d2'].",'".$row['name']."','".htmlspecialchars($row['description'])."',".$row['id'].").then(loadItems($('a.nav-link.roomtab.active').attr('value')));\" class=\"allItemList\" w=\"" . $row['w']. "\" h=\"" .$row['h']. "\" d=\"" .$row['d']. "\" value=\"" . $row['id'] . "\">". $row['description'] . " Code: " .$row['name']. "</option>";
+            echo "<option class = \"highlight\" onClick=\"setSizes(".$row['w'].",".$row['h'].",".$row['d'].",".$row['w2'].",".$row['h2'].",".$row['d2'].",'".$row['name']."','".htmlspecialchars($row['description'])."',".$row['id'].");\" class=\"allItemList\" w=\"" . $row['w']. "\" h=\"" .$row['h']. "\" d=\"" .$row['d']. "\" value=\"" . $row['id'] . "\">". $row['description'] . " Code: " .$row['name']. "</option>";
         }
     }
 }
