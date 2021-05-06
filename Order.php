@@ -317,13 +317,15 @@ function showResult(str) {
 //mod is the ItemID of the mod of the main item. It is 0 if this is already a parent item.
 //itemID is the parent item's id (or it's own ID) in the order item table
 function editItems(itemID, mod){
+	cleanEdit();
 	if(mod>0){
 		$("#editOrderItemPID").val(itemID);
 		$('#editItemTitle').text("Edit/Delete Mod");
 		$('#Position').hide();
 		$('#lblPosition').hide();
+		$('#addNewItemButton').hide();
 	}
-    cleanEdit();
+    //cleanEdit();
 	myData = { mode: "editItemGetDetails", mod: mod, oid: "<?php echo $_GET["OID"] ?>", itemID: itemID};
 	$.post("OrderItem.php",
 			myData, 
@@ -340,7 +342,7 @@ function editItems(itemID, mod){
 	       			$('#D').val(parseFloat(myObj.d));
 	       			$('#D2').val(parseFloat(myObj.d2));
 	       			$('#Qty').val(parseFloat(myObj.qty));
-	       			//Disable option for mods or enable for items
+	       			//Disable Position feature for mods or enable for items
 	       			if($('#editItemID').val()!==0){//items	       				
 	       				$('#Position').prop('disabled',false);
 						$('#Position').val(myObj.position);						
@@ -359,10 +361,11 @@ function editItems(itemID, mod){
 		           $('#editItemTitle').text("Edit/Delete Item");
 		           
 		           if(mod>0){
-		        	   $('#editItemTitle').text("Edit/Delete Mod");
-		        	   $('#editItemID').val(mod);
-		        	   $('#Position').hide();
+		        	   	$('#editItemTitle').text("Edit/Delete Mod");
+		        	   	$('#editItemID').val(mod);
+		        	   	$('#Position').hide();
 						$('#lblPosition').hide();
+						$('#addNewItemButton').hide();
 		           }else{
 			           $('#Position').show();
 			           $('#lblPosition').show();
@@ -442,6 +445,7 @@ function cleanEdit(rqst){
 	if($('#editItemTitle').text() == "Edit/Delete Mod"){
 		$("#Position").hide();
 		$("#lblPosition").hide();
+		$('#addNewItemButton').hide();
 	}else{
 		$("#Position").show();
 		$("#lblPosition").show();
@@ -449,7 +453,7 @@ function cleanEdit(rqst){
 }
 
 function solvefirst(W,H,D,W2,H2,D2,name,catid) {
-  return new Promise(resolve => {
+	return new Promise(resolve => {
   	//setTimeout(() => {
 	    refresh = 0;
 		$('#W').val(W);
@@ -483,18 +487,17 @@ function solvefirst(W,H,D,W2,H2,D2,name,catid) {
 		}
 		$("#Position").prop('disabled', false);
     	resolve('');
-		//}, 5000); set time out
-		}
-  );
+		//}, 1000); //set time out
+	});
 }
 
 async function setSizes(W,H,D,W2,H2,D2,name,desc,catid) {
-  const result = await solvefirst(W,H,D,W2,H2,D2,name,catid);
-  $('#editItemSearch').val(result);
+	const result = await solvefirst(W,H,D,W2,H2,D2,name,catid);
+	$('#editItemSearch').val(result);
 	document.getElementById("livesearch").innerHTML=name;	
 	if($('#editItemTitle').text() != "Edit/Delete Mod")
 		getImage(catid,false);
-	loadItems($("a.nav-link.roomtab.active").attr("value"));
+	//loadItems($("a.nav-link.roomtab.active").attr("value"));
 }
 
 function saveEditedItem(objectID,col){
@@ -574,6 +577,7 @@ function saveItem(){
 		addItemID = myid;
 	}
 	myData = { mode: mode, pid: pid, id: $("#editItemID").val(), myid: myid, oid: "<?php echo $_GET["OID"] ?>", rid: $("a.nav-link.roomtab.active").attr("value")};
+	//console.log(myData);
 	$.post("OrderItem.php",
 			myData, 
 		       function(data, status, jqXHR) {
@@ -2743,6 +2747,10 @@ $(document).ready(function(){
 			});
 		}
 	});
+
+	$("#editItemModal").on('shown.bs.modal', function(){
+        $('#editItemSearch').focus();
+    });
 
 	//set options(Touch up, Hardware)
 	//setExtraOptions($("a.nav-link.roomtab.active").attr("value"));

@@ -233,7 +233,7 @@ if($_POST['mode']=="getNewItem"){
     if($GLOBALS['$result']->num_rows > 0){
         foreach ($GLOBALS['$result'] as $row){
             //the id returned is the id from the mod or items table (not the orders table)
-            echo "<option class = \"highlight\" onClick=\"setSizes(".$row['w'].",".$row['h'].",".$row['d'].",".$row['w2'].",".$row['h2'].",".$row['d2'].",'".$row['name']."','".htmlspecialchars($row['description'])."',".$row['id'].");\" class=\"allItemList\" w=\"" . $row['w']. "\" h=\"" .$row['h']. "\" d=\"" .$row['d']. "\" value=\"" . $row['id'] . "\">". $row['description'] . " Code: " .$row['name']. "</option>";
+            echo "<option class = \"highlight\" onClick=\"setSizes(".$row['w'].",".$row['h'].",".$row['d'].",".$row['w2'].",".$row['h2'].",".$row['d2'].",'".$row['name']."','".htmlspecialchars($row['description'])."',".$row['id'].").then(loadItems($('a.nav-link.roomtab.active').attr('value')));\" class=\"allItemList\" w=\"" . $row['w']. "\" h=\"" .$row['h']. "\" d=\"" .$row['d']. "\" value=\"" . $row['id'] . "\">". $row['description'] . " Code: " .$row['name']. "</option>";
         }
     }
 }
@@ -424,7 +424,7 @@ if($_POST['mode']=="getItems"){
                     echo "<tr class=\"table-sm".$warning."\">";
                 }
 			    if($isParent===1){
-                    echo $tdStyle . "<select id=\"Position".$i."\" class=\"form-control\" onchange=\"$('#editOrderItemID').val(".$row['item']."); saveEditedItem('Position".$i."','position');\">";
+                    echo $tdStyle . "<select id=\"Position".$i."\" class=\"form-control\" onchange=\"$('#editItemTitle').text('Edit/Delete Item');$('#editOrderItemID').val(".$row['item']."); saveEditedItem('Position".$i."','position');\">";
                     echo getSelectControl($_POST['rid'], $i);
                     echo "</select></td>";
                 }else{
@@ -539,9 +539,9 @@ if($_POST['mode']=="getItems"){
                         </svg>
                     </span>";
                     echo "<button class=\"btn btn-primary pl-3 pr-3 btn-sm editbutton\" data-toggle=\"modal\" data-target=\"#fileModal\" type=\"button\" onClick=\"loadFiles(".$_POST['oid'] . ",$('a.nav-link.roomtab.active').attr('value'),".$parentID.",". $row['sid'] .");\">
-                        <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"13\" height=\"13\" fill=\"currentColor\" class=\"bi bi-plus-square text-dark\" viewBox=\"0 0 16 16\">
-                            <path d=\"M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z\"/>
-                            <path d=\"M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z\"/>
+                        <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" fill=\"currentColor\" class=\"bi bi-folder-plus text-dark\" viewBox=\"0 0 16 16\">
+                            <path d=\"m.5 3 .04.87a1.99 1.99 0 0 0-.342 1.311l.637 7A2 2 0 0 0 2.826 14H9v-1H2.826a1 1 0 0 1-.995-.91l-.637-7A1 1 0 0 1 2.19 4h11.62a1 1 0 0 1 .996 1.09L14.54 8h1.005l.256-2.819A2 2 0 0 0 13.81 3H9.828a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 6.172 1H2.5a2 2 0 0 0-2 2zm5.672-1a1 1 0 0 1 .707.293L7.586 3H2.19c-.24 0-.47.042-.683.12L1.5 2.98a1 1 0 0 1 1-.98h3.672z\"/>
+                            <path d=\"M13.5 10a.5.5 0 0 1 .5.5V12h1.5a.5.5 0 1 1 0 1H14v1.5a.5.5 0 1 1-1 0V13h-1.5a.5.5 0 0 1 0-1H13v-1.5a.5.5 0 0 1 .5-.5z\"/>
                         </svg>
                     </button>";
                 }
