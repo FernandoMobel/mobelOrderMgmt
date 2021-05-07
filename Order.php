@@ -38,12 +38,6 @@ table{
 	text-align: center;
 }
 
-.zoom:hover {
-  -ms-transform: scale(1.3); /* IE 9 */
-  -webkit-transform: scale(1.3); /* Safari 3-8 */
-  transform: scale(1.3); 
-}
-
 .highlight:hover {
   /*-ms-transform: scale(1.3); /* IE 9 */
   /*-webkit-transform: scale(1.3); /* Safari 3-8 */
@@ -77,8 +71,6 @@ table p{
 }
 
 </style>
-<!--script src="js/MDB/js/popper.min.js"></script-->
-
 <script>
 <?php
 /*Read only order according to the state */
@@ -2369,7 +2361,7 @@ function setExtraOptions(rid){
 								</div>
 							</div>
 						</div>
-						<div class="col-5 zoom">
+						<div class="col-5 view overlay zoom">
 							<img id="itemImg" class="img-fluid">
 						</div>
                     </div>

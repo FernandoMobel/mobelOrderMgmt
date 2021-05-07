@@ -71,6 +71,16 @@ function saveOrder(objectID,OID){
 	}
 }
 
+function testEmail(){
+	//Send Notification
+	myData = { mode: "orderScheduled", oid: $('#orderID').attr('value')};
+	$.post("../save.php",
+			myData, 
+				function(data, status, jqXHR) {
+					console.log(jqXHR['responseText']);
+				});
+}
+
 function productionReady(){	
 	//Update date
 	myData = { mode: 'updateRoomDetails',  oid:$('#orderID').attr('value'), rid: 0, col:'deliveryDate', val:$('#deliveryDate').val()};
@@ -78,6 +88,9 @@ function productionReady(){
 	//Update status
 	myData = { mode: "updateOrder", id:'state', value:5, oid: $('#orderID').attr('value')};
 	$.post("../OrderItem.php",myData);
+	//Send Notification
+	myData = { mode: "orderScheduled", oid: $('#orderID').attr('value')};
+	$.post("../save.php",myData);
 }
 
 //getting all the order rooms for the detailing for create tabs
@@ -685,6 +698,7 @@ if($GLOBALS['$result2']-> num_rows >0){
 						<div class="modal-footer">
 							<!--button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button-->
 							<button type="submit" class="btn btn-primary">Save changes</button>
+							<!--button type="button" class="btn btn-primary" onclick="testEmail()">Send email</button-->	
 					  	</div>
 					</div>
 				</form>
