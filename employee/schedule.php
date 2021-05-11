@@ -38,7 +38,7 @@ if(is_numeric($_SESSION["firstName"]) && $_SESSION["account"]==2){
 ?>
 var currentDate = getMondayCurWeek();
 
-function loadSchWeek(date, sch){	
+function loadSchWeek(date, sch){
 	if(date=='0'){
 		localStorage.setItem('date','0');
 	}
@@ -123,7 +123,7 @@ function getNewWeek(nextWeek){
 	}
 	currentDate = formatDate(newDate2);
 	localStorage.setItem('date',currentDate);
-	loadSchWeek(currentDate);
+	loadSchWeek(currentDate,dateType);
 }
 
 function formatDate(noformat){//output YYYY-MM-DD
