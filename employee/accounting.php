@@ -2,6 +2,12 @@
 include '../includes/nav.php';
 include_once '../includes/db.php';
 
+//getting employee settings
+$result = opendb("select mainMenuDefaultStateFilter as state from employeeSettings where mosUser = " .$_SESSION["userid"]);
+$row = $result->fetch_assoc();
+$state = $row['state'];
+$state_arr = explode(', ', $state);//convert string to array to create control dinamically
+
 //getting status from DB
 $result = opendb("select id,name from state where id > 1");
 while($row = $result->fetch_assoc()) {
@@ -37,10 +43,14 @@ input[type=number] {
 echo "const states = ".$states.";";
 //set account types
 echo "const accTypes = ".$accTypes.";";?>
+if(!localStorage.getItem('year'))
+	localStorage.setItem('year', '2021');
 
 function updateYear(yr){
-    table.destroy();
-	loadOrders(yr);
+	//table.destroy();
+	//loadOrders(yr);
+	localStorage.setItem('year', yr);
+	window.location.reload();
 }
 
 /* Used to update state only using same functionality from mobl only screen */
@@ -48,33 +58,49 @@ function saveOrder(objectID,OID){
 	$("#"+objectID+OID).css("border-color", "#fa0000");
 	myData = { mode: "updateOrder", id: objectID, value: $("#"+objectID+OID).val(), oid: OID};
 	$.post("../OrderItem.php",
-			myData, 
-				function(data, status, jqXHR) {
-					//console.log($("#"+objectID+OID).val());
-					if(data == "success"){
-						if(objectID=='state'){
-							if($("#"+objectID+OID).val()>7){//State updated Invoiced or beyond
-								$('#dateInvoiced'+OID).prop('disabled',false);
-								if($("#"+objectID+OID).val()==8){
-									//today date
-									var today = new Date();
-									var dd = String(today.getDate()).padStart(2, '0');
-									var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
-									var yyyy = today.getFullYear();
-									today = yyyy+'-'+mm+'-'+dd;
-									$('#dateInvoiced'+OID).val(today);
-								}
-							}else{
-								//State is not invoiced so date should be deleted
-								updateInvoiceDate(objectID,0,OID);
-								$('#dateInvoiced'+OID).prop('disabled',true);
-								$('#dateInvoiced'+OID).val('');
+		myData, 
+			function(data, status, jqXHR) {
+				if(data == "success"){
+					if(objectID=='state'){
+						if($("#"+objectID+OID).val()>7){//State updated Invoiced or beyond
+							$('#dateInvoiced'+OID).prop('disabled',false);
+							if($("#"+objectID+OID).val()==8){
+								//today date
+								var today = new Date();
+								var dd = String(today.getDate()).padStart(2, '0');
+								var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+								var yyyy = today.getFullYear();
+								today = yyyy+'-'+mm+'-'+dd;
+								$('#dateInvoiced'+OID).val(today);
 							}
+						}else{
+							//State is not invoiced so date should be deleted
+							updateInvoiceDate(objectID,0,OID);
+							$('#dateInvoiced'+OID).prop('disabled',true);
+							$('#dateInvoiced'+OID).val('');
 						}
-						$("#"+objectID+OID).css("border-color", "#08fa00");							
 					}
-				});
-	//}
+					$("#"+objectID+OID).css("border-color", "#08fa00");							
+				}
+			});
+}
+
+function saveEmployeeSettings(objectID){
+	var arr = $("#"+objectID).val();//Getting all values from input multiselect options
+	switch(objectID){
+		case 'stateFilter'://Order states evaluation (submitted, invoiced, etc.)
+			if(arr.length==0){//if 0 then all the states will be selected
+				 arr = ["2","3","4","5","6","7","8","9","10"]; 
+			}
+		break;
+		default:
+		break;
+	}
+	myData = { mode: "setFilter", id: objectID, value: arr}; 
+	$.post("EmployeeMenuSettings.php",myData);
+	/*table.destroy();
+	loadOrders($('#selYear').val());*/
+	window.location.reload();
 }
 
 function updateInvoiceDate(obj,date,oid){
@@ -83,8 +109,7 @@ function updateInvoiceDate(obj,date,oid){
 	$.post("EmployeeMenuSettings.php",
 		myData, 
 		function(data, status, jqXHR) {
-			$("#"+obj).css("border-color", "#08fa00");		
-			//console.log(jqXHR['responseText']);
+			$("#"+obj).css("border-color", "#08fa00");
 		});
 }
 
@@ -107,7 +132,6 @@ function updateAcc(obj,col,val,oid){
 	$.post("EmployeeMenuSettings.php",
 		myData, 
 		function(data, status, jqXHR) {
-			console.log(jqXHR['responseText']);
 			$("#"+obj).css("border-color", "#08fa00");
 		});
 }
@@ -116,11 +140,9 @@ function updateAccAmt(obj,col,val,oid){
 	$("#"+obj).css("border-color", "#fa0000");
 
 	myData = { mode: "updateAccountingAmt", col: col, value: val, oid: oid, hst: $('#'+oid+"-hst").val(), total: $('#'+oid+"-amt").val()};
-	console.log(myData);
 	$.post("EmployeeMenuSettings.php",
 		myData, 
 		function(data, status, jqXHR) {
-			console.log(jqXHR['responseText']);
 			$("#"+obj).css("border-color", "#08fa00");
 		});
 }
@@ -131,7 +153,6 @@ function updateOrder(obj,col,val,oid){
 	$.post("EmployeeMenuSettings.php",
 		myData, 
 		function(data, status, jqXHR) {
-			console.log(jqXHR['responseText']);
 			if(col=="dateInvoiced" && val==8){
 				$('#dateInvoiced').prop('disabled',false);				
 			}else{
@@ -145,7 +166,7 @@ function loadOrders(yr){
 	var dataSet;
 	var rowClass = "";
 	var order;
-	var table;
+	//var table;
 	//var state;
 	var html;
 	myData = { mode: "getOrdersAccounting",year:yr}; 
@@ -155,13 +176,13 @@ function loadOrders(yr){
 	    data: myData,
 	    success: function(data, status, jqXHR) {						
     		        dataSet =  JSON.parse(jqXHR['responseText']);
-					//console.log(jqXHR['responseText']);
 					table = $('#mainTable').DataTable({
 						//"sDom": '<"top"i>rt<"bottom"flp><"clear">',
 						order: [[ 0, 'asc' ], [ 1, 'asc' ]],
 						ordering: false,
 						//colReorder: false,
 						//lengthMenu: [500,1000],
+						retrieve: true,						
 						paging: false,
 						//stateSave: true,
 						data: dataSet,
@@ -364,8 +385,8 @@ function loadOrders(yr){
 						}						
 					});					
     	},
-		complete: function () {
-			loadFilters();
+		complete: function(){
+			loadFilters();			
      	}
 	});
 }
@@ -442,7 +463,31 @@ function loadFilters(){
 <div class="container-fluid">
     <div class="card">
         <div class="card-header">
-            <div class="row">                
+            <div class="row">  
+				<div class="col-md-3 col-sm-12">  
+					<div class="input-group">
+						<div class="input-group-prepend">
+							<label class="input-group-text bg-primary text-white" for="stateFilter">State</label>
+						</div>
+						<select class="custom-select" id="stateFilter" onchange="saveEmployeeSettings('stateFilter')" placeholder="Status" multiple>
+						<?php
+						//Getting states
+						$result = opendb("select * from state where id > 1 order by position asc");
+						//Building filter
+						while($row = $result->fetch_assoc()){	
+							$selected = ">";
+							foreach ($state_arr as &$value) {									
+								if($value==$row['id']){
+									$selected = "selected>";
+									break;
+								}
+							}
+							echo "<option value=\"".$row['id']."\" ".$selected.$row['name']."</option>" ;
+						}
+						?>
+						</select>
+					</div>
+				</div>            
 				<div class="col-md-2 col-sm-12">
 					<select id="columns" multiple="multiple">
 						<!--option selected value="mth" id="chkmth">MTH</option>
@@ -470,10 +515,7 @@ function loadFilters(){
                 <?php
                 $result = opendb("select distinct year(dateSubmitted) year from mosOrder where state > 1 and dateSubmitted is not null");
                 while($row = $result->fetch_assoc()){
-                    echo "<option value=\"".$row['year']."\" ";
-                    if(date("Y")==$row['year'])
-                        echo "selected";
-                    echo ">".$row['year']."</option>";
+                    echo "<option value=\"".$row['year']."\"\>".$row['year']."</option>";
                 }            
                 ?>
                 </select>
@@ -489,8 +531,8 @@ function loadFilters(){
 				<!--div class="col"> 
 					<button id="reset" type="button" class="btn btn-primary">Reset</button>
 				</div-->
-                <div class="col-md-7 col-sm-12">
-                    <h5 class="font-weight-normal text-center"> JOBS - BUILDERS / DEALERS / RETAIL</h5>  
+                <div class="col-md-4 col-sm-12">
+                    <h5 class="font-weight-normal text-center">JOBS</h5>  
                 </div>
             </div>
         </div>
@@ -563,7 +605,9 @@ function loadFilters(){
 <?php include '../includes/foot.php';?>
 <script>
 $(document).ready(function () {
-    loadOrders($('#selYear').val());
+    //loadOrders($('#selYear').val());
+	$('#selYear').val(localStorage.getItem('year'));
+	loadOrders(localStorage.getItem('year'));
 	
 	$('#columns').multiselect({
 		allSelectedText: 'All columns are visible',
@@ -571,9 +615,15 @@ $(document).ready(function () {
 		dropRight: true,
 		onChange: function(option, checked) {
 			$("."+$(option).val()).toggle('display');
-			localStorage.setItem($(option).val(), checked);//store cookie for column filter
-			//console.log(localStorage);			
+			localStorage.setItem($(option).val(), checked);//store cookie for column filter		
 		}
+	});
+
+	$('#stateFilter').multiselect({
+		//buttonWidth: '350px',
+		//maxHeight: 600,
+		dropRight: true,
+		includeSelectAllOption: true
 	});
 
 	$('.datepicker').datepicker({

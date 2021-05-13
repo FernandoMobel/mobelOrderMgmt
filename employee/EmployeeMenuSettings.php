@@ -72,7 +72,11 @@ if($_POST['mode']=="getOrders"){
 }
 
 if($_POST['mode']=="getOrdersAccounting"){
-	$sql = "select accountType,CAST(dateInvoiced as DATE) dateInvoiced,state,'$' amount,isPriority,isWarranty,CLid, month(dateSubmitted) mth, day(dateSubmitted) day, year(dateSubmitted) yr, mo.oid orderID, account,(select a.busName from account a where a.id = mo.account)busName, concat( tagName,if(po<>'',concat(' - ',po),'')) contract, (select concat(mu.firstName,' ',mu.lastName) from mosUser mu where mu.id = mo.mosUser )sales, deliveryDate, CAST(dateShipped AS DATE) dateShipped, a.* from mosOrder mo left join accounting a on mo.oid = a.oid where year(dateSubmitted) = ".$_POST['year']." and state > 1 and CLid <> 3 order by dateSubmitted";
+	//getting filter
+	$result = opendb("select mainMenuDefaultStateFilter as state from employeeSettings where mosUser = " .$_SESSION["userid"]);
+	$row = $result->fetch_assoc();
+	//create sql
+	$sql = "select accountType,CAST(dateInvoiced as DATE) dateInvoiced,state,'$' amount,isPriority,isWarranty,CLid, month(dateSubmitted) mth, day(dateSubmitted) day, year(dateSubmitted) yr, mo.oid orderID, account,(select a.busName from account a where a.id = mo.account)busName, concat( tagName,if(po<>'',concat(' - ',po),'')) contract, (select concat(mu.firstName,' ',mu.lastName) from mosUser mu where mu.id = mo.mosUser )sales, deliveryDate, CAST(dateShipped AS DATE) dateShipped, a.* from mosOrder mo left join accounting a on mo.oid = a.oid where year(dateSubmitted) = ".$_POST['year']." and state in(".$row['state'].") and CLid <> 3 order by dateSubmitted";
 	$result = opendb($sql);
 	$dbdata = array();
 	while($row = $result->fetch_assoc()){
