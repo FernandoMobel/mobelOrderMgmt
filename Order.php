@@ -847,6 +847,7 @@ function refreshFiles(){
     	$.post("OrderItem.php",
     			myData, 
     		       function(data, status, jqXHR) {
+					   //console.log(jqXHR)
     					$('#FileList tbody').html(data);
     					//alert("still testing");
     	       			//document.getElementById("fileListing").innerHTML=data;
@@ -864,20 +865,18 @@ function loadFiles(oid, rid = 0, iid = 0, mid = 0){
 	gmid = mid;
 	document.getElementById("fileListing").innerHTML="";
 
-
-	
-    	myData = { mode: "getFileModal", mid: mid, rid: rid ,oid: oid, iid: iid};
-    	$.post("OrderItem.php",
-    			myData, 
-    		       function(data, status, jqXHR) {
-    		(async()=>{
-    	       			document.getElementById("fileListing").innerHTML=data;
-    	       			$( document ).ready(function() {
-    	       				refreshFiles();
-    	       			});
-    		})();
-    					
-    	});
+	myData = { mode: "getFileModal", mid: mid, rid: rid ,oid: oid, iid: iid};
+	$.post("OrderItem.php",
+			myData, 
+				function(data, status, jqXHR) {
+		(async()=>{
+					document.getElementById("fileListing").innerHTML=data;
+					$( document ).ready(function() {
+						refreshFiles();
+					});
+		})();
+					
+	});
 }
 
 function showSubmit(){

@@ -14,9 +14,6 @@ if(isset($_SESSION["username"])){
 <?php
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 if($_POST['mode']=="getFileModal"){
-    
-
-    //echo "<button class=\"btn btn-primary\">Add Order File</button><br/>";
     $oid = $_POST['oid'];
     $rid = $_POST['rid'];
     $iid = $_POST['iid'];
@@ -60,9 +57,6 @@ if($_POST['mode']=="getFileModal"){
         <input type="hidden" value="<?php echo $iid?>" name="iid">
         <input type="hidden" value="<?php echo $mid?>" name="mid">
     </form>
-    
-
-
 
     <?php     
     echo "<br/><b>List of Order Files:<input type=\"button\" class=\"btn btn-light p-1 \" value=\"Refresh Listing\" onClick = \"refreshFiles()\"></b><br/>";
@@ -112,58 +106,51 @@ if($_POST['mode']=="getFiles"){
     if($rid == 0){
         $rid = "NULL";
     }
-	
+	//Getting account for the path
 	$result = opendb2("select account from mosOrder where oid =".$_POST["oid"]);
 	$row2 = mysqli_fetch_assoc($result);
 	
+    //Creating HTML for Order Files
     opendb("select * from orderFiles where oid = ".$oid." and rid is null");
-    
     if($GLOBALS['$result']->num_rows > 0){
         foreach ($GLOBALS['$result'] as $row) {
             echo "<tr>";
-            //echo "<td>" . $row['oid'] . "</td>";
-            echo "<td><a href=\"#\" onclick=\"window.open('uploads/DealerFiles/".$row2['account']."/".$_POST["oid"]."/" . $row['id'] . "." . strtolower(pathinfo($row['name'],PATHINFO_EXTENSION))."', '_blank', 'fullscreen=yes'); return false;\">View</a></td>";
-            echo "<td><b><form action=\"download.php\" method=\"post\"><input name=\"OGName\" type=\"hidden\" value=\"". $row['name'] . "\"></input><input name=\"DealerFile\" type=\"hidden\" value=\"". $row2["account"]."/".$_POST["oid"]."/" . $row['id'] . "." . strtolower(pathinfo($row['name'],PATHINFO_EXTENSION)). "\" ></input><input type=\"submit\" value=\"" . $row['name'] . "\"/></form></b></td>";
-            echo "<td>" . "N/A" . "</td>";
-            echo "<td>" . "N/A" . "</td>";
-            echo "<td>" . "N/A" . "</td>";
-            echo "<td>" . "<input type=\"submit\" value=\"Delete\" onClick=\"deleteFile(". $row['id'] . ");\">" . "</td>";
+                echo "<td><a href=\"#\" onclick=\"window.open('uploads/DealerFiles/".$row2['account']."/".$_POST["oid"]."/" . $row['id'] . "." . strtolower(pathinfo($row['name'],PATHINFO_EXTENSION))."', '_blank', 'fullscreen=yes'); return false;\">View</a></td>";
+                echo "<td><b><form action=\"download.php\" method=\"post\"><input name=\"OGName\" type=\"hidden\" value=\"". $row['name'] . "\"></input><input name=\"DealerFile\" type=\"hidden\" value=\"". $row2["account"]."/".$_POST["oid"]."/" . $row['id'] . "." . strtolower(pathinfo($row['name'],PATHINFO_EXTENSION)). "\" ></input><input type=\"submit\" value=\"" . $row['name'] . "\"/></form></b></td>";
+                echo "<td>" . "N/A" . "</td>";
+                echo "<td>" . "N/A" . "</td>";
+                echo "<td>" . "N/A" . "</td>";
+                echo "<td>" . "<input type=\"submit\" value=\"Delete\" onClick=\"deleteFile(". $row['id'] . ");\">" . "</td>";
             echo "</tr>";
         }
     }
     
+    //Creating HTML for Room Files
 	opendb("select O.account, F.oid as oid, F.name as fileName, R.name as roomName, F.id as id from orderFiles F, orderRoom R, mosOrder O where F.iid is null and F.rid = R.rid and F.oid = ".$oid." and O.oid = F.oid");
     if($GLOBALS['$result']->num_rows > 0){
         foreach ($GLOBALS['$result'] as $row) {
             echo "<tr>";
-            //echo "<td><b>" . $row['oid'] . "</b></td>";
-            echo "<td><a href=\"#\" onclick=\"window.open('uploads/DealerFiles/".$row2['account']."/".$_POST["oid"]."/" . $row['id'] . "." . strtolower(pathinfo($row['fileName'],PATHINFO_EXTENSION))."', '_blank', 'fullscreen=yes'); return false;\">View</a></td>";
-            echo "<td><b><form action=\"download.php\" method=\"post\"><input name=\"OGName\" type=\"hidden\" value=\"". $row['fileName'] . "\"></input><input name=\"DealerFile\" type=\"hidden\" value=\"". $row2['account']."/".$_POST["oid"]."/" . $row['id'] . "." . strtolower(pathinfo($row['fileName'],PATHINFO_EXTENSION)). "\" ></input><input type=\"submit\" value=\"" . $row['fileName'] . "\"/></form></b></td>";
-            echo "<td>" . $row['roomName'] . "</td>";
-            echo "<td>" . "N/A" . "</td>";
-            echo "<td>" . "N/A" . "</td>";
-            echo "<td>" . "<input type=\"submit\" value=\"Delete\" onClick=\"deleteFile(". $row['id'] . ");\">" . "</td>";
+                echo "<td><a href=\"#\" onclick=\"window.open('uploads/DealerFiles/".$row2['account']."/".$_POST["oid"]."/" . $row['id'] . "." . strtolower(pathinfo($row['fileName'],PATHINFO_EXTENSION))."', '_blank', 'fullscreen=yes'); return false;\">View</a></td>";
+                echo "<td><b><form action=\"download.php\" method=\"post\"><input name=\"OGName\" type=\"hidden\" value=\"". $row['fileName'] . "\"></input><input name=\"DealerFile\" type=\"hidden\" value=\"". $row2['account']."/".$_POST["oid"]."/" . $row['id'] . "." . strtolower(pathinfo($row['fileName'],PATHINFO_EXTENSION)). "\" ></input><input type=\"submit\" value=\"" . $row['fileName'] . "\"/></form></b></td>";
+                echo "<td>" . $row['roomName'] . "</td>";
+                echo "<td>" . "N/A" . "</td>";
+                echo "<td>" . "N/A" . "</td>";
+                echo "<td>" . "<input type=\"submit\" value=\"Delete\" onClick=\"deleteFile(". $row['id'] . ");\">" . "</td>";
             echo "</tr>";
         }
     }
-    opendb("select F.oid as oid, F.name as fileName, R.name as roomName, F.id as id, I.description as description, I.name as name, I.id as iid, null as mid,   F.rid as rid from orderItem I, orderFiles F, orderRoom R where F.mid is null and F.iid = I.id and F.rid = R.rid and F.oid = ".$oid."
-union all
-select F.oid as oid, F.name as fileName, R.name as roomName, F.id as id, M.description as description, M.name as name,  I.id as iid, F.mid as mid, F.rid as rid from orderItemMods M, orderItem I, orderFiles F, orderRoom R where M.id = F.mid and F.iid = I.id and F.rid = R.rid and F.oid = ".$oid."
-order by rid, iid, mid");
+
+    //Creating HTML for Item and Mod Files
+    opendb("select O.account, F.oid as oid, F.name as fileName, R.name as roomName, F.id,F.iid,F.mid, COALESCE((SELECT oim.name FROM orderItemMods oim where oim.id = F.mid),I.name) as name, I.position from orderFiles F, orderRoom R, mosOrder O, orderItem I where I.rid = R.rid and F.iid is not null /*and F.mid is null*/ and F.iid = I.id and F.rid = R.rid and F.oid = ".$oid." and O.oid = F.oid order by roomName, iid, position asc");
     if($GLOBALS['$result']->num_rows > 0){
         foreach ($GLOBALS['$result'] as $row) {
             echo "<tr>";
-            //echo "<td><b>" . $row['oid'] . "</b></td>";
-            echo "<td><b><form action=\"download.php\" method=\"post\"><input name=\"OGName\" type=\"hidden\" value=\"". $row['fileName'] . "\"></input><input name=\"DealerFile\" type=\"hidden\" value=\"". $row2["account"]."/".$_POST["oid"]."/" . $row['id'] . "." . strtolower(pathinfo($row['fileName'],PATHINFO_EXTENSION)). "\" ></input><input type=\"submit\" value=\"" . $row['fileName'] . "\"/></form></b></td>";
-            echo "<td>" . $row['roomName'] . "</td>";
-            if(is_null($row['mid'])){
-                echo "<td>" . getItemID($row['rid'],$row['iid'],0) . "</td>";
-            }else{
-                echo "<td>" . getItemID($row['rid'],$row['mid'],1) . "</td>";
-            }
-            echo "<td>" . $row['description'] . " Code: " .$row['name'] . "</td>";
-            
-            echo "<td>" . "<input type=\"submit\" value=\"Delete\" onClick=\"deleteFile(". $row['id'] . ");\">" . "</td>";
+                echo "<td><a href=\"#\" onclick=\"window.open('uploads/DealerFiles/".$row2['account']."/".$_POST["oid"]."/" . $row['id'] . "." . strtolower(pathinfo($row['fileName'],PATHINFO_EXTENSION))."', '_blank', 'fullscreen=yes'); return false;\">View</a></td>";
+                echo "<td><b><form action=\"download.php\" method=\"post\"><input name=\"OGName\" type=\"hidden\" value=\"". $row['fileName'] . "\"></input><input name=\"DealerFile\" type=\"hidden\" value=\"". $row2["account"]."/".$_POST["oid"]."/" . $row['id'] . "." . strtolower(pathinfo($row['fileName'],PATHINFO_EXTENSION)). "\" ></input><input type=\"submit\" value=\"" . $row['fileName'] . "\"/></form></b></td>";
+                echo "<td>" . $row['roomName'] . "</td>";
+                echo "<td>".$row['position'].".0</td>";
+                echo "<td>".$row['name']."</td>";
+                echo "<td>" . "<input type=\"submit\" value=\"Delete\" onClick=\"deleteFile(". $row['id'] . ");\">" . "</td>";
             echo "</tr>";
         }
     }
