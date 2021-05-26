@@ -165,7 +165,7 @@ if($_POST['mode']=="updateCalDay"){
 }
 
 if($_POST['mode']=="getOrderRooms"){ 
-	$sql = "select orr.rid, orr.name, orr.cc, COALESCE(orr.fronts,0) fronts, DATE(COALESCE(deliveryDate,dateRequired)) dateRequired, pieces from orderRoom orr, mosOrder mo where mo.oid = orr.oid and orr.oid = ".$_POST["oid"]." order by orr.name asc";
+	$sql = "select orr.rid, orr.name, COALESCE(orr.cc,0) cc, COALESCE(orr.fronts,0) fronts, DATE(COALESCE(deliveryDate,dateRequired)) dateRequired, COALESCE(pieces,0) pieces from orderRoom orr, mosOrder mo where mo.oid = orr.oid and orr.oid = ".$_POST["oid"]." order by orr.name asc";
 	$query = opendb($sql);
 	$header = true;
 	while($row = $query->fetch_assoc()){ 
@@ -214,7 +214,7 @@ if($_POST['mode']=="getOrderRooms"){
 							  <div class=\"input-group-prepend\">
 								<span class=\"input-group-text\">Fronts</span>
 							  </div>
-							  <input type=\"number\" class=\"form-control\" name=\"fronts\" id=\"fronts".$row['rid']."\" placeholder=\"e.g. ".$row['fronts']."\" aria-describedby=\"fronts\" onchange=\"updateDetail(".$row['rid'].",'fronts',this.value);\">
+							  <input required type=\"number\" class=\"form-control\" name=\"fronts\" id=\"fronts".$row['rid']."\" placeholder=\"e.g. ".$row['fronts']."\" aria-describedby=\"fronts\" onchange=\"updateDetail(".$row['rid'].",'fronts',this.value);\">
 							</div>
 						</div>
 					</div>
@@ -224,7 +224,7 @@ if($_POST['mode']=="getOrderRooms"){
 							  <div class=\"input-group-prepend\">
 								<span class=\"input-group-text\">Pieces</span>
 							  </div>
-							  <input type=\"number\" class=\"form-control\" name=\"pieces\" id=\"pieces".$row['rid']."\" placeholder=\"e.g. ".$row['pieces']."\" aria-describedby=\"pieces\" onchange=\"updateDetail(".$row['rid'].",'pieces',this.value);\">
+							  <input required type=\"number\" class=\"form-control\" name=\"pieces\" id=\"pieces".$row['rid']."\" placeholder=\"e.g. ".$row['pieces']."\" aria-describedby=\"pieces\" onchange=\"updateDetail(".$row['rid'].",'pieces',this.value);\">
 							</div>
 						</div>
 					</div>

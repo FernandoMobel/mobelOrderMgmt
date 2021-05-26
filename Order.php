@@ -2575,9 +2575,9 @@ function setExtraOptions(rid){
 
 				                		foreach ($GLOBALS['$result'] as $row) {
 				                		    if($row['shipAddress']==$row['id']){
-				                                echo "<option ". "selected" ." value=\"" . $row['id'] . "\">" . $row['contactName']. " " . $row['contactEmail']. " " . $row['contactPhone']. " " . $row['unit']. " " . $row['street'].  ", " .$row['city']. ", " . $row['province']. " " . $row['postalCode'].  "</option>";
+				                                echo "<option ". "selected" ." value=\"" . $row['id'] . "\">" . $row['contactName']. " - " . $row['contactEmail']. " - " . $row['contactPhone']. " - " . $row['unit']. " " . $row['street'].  ", " .$row['city']. ", " . $row['province']. " " . $row['postalCode'].  "</option>";
 				                		    }else{
-				                		        echo "<option value=\"" . $row['id'] . "\">" . $row['contactName']. " " . $row['contactEmail']. " " . $row['contactPhone']. " " . $row['unit']. " " . $row['street'].  ", " .$row['city']. ", " . $row['province']. " " . $row['postalCode'].  "</option>";
+				                		        echo "<option value=\"" . $row['id'] . "\">" . $row['contactName']. " - " . $row['contactEmail']. " - " . $row['contactPhone']. " - " . $row['unit']. " " . $row['street'].  ", " .$row['city']. ", " . $row['province']. " " . $row['postalCode'].  "</option>";
 				                		    }
 				                		}
 				                		if($row['shipAddress']=='0'){

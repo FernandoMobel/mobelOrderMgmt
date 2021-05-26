@@ -30,7 +30,7 @@ function saveUser(objectID){
 	myData = { mode: "updateUser", id: objectID, value: $("#"+objectID).val()};
 	$.post("./OrderItem.php",
 			myData, 
-		       function(data, status, jqXHR) {
+		       	function(data, status, jqXHR) {
             		if(status == "success"){
             	    	$("#"+objectID).css("border-color", "#00b828");
             	    }
@@ -73,7 +73,7 @@ function saveOrder(objectID,OID){
 
 function testEmail(){
 	//Send Notification
-	myData = { mode: "orderScheduled", oid: $('#orderID').attr('value')};
+	myData = { mode: "orderScheduled", oid: $('#orderID').attr('value'), scheduled:$('#deliveryDate').val()};
 	$.post("../save.php",
 			myData, 
 				function(data, status, jqXHR) {
@@ -84,12 +84,20 @@ function testEmail(){
 function productionReady(){	
 	//Update date
 	myData = { mode: 'updateRoomDetails',  oid:$('#orderID').attr('value'), rid: 0, col:'deliveryDate', val:$('#deliveryDate').val()};
-	$.post("EmployeeMenuSettings.php",myData);
-	//Update status
-	myData = { mode: "updateOrder", id:'state', value:5, oid: $('#orderID').attr('value')};
-	$.post("../OrderItem.php",myData);
+	$.ajax({
+		url: 'EmployeeMenuSettings.php',
+		type: 'POST',
+		data: myData})
+	.done(function(data, status, jqXHR) {
+		//Update status
+		myData = { mode: "updateOrder", id:'state', value:5, oid: $('#orderID').attr('value')};
+		$.ajax({
+			url: '../OrderItem.php',
+			type: 'POST',
+			data: myData})
+	})
 	//Send Notification
-	myData = { mode: "orderScheduled", oid: $('#orderID').attr('value')};
+	myData = { mode: "orderScheduled", oid: $('#orderID').attr('value'), scheduled:$('#deliveryDate').val()};
 	$.post("../save.php",myData);
 }
 

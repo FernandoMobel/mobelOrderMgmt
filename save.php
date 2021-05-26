@@ -377,15 +377,12 @@ if($_POST['mode'] == "submitToMobel"){
     </html>";
     //echo $msg;
     sendmail("fernando@mobel.ca; orders@mobel.ca; ".$_SESSION['email'], "Order ".$mailOID." Submitted - ".$accountName, $msg);
-    createORDX($_POST['oid'],$accountId);//Call function to create ordx file
+    //createORDX($_POST['oid'],$accountId);//Call function to create ordx file
 }
 
 if($_POST['mode'] == "orderScheduled"){
     $result = opendb("select mo.po,mo.tagName,mo.dateRequired, mo.dateSubmitted, mo.deliveryDate,mu.account, mu.firstName, mu.lastName, mu.email from mosUser mu, mosOrder mo where mu.id = mo.mosUser and mo.oid = ".$_POST['oid']);
     $row = $result->fetch_assoc();
-    /*echo "account ".$row['account']."<br>";
-    echo "name ".$row['firstName']." ".$row['lastName']."<br>";
-    echo "email ".$row['email']."<br>";*/
 
     $msg = "<!DOCTYPE html>
     <html lang=\"en\">
@@ -410,7 +407,7 @@ if($_POST['mode'] == "orderScheduled"){
                     <h5 class=\"mx-5\">We have news about your order.</h5>
                 </div>
                 <div class=\"col-12 d-flex justify-content-center\">
-                    <h5>Your order <b>".$_POST['oid']."</b> has been scheduled for <b>".substr($row['deliveryDate'],0,10)."</b> and our team is working on it.</h5></br>
+                    <h5>Your order <b>".$_POST['oid']."</b> has been scheduled for <b>"./*substr($row['deliveryDate'],0,10)*/$_POST['scheduled']."</b> and our team is working on it.</h5></br>
                 </div>  
                 <div class=\"col-12 d-flex justify-content-center\">  
                     <h5> For more information about this order and the scheduled date, please visit your home page on <a href=\"https://mos.mobel.ca/viewOrder.php\">MOS</a></h5>         
@@ -437,176 +434,15 @@ if($_POST['mode'] == "orderScheduled"){
                         <strong>Ship To: </strong>";
             $msg .= "</p>
                 </div>
-            </div-->";
-            //Rooms start here
-            /*$sql = "select orr.rid,orr.name rname,sp.name spname,irf.name irfname,dd.name ddname,ff.name ffname,db.name dbname,gl.name glname,sdf.name sdfname,sh.name shname,ldf.name ldfname,h.name hname,dg.name dgname, fe.name fename
-            from orderRoom orr,species sp,interiorFinish irf,door dd,frontFinish ff,drawerBox db,glaze gl,smallDrawerFront sdf,sheen sh,largeDrawerFront ldf,hinge h,drawerGlides dg,finishedEnd fe where orr.oid=".$mailOID." and orr.species=sp.id and orr.door=dd.id and orr.frontFinish=ff.id and orr.glaze=gl.id and orr.glaze=gl.id and orr.sheen=sh.id and orr.hinge=h.id and orr.smallDrawerFront=sdf.id and orr.largeDrawerFront=ldf.id and orr.drawerGlides=dg.id and orr.drawerBox=db.id and orr.interiorFinish=irf.id and orr.finishedEnd=fe.id order by orr.name";
-            $result = opendb($sql);
-            $totalOrder = 0;
-            while($row = $result->fetch_assoc()){
-                $roomTotal = 0;
-                $msg .="<table class=\"table table-sm\">
-                    <tr class=\"table-secondary\">
-                        <td class=\"text-end\" colspan=\"2\"><h5>Room</h5></td>
-                        <td class=\"text-start\" colspan=\"2\"><h5>".$row['rname']."</h5></td>
-                    </tr>
-                    <tr>
-                        <td class=\"text-end\">Species:</td>
-                        <td class=\"text-start\">".$row['spname']."</td>
-                        <td class=\"text-end\">Interior Finish:</td>
-                        <td class=\"text-start\">".$row['irfname']."</td>
-                    </tr>
-                    <tr>
-                        <td class=\"text-end\">Door:</td>
-                        <td class=\"text-start\">".$row['ddname']."</td>
-                        <td class=\"text-end\">Finish:</td>
-                        <td class=\"text-start\">".$row['ffname']."</td>
-                    </tr>
-                    <tr>
-                        <td class=\"text-end\">Drawer Box:</td>
-                        <td class=\"text-start\">".$row['dbname']."</td>
-                        <td class=\"text-end\">Glaze:</td>
-                        <td class=\"text-start\">".$row['glname']."</td>
-                    </tr>
-                    <tr>
-                        <td class=\"text-end\">Small Drawer Front:</td>
-                        <td class=\"text-start\">".$row['sdfname']."</td>
-                        <td class=\"text-end\">Sheen:</td>
-                        <td class=\"text-start\">".$row['shname']."</td>
-                    </tr>
-                    <tr>
-                        <td class=\"text-end\">Large Drawer Front:</td>
-                        <td class=\"text-start\">".$row['ldfname']."</td>
-                        <td class=\"text-end\">Hinge:</td>
-                        <td class=\"text-start\">".$row['hname']."</td>
-                    </tr>
-                    <tr>
-                        <td class=\"text-end\">Drawer Glides:</td>
-                        <td class=\"text-start\">".$row['dgname']."</td>
-                        <td class=\"text-end\">Finished End:</td>
-                        <td class=\"text-start\">".$row['fename']."</td>
-                    </tr>
-                </table>
-                <table class=\"table table-sm\">
-                    <thead>
-                         <tr class=\"font-weight-bold text-center\">
-                            <th>Item</th>
-                            <th>Description</th>
-                            <th>W</th>
-                            <th>H</th>
-                            <th>D</th>
-                            <th>Qty</th>
-                            <th>Hinged</th>
-                            <th>F.E.</th>
-                            <th>Note</th>";
-                if($_SESSION["userType"]>1){
-                    $msg .="<th>Price</th>";
-                }
-                            
-                $msg .="</tr>
-                    </thead>
-                    <tbody>";
-
-                $sql2 = "select * from (SELECT orr.rid,it.CLGroup,oi.description, oi.note, oi.id as item, 0 as sid,oi.position, oi.qty, oi.name, oi.price, oi.sizePrice, 0 as 'parentPercent', ds.factor as 'DFactor', irf.factor as 'IFactor', ff.factor as 'FFactor', ff.upcharge as 'FUpcharge', sh.factor as 'SFactor', gl.factor as 'GFactor', sp.finishedEndSizePrice as 'EFactor', (db.upcharge + dg.upcharge) as 'drawerCharge', sdf.upcharge as 'smallDrawerCharge', ldf.upcharge as 'largeDrawerCharge', oi.doorFactor as 'DApplies', oi.speciesFactor as 'SpeciesApplies', oi.interiorFactor as 'IApplies', oi.finishFactor as 'FApplies', oi.sheenFactor as 'SApplies', oi.glazeFactor as 'GApplies',oi.drawers, oi.smallDrawerFronts, oi.largeDrawerFronts, oi.H, oi.W, oi.D, oi.W2, oi.D2, oi.minSize, it.pricingMethod as methodID, oi.hingeLeft,oi.hingeRight,oi.finishLeft,oi.finishRight
-            FROM  orderItem oi, orderRoom orr, doorSpecies ds, interiorFinish irf, item it, sheen sh, glaze gl, frontFinish ff,drawerBox db, drawerGlides dg, smallDrawerFront sdf, largeDrawerFront ldf, species sp
-            WHERE it.id = oi.iid and oi.rid = orr.rid and orr.species = ds.sid and orr.species = sp.id and orr.door = ds.did and orr.interiorFinish = irf.id and orr.sheen = sh.id and orr.glaze = gl.id and orr.frontFinish = ff.id and orr.drawerBox = db.id and orr.drawerGlides = dg.id and orr.smallDrawerFront = sdf.id and orr.largeDrawerFront = ldf.id and orr.rid = " .$row['rid']." 
-            union all
-                SELECT orr.rid,it.CLGroup,oi.description, oi.note, oi.pid,oi.id as sid, oi.position, oi.qty, oi.name, oi.price, oi.sizePrice, parentPercent, ds.factor as 'DFactor', irf.factor as 'IFactor', ff.factor as 'FFactor', ff.upcharge as 'FUpcharge', sh.factor as 'SFactor', gl.factor as 'GFactor', sp.finishedEndSizePrice as 'EFactor', (db.upcharge + dg.upcharge) as 'drawerCharge', sdf.upcharge as 'smallDrawerCharge', ldf.upcharge as 'largeDrawerCharge', oi.doorFactor as 'DApplies', oi.speciesFactor as 'SpeciesApplies', oi.interiorFactor as 'IApplies', oi.finishFactor as 'FApplies', oi.sheenFactor as 'SApplies', oi.glazeFactor as 'GApplies',oi.drawers, oi.smallDrawerFronts, oi.largeDrawerFronts, oi.H, oi.W, oi.D, oi.W2, oi.D2, oi.minSize, it.pricingMethod as methodID, oi.hingeLeft,oi.hingeRight,oi.finishLeft,oi.finishRight
-            FROM  orderItemMods oi, orderRoom orr, doorSpecies ds, interiorFinish irf, itemMods it, sheen sh, glaze gl, frontFinish ff,drawerBox db, drawerGlides dg,  smallDrawerFront sdf, largeDrawerFront ldf, species sp
-            WHERE it.id = oi.mid and oi.rid = orr.rid and orr.species = ds.sid and orr.species = sp.id and orr.door = ds.did and orr.interiorFinish = irf.id and orr.sheen = sh.id and orr.glaze = gl.id and orr.frontFinish = ff.id and orr.drawerBox = db.id and orr.drawerGlides = dg.id and orr.smallDrawerFront = sdf.id and orr.largeDrawerFront = ldf.id and orr.rid = ".$row['rid'].") as T1 order by rid,position,item,sid";
-
-                $result2 = opendb2($sql2);
-                $i = 0;
-                $si= 0;
-                $parentID = -1;
-                $isParent = -1;
-                while($row2 = $result2->fetch_assoc()) {
-                    if($parentID !== $row2['item']){ //new parent item
-                        $parentID = $row2['item'];
-                        $isParent = 1;
-                        $parentPrice = 0;
-                        $si = 0;
-                        $i++;
-                    }else{
-                        opendb2("select price from item where id = (select iid from orderItem where id = " . $row2['item'] . ")");
-                        foreach($GLOBALS['$result2'] as $row1){
-                            $parentPrice = $row1['price'];
-                        }
-                        $isParent = 0;
-                        $si = $si + 1;
-                        //$i = $i - 1;
-                    }
-                    $hinging = "";
-                    if($row2['hingeLeft']==1){
-                        $hinging = "L";
-                    }
-                    if($row2['hingeRight']=="1"){
-                        $hinging = "R";
-                    }
-                    if($row2['hingeLeft']=="1" && $row2['hingeRight'] =="1"){
-                        $hinging = "B";
-                    }
-                    $finishedEnds = "";
-                    if($row2['finishLeft']=="1"){
-                        $finishedEnds = "L";
-                    }
-                    if($row2['finishRight']=="1"){
-                        $finishedEnds = "R";
-                    }
-                    if($row2['finishLeft']=="1" && $row2['finishRight']=="1"){
-                        $finishedEnds = "B";
-                    }
-                    $mixDoorSpeciesFactor = 0;
-                    if($row2['DApplies'] == 1 || $row2['SpeciesApplies']==1){
-                        $mixDoorSpeciesFactor = 1;
-                    }else{
-                        $mixDoorSpeciesFactor = 0;
-                    }
-                    $b=""; 
-                    $be = "";
-                    if($isParent===1){
-                        $b = "<b>";
-                        $be = "</b>";
-                    }
-                    $aPrice =  getPrice($row2['qty'],$row2['price'],$row2['sizePrice'],$parentPrice,$row2['parentPercent'],$row2['DFactor'],$row2['IFactor'],$row2['FFactor'],$row2['GFactor'],$row2['SFactor'],$row2['EFactor'],$row2['drawerCharge'],$row2['smallDrawerCharge'],$row2['largeDrawerCharge'], $mixDoorSpeciesFactor,$row2['IApplies'],$row2['FApplies'],$row2['GApplies'],$row2['SApplies'],$row2['drawers'],$row2['smallDrawerFronts'],$row2['largeDrawerFronts'],$row2['finishLeft']+$row2['finishRight'], $row2['H'],$row2['W'],$row2['D'],$row2['minSize'],$row2['methodID'],$row2['FUpcharge'],$CLfactor);
-                    $roomFinishUpcharge=$row2['FUpcharge'];
-                    if($isParent === 1){
-                        $parentPrice = $aPrice;
-                    }
-                    $roomTotal += $aPrice;
-                    $msg .="<tr class=\"text-center\">
-                            <td>".$b.$i.".".$si.$be."</td>
-                            <td>".$b.$row2['name'].$be."</td>
-                            <td>".$b.(float)$row2['W'].$be."</td>
-                            <td>".$b.(float)$row2['H'].$be."</td>
-                            <td>".$b.(float)$row2['D'].$be."</td>
-                            <td>".$b.(float)$row2['qty'].$be."</td>
-                            <td>".$b.$hinging.$be."</td>
-                            <td>".$b.$finishedEnds.$be."</td>
-                            <td style=\"max-width: 450px;\">".$row2['note']."</td>";
-                    if($_SESSION["userType"]>1){
-                            $msg .= "<td><span title = \"" . getPrice($row2['qty'],$row2['price'],$row2['sizePrice'],$parentPrice,$row2['parentPercent'],$row2['DFactor'],$row2['IFactor'],$row2['FFactor'],$row2['GFactor'],$row2['SFactor'],$row2['EFactor'],$row2['drawerCharge'],$row2['smallDrawerCharge'],$row2['largeDrawerCharge'], $mixDoorSpeciesFactor,$row2['IApplies'],$row2['FApplies'],$row2['GApplies'],$row2['SApplies'],$row2['drawers'],$row2['smallDrawerFronts'],$row2['largeDrawerFronts'],$row2['finishLeft']+$row2['finishRight'], $row2['H'],$row2['W'],$row2['D'],$row2['minSize'],$row2['methodID'],$row2['FUpcharge'],$CLfactor,1) . "\">".$b. number_format($aPrice,2,'.','').$be."</span></td>";
-                    }
-                    $msg .= "</tr>";
-                }
-                if($_SESSION["userType"]>1){
-                    $msg .= "<tr class=\"border-top border-dark\">
-                                <td class=\"text-end\" colspan=\"9\"><h5>Room Total:</h5></td>
-                                <td class=\"text-center\"><h5>$".$roomTotal."</h5></td>
-                            </tr>";
-                }
-                $msg .="</tbody></table>";
-                $totalOrder += $roomTotal+$roomFinishUpcharge;
-            }
-            if($_SESSION["userType"]>1){
-                $msg .= "<div><h4 class=\"text-center\">Order Total: $$totalOrder pre HST & pre delivery</h4></div>";
-            }*/
-                $msg .="</div>
+            </div-->
+            </br>
+            <h5>Thank you from team Mobel</h5>";
+        $msg .="</div>
         <script src=\"https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js\" integrity=\"sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW\" crossorigin=\"anonymous\"></script>
     </body>
     </html>";
     echo $msg;
-    sendmail("fernando@mobel.ca; "/*.$row['email']*/, "your Order ".$_POST['oid']." has been scheduled!", $msg);
+    sendmail("fernando@mobel.ca; ".$row['email'], "Your Order ".$_POST['oid']." has been scheduled!", $msg);
 }
 
 function roomTable($species,$interiorFinish,$door,$frontFinish,$drawerBox,$glaze,$smallDrawerFront,$sheen,$largeDrawerFront,$hinge,$drawerGlides,$finishedEnd){
