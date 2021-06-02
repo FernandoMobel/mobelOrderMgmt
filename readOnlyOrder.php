@@ -214,9 +214,17 @@ $msg = "
 			    $msg .="<tr>
 						<td class=\"border text-center border-dark font-weight-bold\">".$b.$i.".".$si.$be."</td>
 						<td class=\"border border-dark font-weight-bold\">".$b.$row2['name']." - ".$row2['description'].$be."</td>
-						<td class=\"border text-center border-dark font-weight-bold\">".$b.(float)$row2['W'].$be."</td>
+						<td class=\"border text-center border-dark font-weight-bold\">".$b.(float)$row2['W'];
+						/*Printing second Width if exists*/
+						if((float)$row2['W2']>0)
+							$msg .= ", ".(float)$row2['W2'];
+						$msg .=$be."</td>
 						<td class=\"border text-center border-dark font-weight-bold\">".$b.(float)$row2['H'].$be."</td>
-						<td class=\"border text-center border-dark font-weight-bold\">".$b.(float)$row2['D'].$be."</td>
+						<td class=\"border text-center border-dark font-weight-bold\">".$b.(float)$row2['D'];
+						/*Printing second Depth if exists*/
+						if((float)$row2['D2']>0)
+							$msg .= ", ".(float)$row2['D2'];
+						$msg .= $be."</td>
 						<td class=\"border text-center border-dark font-weight-bold\">".$b.(float)$row2['qty'].$be."</td>
 						<td class=\"border text-center border-dark font-weight-bold\">".$b.$hinging.$be."</td>
 						<td class=\"border text-center border-dark font-weight-bold\">".$b.$finishedEnds.$be."</td>
