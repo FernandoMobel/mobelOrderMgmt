@@ -2742,10 +2742,10 @@ $(document).ready(function(){
 	$("#editItemModal").on('shown.bs.modal', function(){
         $('#editItemSearch').focus();
     });
-	$("#editItemModal").on('hide.bs.modal', function(){
+	/*$("#editItemModal").on('hide.bs.modal', function(){
 		//console.log('hidding now...');
 		loadItems($("a.nav-link.roomtab.active").attr("value"))
-	});
+	});*/
 	//set options(Touch up, Hardware)
 	//setExtraOptions($("a.nav-link.roomtab.active").attr("value"));
 
