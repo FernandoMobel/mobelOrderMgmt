@@ -247,8 +247,10 @@ if($_POST['mode']=="updateOrder"){
     if(strcmp($_POST['id'],"OrderNote")==0){
         $fixPost = "note";
     }
-    if(isset($_POST['isPriority']) == 0){//This updates who is going to be invoiced if service. In this case set as null is not a service to revert if previously was selected.
-        opendb("update mosOrder set invoiceTo=null where oid=".$_POST['oid']);
+    //This updates who is going to be invoiced if service. In this case set as null is not a service to revert if previously was selected.
+    if(isset($_POST['isPriority']) ){
+        if($_POST['isPriority']==0)  
+            opendb("update mosOrder set invoiceTo=null where oid=".$_POST['oid']);
     }
     
     $sql = "update mosOrder set ".$fixPost." = '" . $_POST['value'] . "' where oid = " . $_POST['oid'];
